@@ -2,6 +2,7 @@ from PIL import Image
 import json
 import random
 import math
+import pygame
 
 DRAWING_SIZE = 1000
 GOLDEN = (1 + math.sqrt(5)) / 2
@@ -310,6 +311,38 @@ class Drawing:
                 point_pos += origin
                 line["points"][point_index] = point_pos.point()
         return self
+
+    def render(self):
+        pygame_scale = 10
+        pygame.init()
+        screen = pygame.display.set_mode((DRAWING_SIZE * pygame_scale, DRAWING_SIZE * pygame_scale))
+        pygame.display.set_caption("Drawing Render")
+        screen.fill(WHITE[:3])
+
+        for line in self.object["lines"]:
+            brush_radius = line["brushRadius"] * pygame_scale
+            color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
+
+            points = []
+            for point in line["points"]:
+                this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
+                points.append(this_point)
+                pygame.draw.circle(screen, color, this_point, int(brush_radius))
+
+            pygame.draw.lines(screen, color, False, points, int(brush_radius*2))
+
+        # update screen to render drawing
+        pygame.display.update()
+        pygame.image.save(screen, "screenshot.png")
+
+        # enter a loop to prevent pygame from ending
+        # running = True
+        # while running:
+        #     ev = pygame.event.get()
+        #     for event in ev:
+        #         if event.type == pygame.QUIT:
+        #             running = False
+        #             break
 
     def to_nifty_import(self):
         return "drawingCanvas.current.loadSaveData(\"" + json.dumps(self.object).replace('"', '\\"') + "\", false)"
@@ -641,11 +674,13 @@ def big_text_boi(drawing):
 
 def main():
 
-    # drawing = square_fractal(Drawing(), [8, 1, 5, 0], 8)
-    drawing = big_text_boi(Drawing())
+    drawing = square_fractal(Drawing(), [8, 1, 4, 0], 13)
+    # drawing = big_text_boi(Drawing())
 
     # scale down so it not touch edgy
     # drawing *= 0.95
+
+    drawing.render()
 
     print(f"Lines: {len(drawing.object['lines'])}, Size: {len(drawing.to_nifty_import())}")
     with open("output.txt", "w") as file:
