@@ -15,5 +15,8 @@ class FractalPiece2D:
         result.mx = self.mx
         return result
 
+    def radius(self):
+        return self.mx.rms_metric()
+
     def __repr__(self):
         return f"(id {self.id}, vect {self.vect}, mx {self.mx})"
