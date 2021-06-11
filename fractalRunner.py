@@ -15,7 +15,7 @@ def fractalRunner(drawing):
 
     # Set up whatever control parameters are required
     initial_id = 0
-    min_radius = 20
+    min_radius = 26
     max_iterations = 8
     circle_colour_list = [BLUE, RED, MAGENTA, GREEN, YELLOW]
     circle_radius_factor = 0.5 ** 0.5  # just touching
@@ -28,84 +28,27 @@ def fractalRunner(drawing):
     main_piece.mx = Matrix2D(DRAWING_SIZE/2, 0, 0, DRAWING_SIZE/2)
 
     # Set up linked fractal system
-    fract_sys = FractalSystem2D()
+    fs = FractalSystem2D()
+    fs.add_n_defns(3)
 
-    # Add 1, 2 or more definitions to the system
-    defn_0 = FractalDefn2D()
-    defn_1 = FractalDefn2D()
-    defn_2 = FractalDefn2D()
-    fract_sys.add_defn(defn_0)
-    fract_sys.add_defn(defn_1)
-    fract_sys.add_defn(defn_2)
-    # optionally set defn.radius_factor
-    # for each defn using a suitable formula
-    # based on vectors and matrices in each defn
-    # which is potentially automatable
-    # using convex hulls
+    fs.add_child(0, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
+    fs.add_child(0, FractalPiece2D(1, Vector2D(-1, 1) * 0.5, Matrix2D(0, 1, -1, 0) * 0.5))
+    fs.add_child(0, FractalPiece2D(2, Vector2D(1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
 
-    # Set up definition 0
-    pc_0_0 = FractalPiece2D()
-    pc_0_0.id = 0
-    pc_0_0.vect = Vector2D(-1, -1) * 0.5
-    pc_0_0.mx = Matrix2D(1, 0, 0, 1) * 0.5
-    defn_0.add_child(pc_0_0)
+    fs.add_child(1, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
+    fs.add_child(1, FractalPiece2D(0, Vector2D(-1, 1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
+    fs.add_child(1, FractalPiece2D(0, Vector2D(1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
 
-    pc_0_1 = FractalPiece2D()
-    pc_0_1.id = 1
-    pc_0_1.vect = Vector2D(-1, 1) * 0.5
-    pc_0_1.mx = Matrix2D(0, 1, -1, 0) * 0.5
-    defn_0.add_child(pc_0_1)
-
-    pc_0_2 = FractalPiece2D()
-    pc_0_2.id = 2
-    pc_0_2.vect = Vector2D(1, -1) * 0.5
-    pc_0_2.mx = Matrix2D(1, 0, 0, 1) * 0.5
-    defn_0.add_child(pc_0_2)
-
-    # Set up definition 1
-    pc_1_0 = FractalPiece2D()
-    pc_1_0.id = 0
-    pc_1_0.vect = Vector2D(-1, -1) * 0.5
-    pc_1_0.mx = Matrix2D(1, 0, 0, 1) * 0.5
-    defn_1.add_child(pc_1_0)
-
-    pc_1_1 = FractalPiece2D()
-    pc_1_1.id = 0
-    pc_1_1.vect = Vector2D(-1, 1) * 0.5
-    pc_1_1.mx = Matrix2D(1, 0, 0, 1) * 0.5
-    defn_1.add_child(pc_1_1)
-
-    pc_1_2 = FractalPiece2D()
-    pc_1_2.id = 0
-    pc_1_2.vect = Vector2D(1, -1) * 0.5
-    pc_1_2.mx = Matrix2D(1, 0, 0, 1) * 0.5
-    defn_1.add_child(pc_1_2)
-
-    # Set up definition 2
-    pc_2_0 = FractalPiece2D()
-    pc_2_0.id = 0
-    pc_2_0.vect = Vector2D(1, -1) * 0.25
-    pc_2_0.mx = Matrix2D(-1, 0, 0, 1) * 0.75
-    defn_2.add_child(pc_2_0)
-
-    pc_2_1 = FractalPiece2D()
-    pc_2_1.id = 0
-    pc_2_1.vect = Vector2D(-1, -1) * 0.75
-    pc_2_1.mx = Matrix2D(1, 0, 0, 1) * 0.25
-    defn_2.add_child(pc_2_1)
+    fs.add_child(2, FractalPiece2D(0, Vector2D(-3, -1) * 0.25, Matrix2D(1, 0, 0, 1) * 0.25))
+    fs.add_child(2, FractalPiece2D(0, Vector2D(1, -1) * 0.25, Matrix2D(-1, 0, 0, 1) * 0.75))
 
     # Calculate the iterations here using the system
-    main_iterations = fract_sys.iterate(main_piece, max_iterations, min_radius)
+    main_iterations = fs.iterate(main_piece, max_iterations, min_radius)
 
-    # Smoke test via a few console prints
+    # Smoke test via console print
     print("")
-    print("")
-    print(pc_0_0)
-    print("")
-    print(defn_0)
-    print("")
-    print(fract_sys)
-    print("")
+    print("Fractal System:")
+    print(fs)
     print("")
     
     # Turn main_iterations into a list of Pos
