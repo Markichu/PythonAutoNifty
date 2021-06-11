@@ -14,7 +14,7 @@ def fractalRunner(drawing):
     # which each contain a list of FractalPiece2D (controlling next iteration)
 
     # Set up whatever control parameters are required
-    initial_id = 0
+    init_id = 0
     min_radius = 26
     max_iterations = 8
     circle_colour_list = [BLUE, RED, MAGENTA, GREEN, YELLOW]
@@ -22,10 +22,8 @@ def fractalRunner(drawing):
     # circle_radius_factor = 1 # overlapping
 
     # Initialisation of fractal
-    main_piece = FractalPiece2D()
-    main_piece.id = initial_id
-    main_piece.vect = Vector2D(DRAWING_SIZE/2, DRAWING_SIZE/2)
-    main_piece.mx = Matrix2D(DRAWING_SIZE/2, 0, 0, DRAWING_SIZE/2)
+    sc = DRAWING_SIZE / 2  # main scale
+    init_fractal_piece = FractalPiece2D(init_id, Vector2D(1, 1) * sc, Matrix2D(1, 0, 0, 1) * sc)
 
     # Set up linked fractal system
     fs = FractalSystem2D()
@@ -43,7 +41,7 @@ def fractalRunner(drawing):
     fs.add_child(2, FractalPiece2D(0, Vector2D(1, -1) * 0.25, Matrix2D(-1, 0, 0, 1) * 0.75))
 
     # Calculate the iterations here using the system
-    main_iterations = fs.iterate(main_piece, max_iterations, min_radius)
+    main_iterations = fs.iterate(init_fractal_piece, max_iterations, min_radius)
 
     # Smoke test via console print
     print("")
