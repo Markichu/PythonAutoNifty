@@ -1,3 +1,4 @@
+from FractalDefn2D import FractalDefn2D
 from FractalPiece2D import FractalPiece2D
 
 
@@ -7,6 +8,17 @@ class FractalSystem2D:
 
     def add_defn(self, fractal_defn):
         self.defns.append(fractal_defn)
+        return self
+        
+    def add_n_defns(self, n):
+        if isinstance(n, int):
+            if n > 0:
+                for i in range(0, n):
+                    self.add_defn(FractalDefn2D())
+        return self
+
+    def add_child(self, id, fractal_piece):
+        self.defns[id].add_child(fractal_piece)
         return self
 
     def iterate(self, fractal_piece, max_iterations=0, min_radius=1):
