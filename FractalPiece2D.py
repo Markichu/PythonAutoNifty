@@ -26,11 +26,7 @@ class FractalPiece2D:
             self.mx = Matrix2D() # need new object
 
     def copy(self):
-        result = FractalPiece2D()
-        result.id = self.id
-        result.vect = self.vect
-        result.mx = self.mx
-        return result
+        return FractalPiece2D(self.id, self.vect.copy(), self.mx.copy())
 
     def radius(self):
         return self.mx.rms_metric()
