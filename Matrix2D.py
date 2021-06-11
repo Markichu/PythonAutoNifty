@@ -15,8 +15,19 @@ class Matrix2D:
     def copy(self):
         return Matrix2D(self.a, self.b, self.c, self.d)
 
+    # Give an order of magnitude size for this matrix
+    def rms_metric(self):
+        return (self.a ** 2 + self.b ** 2 + self.c ** 2 + self.d ** 2) ** 0.5
+    
     def __mul__(self, obj):
-        if isinstance(obj, Vector2D):
+        if isinstance(obj, (int, float)):
+            result = Matrix2D()
+            result.a = self.a * obj
+            result.b = self.b * obj
+            result.c = self.c * obj
+            result.d = self.d * obj
+            return result
+        elif isinstance(obj, Vector2D):
             result = Vector2D()
             result.x = self.a * obj.x + self.b * obj.y
             result.y = self.c * obj.x + self.d * obj.y
