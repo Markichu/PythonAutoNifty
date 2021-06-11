@@ -9,23 +9,27 @@ class FractalSystem2D:
         self.defns.append(fractal_defn)
         return self
 
-    def iterate(self, fractal_piece, iterations=0):
+    def iterate(self, fractal_piece, max_iterations=0, min_radius=1):
         result = [fractal_piece]
-        for i in range(0, iterations):
-            result = self.get_next_iteration(result)
+        for i in range(0, max_iterations):
+            result = self.get_next_iteration(result, min_radius)
         return result
 
-    def get_next_iteration(self, fractal_piece_list):
+    def get_next_iteration(self, fractal_piece_list, min_radius):
         result = []
         for prev_piece in fractal_piece_list:
             this_id = prev_piece.id
             this_defn = self.defns[this_id]
-            for child_piece in this_defn.children:
-                next_piece = FractalPiece2D()
-                next_piece.id = child_piece.id
-                next_piece.vect = prev_piece.vect + prev_piece.mx * child_piece.vect
-                next_piece.mx = prev_piece.mx * child_piece.mx
-                result.append(next_piece)
+            this_size_px = this_defn.radius_factor * prev_piece.radius()
+            if this_size_px <= min_radius:
+                result.append(prev_piece)
+            else:
+                for child_piece in this_defn.children:
+                    next_piece = FractalPiece2D()
+                    next_piece.id = child_piece.id
+                    next_piece.vect = prev_piece.vect + prev_piece.mx * child_piece.vect
+                    next_piece.mx = prev_piece.mx * child_piece.mx
+                    result.append(next_piece)
         return result
 
     def __repr__(self):
