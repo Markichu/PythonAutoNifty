@@ -1,5 +1,6 @@
 class FractalDefn2D:
     def __init__(self):
+        self.radius_factor = 1
         self.children = []
 
     def add_child(self, fractal_piece):
