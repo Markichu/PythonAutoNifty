@@ -1,8 +1,10 @@
 import json
 import random
+import pygame
+import os
 
 from Pos import Pos
-from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK
+from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
 
 
 class Drawing:
@@ -248,6 +250,39 @@ class Drawing:
                 point_pos += origin
                 line["points"][point_index] = point_pos.point()
         return self
+
+    def render(self, pygame_scale=1):
+        if pygame_scale > 1:
+            os.environ['SDL_VIDEODRIVER'] = 'dummy'
+        pygame.init()
+        screen = pygame.display.set_mode((DRAWING_SIZE * pygame_scale, DRAWING_SIZE * pygame_scale))
+        pygame.display.set_caption("Drawing Render")
+        screen.fill(WHITE[:3])
+
+        for line in self.object["lines"]:
+            brush_radius = line["brushRadius"] * pygame_scale
+            color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
+
+            points = []
+            for point in line["points"]:
+                this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
+                points.append(this_point)
+                pygame.draw.circle(screen, color, this_point, int(brush_radius))
+
+            pygame.draw.lines(screen, color, False, points, int(brush_radius*2))
+
+        # update screen to render drawing
+        pygame.display.update()
+        pygame.image.save(screen, "screenshot.png")
+
+        # enter a loop to prevent pygame from ending
+        running = True
+        while running and pygame_scale <= 1:
+            ev = pygame.event.get()
+            for event in ev:
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
 
     def to_nifty_import(self):
         return "drawingCanvas.current.loadSaveData(\"" + json.dumps(self.object).replace('"', '\\"') + "\", false)"

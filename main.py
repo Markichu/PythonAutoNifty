@@ -17,8 +17,13 @@ def main():
     drawing = fractalRunner(Drawing())
     # ---------------
 
-    # # Optional - Reduce scale to prevent drawing from touching the edge
+    # # Options
+    # # Reduce scale to prevent drawing from touching the edge
     # drawing *= 0.95
+    # # Render and save the image in pygame as a PNG,\
+    # #   increase pygame_scale for higher RES output images,\
+    # #   pygame_scale's above 1 do not render on screen
+    drawing.render(pygame_scale=10)
 
     # # Write the drawing to output file
     # # that can be pasted into the console
