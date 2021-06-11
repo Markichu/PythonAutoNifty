@@ -1,4 +1,5 @@
-
 output.txt
 screenshot.png
 .idea/*
+__pycache__
+temp*
