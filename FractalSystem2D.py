@@ -37,11 +37,10 @@ class FractalSystem2D:
                 result.append(prev_piece)
             else:
                 for child_piece in this_defn.children:
-                    next_piece = FractalPiece2D()
-                    next_piece.id = child_piece.id
-                    next_piece.vect = prev_piece.vect + prev_piece.mx * child_piece.vect
-                    next_piece.mx = prev_piece.mx * child_piece.mx
-                    result.append(next_piece)
+                    result.append(FractalPiece2D(\
+                        child_piece.id,\
+                        prev_piece.vect + prev_piece.mx * child_piece.vect,\
+                        prev_piece.mx * child_piece.mx))
         return result
 
     def __repr__(self):
