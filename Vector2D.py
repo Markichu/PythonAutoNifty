@@ -1,3 +1,7 @@
+# A Vector2D is a vector of this form:
+# [x]
+# [y]
+
 class Vector2D:
     def __init__(self, x=0, y=0):
         self.x = x
