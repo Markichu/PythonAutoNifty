@@ -15,6 +15,7 @@ def main():
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)
     # drawing = big_text_boi(Drawing())
     drawing = fractalRunner(Drawing())
+    # drawing = point_image(Drawing(),"stars.jpg")
     # ---------------
 
     # # Optional - Reduce scale to prevent drawing from touching the edge
