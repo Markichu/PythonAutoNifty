@@ -22,8 +22,7 @@ def fractalRunner(drawing):
         [BLUE, CYAN],\
         [RED, MAGENTA],\
         [GREEN, YELLOW]]
-    circle_radius_factor = 0.5 ** 0.5  # just touching
-    # circle_radius_factor = 1 # overlapping
+    circle_radius_factor = 1
 
     # Initialisation of fractal
     sc = DRAWING_SIZE / 2  # main scale

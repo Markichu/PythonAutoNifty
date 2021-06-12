@@ -17,7 +17,7 @@ class Matrix2D:
 
     # Give an order of magnitude size for this matrix
     def rms_metric(self):
-        return (self.a ** 2 + self.b ** 2 + self.c ** 2 + self.d ** 2) ** 0.5
+        return (0.5 * (self.a ** 2 + self.b ** 2 + self.c ** 2 + self.d ** 2)) ** 0.5
     
     def __mul__(self, obj):
         if isinstance(obj, (int, float)):
