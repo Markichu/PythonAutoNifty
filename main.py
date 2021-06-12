@@ -1,9 +1,9 @@
 from Drawing import Drawing
 
 from fractalRunner import fractalRunner
-# from originalDrawingMethods? import point_image, rotating_square, tiled_diagonals,\
-#   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
-#   shrinking_circle_ring, square_fractal, big_text_boi
+from originalDrawingMethods import point_image, rotating_square, tiled_diagonals,\
+  fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
+  shrinking_circle_ring, square_fractal, big_text_boi
 
 
 def main():
@@ -15,6 +15,7 @@ def main():
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)
     # drawing = big_text_boi(Drawing())
     drawing = fractalRunner(Drawing())
+    # drawing = point_image(Drawing(),"stars.jpg")
     # ---------------
 
     # # Optional - Reduce scale to prevent drawing from touching the edge

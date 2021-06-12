@@ -21,7 +21,11 @@ def point_image(drawing, image_name):
     for x in range(width):
         for y in range(height):
             colour = list(image.getpixel((x, y)))
-            if colour[3] > 0.25:
+            if len(colour) == 4:
+                if colour[3] > 0.25:
+                    drawing.add_point(Pos((x + 0.5) * x_diff, (y + 0.5) * y_diff), colour, x_diff * pow(2, 0.5) / 2)
+            else:
+                colour.append(1)
                 drawing.add_point(Pos((x + 0.5) * x_diff, (y + 0.5) * y_diff), colour, x_diff * pow(2, 0.5) / 2)
 
     return drawing
