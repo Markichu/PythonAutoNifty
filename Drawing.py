@@ -4,7 +4,7 @@ import pygame
 import os
 
 from Pos import Pos
-from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
+from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
 
 
 class Drawing:
@@ -251,11 +251,32 @@ class Drawing:
                 line["points"][point_index] = point_pos.point()
         return self
 
-    def render(self, pygame_scale=1):
-        if pygame_scale > 1:
+    def render(self, pygame_scale=None, headless=False, filename="output.png"):
+        # Set a fake video driver to hide output
+        if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
+            # No screen to get the dimensions, just render at normal size
+            if pygame_scale is None:
+                pygame_scale = 1
+
         pygame.init()
-        screen = pygame.display.set_mode((DRAWING_SIZE * pygame_scale, DRAWING_SIZE * pygame_scale))
+
+        # Position the window perfectly if it's not headless
+        if not headless:
+            info_object = pygame.display.Info()
+            smallest_dimension = min(info_object.current_w, info_object.current_h)
+
+            x = round((info_object.current_w-(smallest_dimension-TITLE_BAR_HEIGHT-(BORDER_WIDTH*2)))/2)
+            y = TITLE_BAR_HEIGHT+BORDER_WIDTH
+            os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
+
+            # Scale the window and drawing to the maximum square size
+            if pygame_scale is None:
+                pygame_scale = (smallest_dimension-TITLE_BAR_HEIGHT-(BORDER_WIDTH*2)) / DRAWING_SIZE
+
+        # Initialise the window with dimensions
+        screen = pygame.display.set_mode((round(DRAWING_SIZE * pygame_scale), round(DRAWING_SIZE * pygame_scale)))
+
         pygame.display.set_caption("Drawing Render")
         screen.fill(WHITE[:3])
 
@@ -273,11 +294,13 @@ class Drawing:
 
         # update screen to render drawing
         pygame.display.update()
-        pygame.image.save(screen, "screenshot.png")
+        print(f"\nSaving {filename}")
+        pygame.image.save(screen, filename)
+        print("Saved.")
 
         # enter a loop to prevent pygame from ending
         running = True
-        while running and pygame_scale <= 1:
+        while running and not headless:
             ev = pygame.event.get()
             for event in ev:
                 if event.type == pygame.QUIT:

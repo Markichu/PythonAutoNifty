@@ -25,7 +25,7 @@ Set up and activate the env in your local PythonAutoNifty folder, so this projec
 ``` sh
 python3 -m venv ~/.virtualenvs/PythonAutoNifty
 source ~/.virtualenvs/PythonAutoNifty/bin/activate
-pip3 install Pillow
+pip3 install -r requirements.txt
 pip3 list
 ```
 
@@ -37,5 +37,5 @@ deactivate
 
 ## Credits
 - Original code by `Markichu`
-- Contributions from `niftymaestro`
+- Contributions from `niftymaestro` and `EL-S`
 - Thanks to the developers behind Nifty Ink website
