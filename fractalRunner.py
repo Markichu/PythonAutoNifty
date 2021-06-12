@@ -15,7 +15,8 @@ def fractalRunner(drawing):
     # which each contain a list of FractalPiece2D (controlling next iteration)
 
     # Set up whatever control parameters are required
-    init_id = 0
+    total_defns = 3
+    init_defn_id = 0
     min_radius = 26
     max_iterations = 8
     circle_colours = [\
@@ -26,11 +27,11 @@ def fractalRunner(drawing):
 
     # Initialisation of fractal
     sc = DRAWING_SIZE / 2  # main scale
-    init_fractal_piece = FractalPiece2D(init_id, Vector2D(1, 1) * sc, Matrix2D(1, 0, 0, 1) * sc)
+    init_fractal_piece = FractalPiece2D(init_defn_id, Vector2D(1, 1) * sc, Matrix2D(1, 0, 0, 1) * sc)
 
     # Set up linked fractal system
     fs = FractalSystem2D()
-    fs.add_n_defns(3)
+    fs.add_n_defns(total_defns)
 
     fs.add_child(0, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
     fs.add_child(0, FractalPiece2D(1, Vector2D(-1, 1) * 0.5, Matrix2D(0, 1, -1, 0) * 0.5))
