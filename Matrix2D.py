@@ -40,7 +40,7 @@ class Matrix2D:
             result.d = self.c * obj.b + self.d * obj.d
             return result
         else:
-            raise TypeError("Passes object for multiplication is not a supported type.")
+            raise TypeError("Argument for matrix multiplication is not of a supported type")
 
     def __repr__(self):
         return f"[{self.a}, {self.b}; {self.c}, {self.d}]"
