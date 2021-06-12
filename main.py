@@ -1,9 +1,9 @@
 from Drawing import Drawing
 
 from fractalRunner import fractalRunner
-# from originalDrawingMethods? import point_image, rotating_square, tiled_diagonals,\
-#   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
-#   shrinking_circle_ring, square_fractal, big_text_boi
+from originalDrawingMethods import point_image, rotating_square, tiled_diagonals,\
+  fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
+  shrinking_circle_ring, square_fractal, big_text_boi
 
 
 def main():
@@ -27,6 +27,12 @@ def main():
     with open("output.txt", "w") as file:
         file.write(drawing.to_nifty_import())
 
+
+    # # Optional - Render and save the image in pygame,\
+    # #   increase pygame_scale for higher RES output images,\
+    # #   enable headless if image will be larger than the screen,\
+    # #   filename specifies the name and format of the image
+    drawing.render(pygame_scale=None,headless=False,filename="screenshot.png")
 
 if __name__ == '__main__':
     main()
