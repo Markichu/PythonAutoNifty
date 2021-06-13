@@ -17,7 +17,7 @@ def fractalRunner(drawing):
     # Set up whatever control parameters are required
     total_defns = 3
     init_defn_id = 0
-    min_radius = 26
+    min_radius = 12
     max_iterations = 8
     circle_colours = [\
         [BLUE, CYAN],\
@@ -25,27 +25,36 @@ def fractalRunner(drawing):
         [GREEN, YELLOW]]
     circle_radius_factor = 1
 
-    # Initialisation of fractal
+    # Initialise fractal to be in the middle of the Nifty Ink window, with size to fill the window.
+    # This is assuming the fractal scale is within a box [-1, 1] x [-1, 1]
     sc = DRAWING_SIZE / 2  # main scale
     init_fractal_piece = FractalPiece2D(init_defn_id, Vector2D(1, 1) * sc, Matrix2D(1, 0, 0, 1) * sc)
+    # You can iterate on multiple fractals at the same time, to make a fractal landscape:
+    init_fractal_piece_2 = FractalPiece2D(1, Vector2D(sc * 1.5, sc * 1.4), Matrix2D.rotd(15) * sc * 0.4)  # rotate 15 degrees clockwise
+    init_fractal_piece_list = [init_fractal_piece, init_fractal_piece_2]
 
     # Set up linked fractal system
     fs = FractalSystem2D()
     fs.add_n_defns(total_defns)
 
-    fs.add_child(0, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
-    fs.add_child(0, FractalPiece2D(1, Vector2D(-1, 1) * 0.5, Matrix2D(0, 1, -1, 0) * 0.5))
-    fs.add_child(0, FractalPiece2D(2, Vector2D(1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
+    # Set up 0th fractal defn using rotation matrices
+    fs.add_child(0, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D.rotd(0) * 0.5))  # id matrix
+    fs.add_child(0, FractalPiece2D(1, Vector2D(-1, 1) * 0.5, Matrix2D.rotd(90) * 0.5))  # 90 degree rotation clockwise
+    fs.add_child(0, FractalPiece2D(2, Vector2D(1, -1) * 0.5, Matrix2D.rotd(0) * 0.5))
 
-    fs.add_child(1, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
+    # Set up 1st fractal defn using direct definition of matrices
+    fs.add_child(1, FractalPiece2D(0, Vector2D(-1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5)) # id matrices
     fs.add_child(1, FractalPiece2D(0, Vector2D(-1, 1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
     fs.add_child(1, FractalPiece2D(0, Vector2D(1, -1) * 0.5, Matrix2D(1, 0, 0, 1) * 0.5))
 
-    fs.add_child(2, FractalPiece2D(0, Vector2D(-3, -1) * 0.25, Matrix2D(1, 0, 0, 1) * 0.25))
-    fs.add_child(2, FractalPiece2D(0, Vector2D(1, -1) * 0.25, Matrix2D(-1, 0, 0, 1) * 0.75))
+    # Set up 2nd fractal definition using matrices in the dihedral group and square group
+    fs.add_child(2, FractalPiece2D(0, Vector2D(-3, -1) * 0.25, Matrix2D.dh(5, 1) * 0.25))  # id
+    fs.add_child(2, FractalPiece2D(0, Vector2D(1, -1) * 0.25, Matrix2D.sq(7) * 0.75))  # horizontal reflection
+
+    # All the matrix definition types convert into Matrix2D(a, b, c, d) type 
 
     # Calculate the iterations here using the system
-    main_iterations = fs.iterate(init_fractal_piece, max_iterations, min_radius)
+    main_iterations = fs.iterate(init_fractal_piece_list, max_iterations, min_radius)
 
     # Smoke test via console print
     print("")
