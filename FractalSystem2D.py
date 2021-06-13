@@ -21,8 +21,8 @@ class FractalSystem2D:
         self.defns[id].add_child(fractal_piece)
         return self
 
-    def iterate(self, fractal_piece, max_iterations=0, min_radius=1):
-        result = [fractal_piece]
+    def iterate(self, fractal_piece_list, max_iterations=0, min_radius=1):
+        result = fractal_piece_list
         for i in range(0, max_iterations):
             result = self.get_next_iteration(result, min_radius)
         return result
