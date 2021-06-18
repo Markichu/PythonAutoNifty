@@ -59,12 +59,13 @@ class Drawing:
         # add line to object
         self.object["lines"].append(line)
 
-    def add_line(self, pos_list, colour, brush_radius):
+    def add_line(self, pos_list, colour, brush_radius, enclosed_path=False):
         # convert pos list to points list
         points_list = []
         for pos in pos_list:
             points_list.append(pos.point())
-
+        if enclosed_path:
+            points_list.append(pos_list[0].point())
         # create line with two points
         line = {"points": points_list,
                 "brushColor": "rgba({},{},{},{})".format(*colour),
@@ -312,3 +313,19 @@ class Drawing:
 
     def shuffle_lines(self):
         random.shuffle(self.object["lines"])
+
+
+    def to_nifty_fast_import(self):
+        # Use a minified LZString
+        lz_string = """function compress(r){if(null==r)return"";var e,o,t,h=function(r){return String.fromCharCode(r)},p={},f={},s="",a="",c="",l=2,u=3,n=2,i=[],d=0,w=0;for(t=0;t<r.length;t+=1)if(s=r.charAt(t),Object.prototype.hasOwnProperty.call(p,s)||(p[s]=u++,f[s]=!0),a=c+s,Object.prototype.hasOwnProperty.call(p,a))c=a;else{if(Object.prototype.hasOwnProperty.call(f,c)){if(c.charCodeAt(0)<256){for(e=0;e<n;e++)d<<=1,15==w?(w=0,i.push(h(d)),d=0):w++;for(o=c.charCodeAt(0),e=0;e<8;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1}else{for(o=1,e=0;e<n;e++)d=d<<1|o,15==w?(w=0,i.push(h(d)),d=0):w++,o=0;for(o=c.charCodeAt(0),e=0;e<16;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1}0==--l&&(l=Math.pow(2,n),n++),delete f[c]}else for(o=p[c],e=0;e<n;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1;0==--l&&(l=Math.pow(2,n),n++),p[a]=u++,c=String(s)}if(""!==c){if(Object.prototype.hasOwnProperty.call(f,c)){if(c.charCodeAt(0)<256){for(e=0;e<n;e++)d<<=1,15==w?(w=0,i.push(h(d)),d=0):w++;for(o=c.charCodeAt(0),e=0;e<8;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1}else{for(o=1,e=0;e<n;e++)d=d<<1|o,15==w?(w=0,i.push(h(d)),d=0):w++,o=0;for(o=c.charCodeAt(0),e=0;e<16;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1}0==--l&&(l=Math.pow(2,n),n++),delete f[c]}else for(o=p[c],e=0;e<n;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1;0==--l&&(l=Math.pow(2,n),n++)}for(o=2,e=0;e<n;e++)d=d<<1|1&o,15==w?(w=0,i.push(h(d)),d=0):w++,o>>=1;for(;;){if(d<<=1,15==w){i.push(h(d));break}w++}return i.join("")};"""
+
+        # Set up the json string
+        json_string = "var json_string = \"" + json.dumps(self.object).replace("\"", "\\\"").replace(" ", "") + "\";"
+
+        # Update the session storage with the escaped unicode point compressed json string
+        local_storage = """window.localStorage.setItem("drawing", JSON.stringify(compress(json_string)));"""
+
+        # Refresh the Create Ink page to show the new Canvas Ink
+        refresh_page = "location.reload();"
+
+        return lz_string + json_string + local_storage + refresh_page

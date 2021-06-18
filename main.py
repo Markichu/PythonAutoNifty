@@ -5,7 +5,6 @@ from originalDrawingMethods import point_image, rotating_square, tiled_diagonals
   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
   shrinking_circle_ring, square_fractal, big_text_boi
 
-
 def main():
 
     # ---------------
@@ -24,9 +23,9 @@ def main():
     # # Write the drawing to output file
     # # that can be pasted into the console
     # # in the Developer pane on Nifty Ink website
-    print(f"Lines: {len(drawing.object['lines'])}, Size: {len(drawing.to_nifty_import())}")
+    print(f"Lines: {len(drawing.object['lines'])}, Size: {len(drawing.to_nifty_fast_import())}")
     with open("output.txt", "w") as file:
-        file.write(drawing.to_nifty_import())
+        file.write(drawing.to_nifty_fast_import())
 
 
     # # Optional - Render and save the image in pygame,\
