@@ -1,14 +1,15 @@
 from FractalDefn2D import FractalDefn2D
 from FractalPiece2D import FractalPiece2D
+from fractalConstants import DEFAULT_MAX_ITERATIONS, DEFAULT_MIN_RADIUS, DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
 
 
 class FractalSystem2D:
-    def __init__(self, max_iterations=4, min_radius=40, max_pieces=1000):
+    def __init__(self, max_iterations=DEFAULT_MAX_ITERATIONS, min_radius=DEFAULT_MIN_RADIUS, max_pieces=DEFAULT_MAX_PIECES):
         self.defns = []
         self.max_iterations = max_iterations
         self.min_radius = min_radius
         self.max_pieces = max_pieces
-        self.max_defns = 10000
+        self.max_defns = DEFAULT_MAX_DEFNS
 
     def add_defn(self, fractal_defn):
         self.defns.append(fractal_defn)
