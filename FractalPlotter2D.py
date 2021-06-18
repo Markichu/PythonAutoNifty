@@ -65,4 +65,4 @@ class FractalPlotter2D:
             drawing.add_point(pos, colour_this, circle_radius)
 
     def __repr__(self):
-        return "FDO: (options)"
+        return f"FP: draw {self.draw}, dot rel. size {self.dot_expand_factor}, path width {self.path_width}, path vectors {self.path_vectors}, colours {self.colours}"
