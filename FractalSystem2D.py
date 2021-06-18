@@ -59,7 +59,10 @@ class FractalSystem2D:
                 for piece2 in fractal_piece_list_plot:
                     defn2 = self.defns[piece2.id]
                     plotter2 = defn2.plotter
-                    progress = progress_counter / (piece_count_plot - 1)
+                    if piece_count_plot > 1:
+                        progress = progress_counter / (piece_count_plot - 1)
+                    else:
+                        progress = 0.5
                     progress_counter += 1
                     plotter2.plot(piece2, drawing, progress)
 
