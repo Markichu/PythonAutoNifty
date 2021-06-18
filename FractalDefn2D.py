@@ -4,6 +4,7 @@ from FractalPiece2D import FractalPiece2D
 
 class FractalDefn2D:
     def __init__(self):
+        self.iterate = True
         self.children = []
         self.plotter = FractalPlotter2D()
 
