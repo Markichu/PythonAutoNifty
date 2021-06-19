@@ -4,9 +4,15 @@ from FractalPiece2D import FractalPiece2D
 
 class FractalDefn2D:
     def __init__(self):
+        self.iterate = True
         self.children = []
         self.plotter = FractalPlotter2D()
-        self.relative_size = 1  # How big is this definition relative to square [-1, 1] x [-1, 1]?
+
+        # How big is this definition?
+        self.relative_size = 1
+        # for self.relative_size = n,
+        # either definition occupies circle of radius n,
+        # or definition occupies square of size [-n, n] x [-n, n]
 
     def add_child(self, fractal_piece):
         if isinstance(fractal_piece, FractalPiece2D):

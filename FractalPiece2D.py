@@ -1,35 +1,30 @@
-from Vector2D import Vector2D
-from Matrix2D import Matrix2D
-
-dummyVect = Vector2D()
-dummyMx = Matrix2D()
-
-
 class FractalPiece2D:
-    def __init__(self, id=0, vect=dummyVect, mx=dummyMx):
-        if isinstance(id, int):
-            if id >= 0:
-                self.id = id
-            else:
-                self.id = 0
-        else:
-            self.id = 0
-        
-        if isinstance(vect, Vector2D):
-            self.vect = vect
-        else:
-            self.vect = Vector2D() # need new object here, not the dummy object
+    def __init__(self, id, vect, mx):
+        self.id = id  # Integer list index (0, 1, 2...) in fractal system, or callback that returns an index
+        self.vect = vect  # Vector, or callback that returns a vector
+        self.mx = mx  # Matrix, or callback that returns a matrix
 
-        if isinstance(mx, Matrix2D):
-            self.mx = mx
-        else:
-            self.mx = Matrix2D() # need new object
+    # If instance variable is callable, then return var()
+    # Otherwise, return var
+    # This allows things like randomisation to be carried out
+    # each time the getter is called
+    def _get_instance_var(self, arg):
+        result = arg
+        if callable(result):
+            result = result()
+        return result
 
-    def copy(self):
-        return FractalPiece2D(self.id, self.vect.copy(), self.mx.copy())
+    def get_id(self):
+        return self._get_instance_var(self.id)
 
-    def radius(self):
-        return self.mx.rms_metric()
+    def get_vect(self):
+        return self._get_instance_var(self.vect)
+
+    def get_mx(self):
+        return self._get_instance_var(self.mx)
+
+    def get_radius(self):
+        return self.get_mx().rms_metric()
 
     def __repr__(self):
         return f"(id {self.id}, vect {self.vect}, mx {self.mx})"

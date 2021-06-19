@@ -1,9 +1,6 @@
-import math
-import random
-from helperFns import interpolate_colour
-from constants import DRAWING_SIZE, BLACK
+from constants import BLACK
 from Vector2D import Vector2D
-from Pos import Pos
+from fractalHelperFns import vect_to_pos, get_colour
 
 
 class FractalPlotter2D:
@@ -29,21 +26,7 @@ class FractalPlotter2D:
         return self
 
     def plot(self, piece, drawing, progress):
-        # Calculate which colour to use, based on progress through piece list
-        cols = self.colours
-        len_col = len(cols) - 1
-        prog2 = progress * len_col
-        prog_rem = prog2 - math.floor(prog2)
-        colour_start = cols[math.floor(prog2)]
-        colour_end = cols[math.ceil(prog2)]
-        colour_this = interpolate_colour(colour_start, colour_end, prog_rem, self.alpha)
-        # Inner function to turn vector into Pos
-        def vect_to_pos(v1, mx, v2):
-            wobble_x = self.hand_wobble_px * (random.random() - 0.5)
-            wobble_y = self.hand_wobble_px * (random.random() - 0.5)
-            v3 = v1 + (mx * v2) * self.path_expand_factor + Vector2D(wobble_x, wobble_y)
-            pos1 = Pos(v3.x, DRAWING_SIZE - v3.y)
-            return pos1
+        this_colour = get_colour(self.colours, progress, self.alpha)
         # Plot
         path_vects = self.path_vectors
         path_len = len(path_vects)
@@ -51,18 +34,18 @@ class FractalPlotter2D:
             # Plot path
             pos_list = []
             for i in range(0, path_len):
-                pos_list.append(vect_to_pos(piece.vect, piece.mx, path_vects[i]))
+                pos_list.append(vect_to_pos(piece.get_vect(), piece.get_mx(), path_vects[i], self.hand_wobble_px, self.path_expand_factor))
             if self.path_close:
                 pos_list.append(pos_list[0])
-            drawing.add_line(pos_list, colour_this, self.path_width)
+            drawing.add_line(pos_list, this_colour, self.path_width)
         else:
             # Plot dot
             v4 = Vector2D()
             if path_len == 1:
                 v4 = path_vects[0]
-            pos = vect_to_pos(piece.vect, piece.mx, v4)
-            circle_radius = self.dot_expand_factor * piece.radius()
-            drawing.add_point(pos, colour_this, circle_radius)
+            pos = vect_to_pos(piece.get_vect(), piece.get_mx(), v4, self.hand_wobble_px, 1)
+            circle_radius = self.dot_expand_factor * piece.get_radius()
+            drawing.add_point(pos, this_colour, circle_radius)
 
     def __repr__(self):
-        return "FDO: (options)"
+        return f"FP: draw {self.draw}, dot rel. size {self.dot_expand_factor}, path width {self.path_width}, path vectors {self.path_vectors}, colours {self.colours}"
