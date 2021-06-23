@@ -1,12 +1,12 @@
-from FractalPlotter2D import FractalPlotter2D
-from FractalPiece2D import FractalPiece2D
+from FractalPlotter import FractalPlotter
+from FractalPiece import FractalPiece
 
 
-class FractalDefn2D:
+class FractalDefn:
     def __init__(self):
         self.iterate = True
         self.children = []
-        self.plotter = FractalPlotter2D()
+        self.plotter = FractalPlotter()
 
         # How big is this definition?
         self.relative_size = 1
@@ -15,7 +15,7 @@ class FractalDefn2D:
         # or definition occupies square of size [-n, n] x [-n, n]
 
     def add_child(self, fractal_piece):
-        if isinstance(fractal_piece, FractalPiece2D):
+        if isinstance(fractal_piece, FractalPiece):
             self.children.append(fractal_piece)
         return self
 

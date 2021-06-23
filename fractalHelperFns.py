@@ -2,21 +2,21 @@ import math
 import random
 
 from Pos import Pos
-from Vector2D import Vector2D
-from Matrix2D import Matrix2D
 from constants import DRAWING_SIZE
 from helperFns import interpolate_colour
+from numpyHelperFns import vect, mx_rotd, mx_refl_x, mx_sq, mx_dh
 
 
 # -------------------------------------
 # General methods
 
-# Turn vector into Pos
-def vect_to_pos(v1, mx, v2, wobble_px=0, scale=1):
+
+# Turn Numpy vector into Pos
+def get_canvas_pos(v1, mx, v2, wobble_px=0, scale=1):
     wobble_x = wobble_px * (random.random() - 0.5)
     wobble_y = wobble_px * (random.random() - 0.5)
-    v3 = v1 + (mx * v2) * scale + Vector2D(wobble_x, wobble_y)
-    pos1 = Pos(v3.x, DRAWING_SIZE - v3.y)
+    v3 = v1 + (mx @ v2) * scale + vect(wobble_x, wobble_y)
+    pos1 = Pos(v3[0], DRAWING_SIZE - v3[1])
     return pos1
 
 # Get an interpolated colour using a list of colours, and the progress through the list
@@ -34,7 +34,7 @@ def get_colour(cols, progress, alpha=1):
 # Methods to calculate a random id
 
 # Select an id at random from a list, equal weights
-def rand_id(list_of_ids):
+def idgen_rand(list_of_ids):
     def callback():
         return random.choice(list_of_ids)
     return callback
@@ -44,44 +44,47 @@ def rand_id(list_of_ids):
 # Methods to calculate a random vector
 
 # Calculate a random continuous vector in the rectangle [x1, x2] x [y1, y2]
-def rand_vect_cts(x1, y1, x2, y2):
+def vectgen_rand(x1, y1, x2, y2):
     def callback():
-        return Vector2D(x1 + (x2 - x1) * random.random(), y1 + (y2 - y1) * random.random())
+        return vect(x1 + (x2 - x1) * random.random(), y1 + (y2 - y1) * random.random())
     return callback
 
 
 # -------------------------------------
 # Methods to calculate a random matrix
 
-# Any rotation in the circle
-def rand_mx_rotation(scale=1):
-    def callback():
-        return Matrix2D.rotd(360 * random.random()) * scale
-    return callback
-
 # Any rotation or reflection in the circle
-def rand_mx_circle(scale=1):
+def mxgen_rand_circ(scale=1, reflect=True):
     def callback():
-        mx = Matrix2D.rotd(360 * random.random())
-        if (random.random() < 0.5):
-            mx = mx * Matrix2D(-1, 0, 0, 1)
+        mx = mx_rotd(360 * random.random())
+        if reflect and (random.random() < 0.5):
+            mx = mx @ mx_refl_x()
         return mx * scale
     return callback
 
 # Any rotation or reflection in a square with a flat edge down
-def rand_mx_square(scale=1):
+def mxgen_rand_sq(scale=1, reflect=True):
+    max_num = 4
+    if reflect:
+        max_num = 8
     def callback():
-        return Matrix2D.sq(random.randint(1, 8)) * scale
+        return mx_sq(random.randint(1, max_num)) * scale
     return callback
 
 # Any rotation or reflection in a triangle with a flat edge down
-def rand_mx_triangle(scale=1):
+def mxgen_rand_tri(scale=1, reflect=True):
+    max_num = 3
+    if reflect:
+        max_num = 6
     def callback():
-        return Matrix2D.dh(3, random.randint(1, 6)) * scale
+        return mx_dh(3, random.randint(1, max_num)) * scale
     return callback
 
 # Any rotation or reflection in a <sides>-sided polygon with a flat edge down
-def rand_mx_dihedral(sides, scale=1):
+def mxgen_rand_dihedral(sides, scale=1, reflect=True):
+    max_num = sides
+    if reflect:
+        max_num = sides * 2
     def callback():
-        return Matrix2D.dh(sides, random.randint(1, sides * 2)) * scale
+        return mx_dh(sides, random.randint(1, max_num)) * scale
     return callback

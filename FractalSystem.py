@@ -1,11 +1,9 @@
-from Vector2D import Vector2D
-from Matrix2D import Matrix2D
-from FractalDefn2D import FractalDefn2D
-from FractalPiece2D import FractalPiece2D
+from FractalDefn import FractalDefn
+from FractalPiece import FractalPiece
 from fractalConstants import DEFAULT_MAX_ITERATIONS, DEFAULT_MIN_RADIUS, DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
 
 
-class FractalSystem2D:
+class FractalSystem:
     def __init__(self, max_iterations=DEFAULT_MAX_ITERATIONS, min_radius=DEFAULT_MIN_RADIUS, max_pieces=DEFAULT_MAX_PIECES):
         self.defns = []
         self.max_iterations = max_iterations
@@ -27,7 +25,7 @@ class FractalSystem2D:
         if isinstance(n, int):
             if n > 0 and n <= self.max_defns:
                 for i in range(0, n):
-                    self.add_defn(FractalDefn2D())
+                    self.add_defn(FractalDefn())
         return self
 
     def iterate(self, fractal_piece_list):
@@ -50,7 +48,7 @@ class FractalSystem2D:
             this_vect = this_piece.get_vect()
             this_mx = this_piece.get_mx()
             this_radius = this_piece.get_radius()
-            if self.is_id_valid(this_id) and isinstance(this_vect, Vector2D) and isinstance(this_mx, Matrix2D):
+            if self.is_id_valid(this_id):
                 this_defn = self.defns[this_id]
                 does_not_iterate = not this_defn.iterate
                 this_size_px = this_defn.relative_size * this_radius
@@ -62,7 +60,7 @@ class FractalSystem2D:
                         child_id = child_piece.get_id()
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()
-                        result.append(FractalPiece2D(child_id, this_vect + this_mx * child_vect, this_mx * child_mx))
+                        result.append(FractalPiece(child_id, this_vect + this_mx @ child_vect, this_mx @ child_mx))
         iteration_result = [iteration_finished, result]
         return iteration_result
 

@@ -1,9 +1,8 @@
 from constants import BLACK
-from Vector2D import Vector2D
-from fractalHelperFns import vect_to_pos, get_colour
+from fractalHelperFns import get_canvas_pos, get_colour
 
 
-class FractalPlotter2D:
+class FractalPlotter:
     def __init__(self):
         self.draw = True
         self.colours = [BLACK]
@@ -16,8 +15,7 @@ class FractalPlotter2D:
         self.path_close = False
     
     def add_path_vector(self, vect):
-        if isinstance(vect, Vector2D):
-            self.path_vectors.append(vect)
+        self.path_vectors.append(vect)
         return self
     
     def add_path_vectors(self, vect_list):
@@ -30,20 +28,22 @@ class FractalPlotter2D:
         # Plot
         path_vects = self.path_vectors
         path_len = len(path_vects)
+        piece_vect = piece.get_vect()
+        piece_mx = piece.get_mx()
         if path_len > 1:
             # Plot path
             pos_list = []
             for i in range(0, path_len):
-                pos_list.append(vect_to_pos(piece.get_vect(), piece.get_mx(), path_vects[i], self.hand_wobble_px, self.path_expand_factor))
+                pos_list.append(get_canvas_pos(piece_vect, piece_mx, path_vects[i], self.hand_wobble_px, self.path_expand_factor))
             if self.path_close:
                 pos_list.append(pos_list[0])
             drawing.add_line(pos_list, this_colour, self.path_width)
         else:
             # Plot dot
-            v4 = Vector2D()
+            v4 = piece_vect * 0
             if path_len == 1:
                 v4 = path_vects[0]
-            pos = vect_to_pos(piece.get_vect(), piece.get_mx(), v4, self.hand_wobble_px, 1)
+            pos = get_canvas_pos(piece_vect, piece_mx, v4, self.hand_wobble_px, 1)
             circle_radius = self.dot_expand_factor * piece.get_radius()
             drawing.add_point(pos, this_colour, circle_radius)
 
