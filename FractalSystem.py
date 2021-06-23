@@ -48,7 +48,7 @@ class FractalSystem:
             this_vect = this_piece.get_vect()
             this_mx = this_piece.get_mx()
             this_radius = this_piece.get_radius()
-            if self.is_id_valid(this_id) and isinstance(this_vect, Vector2D) and isinstance(this_mx, Matrix2D):
+            if self.is_id_valid(this_id):
                 this_defn = self.defns[this_id]
                 does_not_iterate = not this_defn.iterate
                 this_size_px = this_defn.relative_size * this_radius
@@ -60,7 +60,7 @@ class FractalSystem:
                         child_id = child_piece.get_id()
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()
-                        result.append(FractalPiece(child_id, this_vect + this_mx * child_vect, this_mx * child_mx))
+                        result.append(FractalPiece(child_id, this_vect + this_mx @ child_vect, this_mx @ child_mx))
         iteration_result = [iteration_finished, result]
         return iteration_result
 

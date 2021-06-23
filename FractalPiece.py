@@ -1,3 +1,6 @@
+from numpyHelperFns import array_rms_metric
+
+
 class FractalPiece:
     def __init__(self, id, vect, mx):
         self.id = id  # Integer list index (0, 1, 2...) in fractal system, or callback that returns an index
@@ -24,7 +27,8 @@ class FractalPiece:
         return self._get_instance_var(self.mx)
 
     def get_radius(self):
-        return self.get_mx().rms_metric()
+        return array_rms_metric(self.get_mx())
 
     def __repr__(self):
-        return f"(id {self.id}, vect {self.vect}, mx {self.mx})"
+        mxprint = f"{self.mx}".replace("\n", ",")
+        return f"(id {self.id}, vect {self.vect}, mx {mxprint})"
