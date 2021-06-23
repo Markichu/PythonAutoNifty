@@ -1,4 +1,4 @@
-class FractalPiece2D:
+class FractalPiece:
     def __init__(self, id, vect, mx):
         self.id = id  # Integer list index (0, 1, 2...) in fractal system, or callback that returns an index
         self.vect = vect  # Vector, or callback that returns a vector

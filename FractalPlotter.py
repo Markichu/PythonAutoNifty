@@ -3,7 +3,7 @@ from Vector2D import Vector2D
 from fractalHelperFns import vect_to_pos, get_colour
 
 
-class FractalPlotter2D:
+class FractalPlotter:
     def __init__(self):
         self.draw = True
         self.colours = [BLACK]
