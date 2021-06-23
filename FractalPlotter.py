@@ -1,5 +1,4 @@
 from constants import BLACK
-from Vector2D import Vector2D
 from fractalHelperFns import vect_to_pos, get_colour
 
 

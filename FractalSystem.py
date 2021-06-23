@@ -1,5 +1,3 @@
-from Vector2D import Vector2D
-from Matrix2D import Matrix2D
 from FractalDefn import FractalDefn
 from FractalPiece import FractalPiece
 from fractalConstants import DEFAULT_MAX_ITERATIONS, DEFAULT_MIN_RADIUS, DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS

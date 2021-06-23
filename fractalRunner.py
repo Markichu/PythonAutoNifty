@@ -1,5 +1,5 @@
-from Vector2D import Vector2D
-from Matrix2D import Matrix2D
+import numpy as np
+
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from fractalHelperFns import rand_id, rand_mx_square, rand_mx_triangle, rand_mx_dihedral, rand_mx_rotation, rand_mx_circle, rand_vect_cts

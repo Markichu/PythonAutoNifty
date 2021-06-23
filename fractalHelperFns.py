@@ -2,8 +2,6 @@ import math
 import random
 
 from Pos import Pos
-from Vector2D import Vector2D
-from Matrix2D import Matrix2D
 from constants import DRAWING_SIZE
 from helperFns import interpolate_colour
 
