@@ -323,7 +323,7 @@ class Drawing:
         json_string = "var json_string = \"" + json.dumps(self.object).replace("\"", "\\\"").replace(" ", "") + "\";"
 
         # Update the session storage with the escaped unicode point compressed json string
-        local_storage = """window.localStorage.setItem("drawing", JSON.stringify(compress(json_string)));"""
+        local_storage = """window.localStorage.setItem("drawing", JSON.stringify(LZString.compress(json_string)));"""
 
         # Refresh the Create Ink page to show the new Canvas Ink
         refresh_page = "location.reload();"
