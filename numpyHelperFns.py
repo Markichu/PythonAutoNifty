@@ -1,6 +1,10 @@
 import numpy as np
 
 
+# Get dimension of vector or matrix
+def np_dim(np_obj):
+    return np_obj.shape[0]
+
 # Find a metric for vector or matrix
 # = square root of sum of all entries in the vector or matrix
 def array_rms_metric(mx):
