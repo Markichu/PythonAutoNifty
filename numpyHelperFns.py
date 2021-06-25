@@ -12,7 +12,7 @@ def array_rms_metric(mx):
 
 # Easy syntax for generating 2D or 3D vectors
 def vect(x, y, z=None):
-    if z == None:
+    if z is None:
         return np.array((x, y))
     else:
         return np.array((x, y, z))
