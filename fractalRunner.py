@@ -111,7 +111,7 @@ def fractalRunner(drawing):
     sc = 0.5
     fd6.add_child(FractalPiece(6, vect(-1, -1) * sc, mx_id() * sc))
     fd6.add_child(FractalPiece(6, vect(1, -1) * sc, mx_id() * sc))
-    fd6.add_child(FractalPiece(6, vectgen_rand(-sc, sc, sc, sc), mx_id() * sc))
+    fd6.add_child(FractalPiece(6, vectgen_rand([-sc, sc], [sc, sc]), mx_id() * sc))
     # Set up plotter
     fp6 = fd6.plotter
     fp6.colours = [BLACK, BLACK, BLACK, BLACK, GREEN, GREEN]

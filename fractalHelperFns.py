@@ -4,17 +4,16 @@ import random
 from Pos import Pos
 from constants import DRAWING_SIZE
 from helperFns import interpolate_colour
-from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_x, mx_sq, mx_dh
+from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
 # General methods
 
-
 # Turn Numpy vector into Pos
 def get_canvas_pos(v1, mx, v2, wobble_px=0, scale=1):
     def get_wobble():
-        return wobble_px * (random.random() - 0.5)
+        return random.uniform(-0.5 * wobble_px, 0.5 * wobble_px)
     vw = None
     if np_dim(v1) == 2:
         vw = vect(get_wobble(), get_wobble())
@@ -48,24 +47,30 @@ def idgen_rand(list_of_ids):
 
 
 # -------------------------------------
-# Methods to calculate a random vector
+# 2D or 3D methods to calculate a random vector
 
-# Calculate a random continuous vector in the rectangle [x1, x2] x [y1, y2]
-def vectgen_rand(x1, y1, x2, y2):
+# Calculate a random continuous 2D or 3D vector in (x1, x2) x (y1, y2) [x (z1, z2)]
+# Example: vectgen_rand([1, 2], [3, 4], [5, 6])
+def vectgen_rand(x_range, y_range, z_range=None):
     def callback():
-        return vect(x1 + (x2 - x1) * random.random(), y1 + (y2 - y1) * random.random())
+        x = random.uniform(x_range[0], x_range[1])
+        y = random.uniform(y_range[0], y_range[1])
+        if z_range is None:
+            return vect(x, y)
+        z = random.uniform(z_range[0], z_range[1])
+        return vect(x, y, z)
     return callback
 
 
 # -------------------------------------
-# Methods to calculate a random matrix
+# 2D methods to calculate a random matrix
 
 # Any rotation or reflection in the circle
 def mxgen_rand_circ(scale=1, reflect=True):
     def callback():
-        mx = mx_rotd(360 * random.random())
+        mx = mx_rotd(random.uniform(0, 360))
         if reflect and (random.random() < 0.5):
-            mx = mx @ mx_refl_x()
+            mx = mx @ mx_refl_X()
         return mx * scale
     return callback
 

@@ -1,12 +1,15 @@
 import numpy as np
 
 
+# ---------------------------------------
+# General helper methods such as easily generate a vector or identity matrix
+
 # Get dimension of vector or matrix
 def np_dim(np_obj):
     return np_obj.shape[0]
 
 # Find a metric for vector or matrix
-# = square root of sum of all entries in the vector or matrix
+# where identity matrix in 2D or 3D has metric 1
 def array_rms_metric(mx):
     return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
@@ -14,31 +17,71 @@ def array_rms_metric(mx):
 def vect(x, y, z=None):
     if z is None:
         return np.array((x, y))
-    else:
-        return np.array((x, y, z))
+    return np.array((x, y, z))
 
 # Easy syntax for generating matrix identity
 # Defaults to 2D matrix
 def mx_id(n=2):
     return np.identity(n)
 
-# 2D clockwise rotation matrix, angle in radians
-def mx_rotr(angle_in_radians):
-    angle_anticlock = -angle_in_radians
-    c, s = np.cos(angle_anticlock), np.sin(angle_anticlock)
-    return np.array(((c, -s), (s, c)))
 
-# 2D clockwise rotation matrix, angle in degrees
+# ---------------------------------------
+# Generate rotation matrices in 2D or 3D
+
+# 2D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
 def mx_rotd(angle_in_degrees):
-    return mx_rotr(np.radians(angle_in_degrees))
+    angle_in_radians = np.radians(angle_in_degrees)
+    c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
+    return np.array(((c, s), (-s, c)))
 
-# 2D reflection matrix in x-axis
-def mx_refl_x():
+# 3D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
+def mx_rotd_XY(angle_in_degrees):
+    angle_in_radians = np.radians(angle_in_degrees)
+    c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
+    return np.array(((c, s, 0), (-s, c, 0), (0, 0, 1)))
+
+# 3D clockwise rotation matrix in XZ plane, angle in degrees, +1° rotates Z towards X
+def mx_rotd_XZ(angle_in_degrees):
+    angle_in_radians = np.radians(angle_in_degrees)
+    c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
+    return np.array(((c, 0, s), (0, 1, 0), (-s, 0, c)))
+
+# 3D clockwise rotation matrix in YZ plane, angle in degrees, +1° rotates Z towards Y
+def mx_rotd_YZ(angle_in_degrees):
+    angle_in_radians = np.radians(angle_in_degrees)
+    c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
+    return np.array(((1, 0, 0), (0, c, s), (0, -s, c)))
+
+# Utility method to do an XY rotation, then a XZ rotation, then an optional scale
+# Applying a matrix transformation is _pre_multiplication, so XZ goes first.
+# Scaling is commutative, so can go anywhere.
+# Angles are in degrees
+def mx_rotd_3D(ang_xy, ang_xz, scale=1):
+    return mx_rotd_XZ(ang_xz) @ (mx_rotd_XY(ang_xy) * scale)
+
+
+# ---------------------------------------
+# Generate reflection matrices in 2D or 3D
+
+# Reflection matrix in x-axis
+def mx_refl_X(n=2):
+    if n == 3:
+        return np.array(((-1, 0, 0), (0, 1, 0), (0, 0, 1)))
     return np.array(((-1, 0), (0, 1)))
 
-# 2D reflection matrix in y-axis
-def mx_refl_y():
+# Reflection matrix in y-axis
+def mx_refl_Y(n=2):
+    if n == 3:
+        return np.array(((1, 0, 0), (0, -1, 0), (0, 0, 1)))
     return np.array(((1, 0), (0, -1)))
+
+# Reflection matrix in z-axis
+def mx_refl_Z():
+    return np.array(((1, 0, 0), (0, 1, 0), (0, 0, -1)))
+
+
+# ---------------------------------------
+# Discrete symmetry groups
 
 # Dihedral group of regular polygon 2, 3, 4, 5, 6...
 # (rectangle, triangle, square, pentagon, hexagon...)
