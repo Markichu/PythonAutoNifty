@@ -4,10 +4,6 @@ from Pos import Pos
 from constants import DRAWING_SIZE
 
 
-def deg_to_rad(deg):
-    return (deg * math.pi) / 180
-
-
 def rotate(coord, rotation, origin=None):
     # get default center
     if origin is None:

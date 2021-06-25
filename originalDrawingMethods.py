@@ -1,11 +1,12 @@
 from PIL import Image
 import random
 import math
+import numpy as np
 
 from Pos import Pos
 
 from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
-from helperFns import deg_to_rad, rotate, hsva_to_rgba
+from helperFns import rotate, hsva_to_rgba
 
 
 def point_image(drawing, image_name, do_a_shuffle=False):
@@ -125,10 +126,10 @@ def squared_circle(drawing, n=8):
         degrees = i * step + (step / 2)
 
         # get pos for corners
-        pos1 = Pos.from_rotational(deg_to_rad(degrees), DRAWING_SIZE).rotate(deg_to_rad(45))
-        pos2 = Pos(pos1.x, 1000 - pos1.y).rotate(deg_to_rad(45))
-        pos3 = Pos(1000 - pos1.x, 1000 - pos1.y).rotate(deg_to_rad(45))
-        pos4 = Pos(1000 - pos1.x, pos1.y).rotate(deg_to_rad(45))
+        pos1 = Pos.from_rotational(np.radians(degrees), DRAWING_SIZE).rotate(np.radians(45))
+        pos2 = Pos(pos1.x, 1000 - pos1.y).rotate(np.radians(45))
+        pos3 = Pos(1000 - pos1.x, 1000 - pos1.y).rotate(np.radians(45))
+        pos4 = Pos(1000 - pos1.x, pos1.y).rotate(np.radians(45))
 
         # do color
         color = hsva_to_rgba(current_h, 0.8, 0.85)

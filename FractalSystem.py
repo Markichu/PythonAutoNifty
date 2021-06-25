@@ -10,6 +10,8 @@ class FractalSystem:
         self.min_radius = min_radius
         self.max_pieces = max_pieces
         self.max_defns = DEFAULT_MAX_DEFNS
+        self.initial_pieces = []  # Set this one to a list of Fractal Pieces
+        self.iterated_pieces = []  # Do not set this one, call fs.do_iterations() to generate it automatically
     
     def is_id_valid(self, id):
         if isinstance(id, int):
@@ -28,21 +30,18 @@ class FractalSystem:
                     self.add_defn(FractalDefn())
         return self
 
-    def iterate(self, fractal_piece_list):
-        result = fractal_piece_list
+    def do_iterations(self):
+        self.iterated_pieces = self.initial_pieces
         for i in range(0, self.max_iterations):
-            iteration_result = self.get_next_iteration(result)
-            iteration_finished = iteration_result[0]
-            result = iteration_result[1]
+            iteration_finished = self.iterate_once()
             if iteration_finished:
                 break
-        return result
 
-    def get_next_iteration(self, fractal_piece_list):
+    def iterate_once(self):
         iteration_finished = True
-        result = []
+        next_iterated_pieces = []
         counter = 0
-        for this_piece in fractal_piece_list:
+        for this_piece in self.iterated_pieces:
             counter += 1
             this_id = this_piece.get_id()
             this_vect = this_piece.get_vect()
@@ -53,32 +52,34 @@ class FractalSystem:
                 does_not_iterate = not this_defn.iterate
                 this_size_px = this_defn.relative_size * this_radius
                 if this_size_px <= self.min_radius or self.max_pieces < counter or does_not_iterate:
-                    result.append(this_piece)
+                    next_iterated_pieces.append(this_piece)
                 else:
                     iteration_finished = False
                     for child_piece in this_defn.children:
                         child_id = child_piece.get_id()
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()
-                        result.append(FractalPiece(child_id, this_vect + this_mx @ child_vect, this_mx @ child_mx))
-        iteration_result = [iteration_finished, result]
-        return iteration_result
+                        next_iterated_pieces.append(FractalPiece(child_id, this_vect + this_mx @ child_vect, this_mx @ child_mx))
+        self.iterated_pieces = next_iterated_pieces
+        return iteration_finished
 
-    def plot(self, fractal_piece_list_all, drawing):
-        piece_count_all = len(fractal_piece_list_all)
-        if piece_count_all > 0:
+    def final_size(self):
+        return len(self.iterated_pieces)
+
+    def plot(self, drawing):
+        if self.final_size() > 0:
             # Make a list of pieces to plot, excluding non-drawing pieces
-            fractal_piece_list_plot = []
-            for piece1 in fractal_piece_list_all:
+            pieces_to_plot = []
+            for piece1 in self.iterated_pieces:
                 defn1 = self.defns[piece1.id]
                 plotter1 = defn1.plotter
                 if plotter1.draw == True:
-                    fractal_piece_list_plot.append(piece1)
-            piece_count_plot = len(fractal_piece_list_plot)
+                    pieces_to_plot.append(piece1)
+            piece_count_plot = len(pieces_to_plot)
             if piece_count_plot > 0:
                 # Plot them
                 progress_counter = 0
-                for piece2 in fractal_piece_list_plot:
+                for piece2 in pieces_to_plot:
                     defn2 = self.defns[piece2.id]
                     plotter2 = defn2.plotter
                     if piece_count_plot > 1:

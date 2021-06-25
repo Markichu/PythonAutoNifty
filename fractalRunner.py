@@ -111,7 +111,7 @@ def fractalRunner(drawing):
     sc = 0.5
     fd6.add_child(FractalPiece(6, vect(-1, -1) * sc, mx_id() * sc))
     fd6.add_child(FractalPiece(6, vect(1, -1) * sc, mx_id() * sc))
-    fd6.add_child(FractalPiece(6, vectgen_rand(-sc, sc, sc, sc), mx_id() * sc))
+    fd6.add_child(FractalPiece(6, vectgen_rand([-sc, sc], [sc, sc]), mx_id() * sc))
     # Set up plotter
     fp6 = fd6.plotter
     fp6.colours = [BLACK, BLACK, BLACK, BLACK, GREEN, GREEN]
@@ -138,14 +138,13 @@ def fractalRunner(drawing):
     print("")
 
     # Calculate the iterations
-    init_fractal_piece = FractalPiece(init_defn_id, init_vect, init_mx)
-    init_fractal_piece_list = [init_fractal_piece]
-    iterated_fractal_piece_list = fs.iterate(init_fractal_piece_list)
-    print(f"After iteration, there are {len(iterated_fractal_piece_list)} pieces")
+    fs.initial_pieces = [FractalPiece(init_defn_id, init_vect, init_mx)]
+    fs.do_iterations()
+    print(f"After iteration, there are {fs.final_size()} pieces")
     print("")
-    
+
     # Plot iterations to drawing
-    fs.plot(iterated_fractal_piece_list, drawing)
+    fs.plot(drawing)
     print("Fractal System plotted successfully")
     print("")
 
