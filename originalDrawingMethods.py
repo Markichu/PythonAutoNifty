@@ -8,7 +8,7 @@ from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
 from helperFns import deg_to_rad, rotate, hsva_to_rgba
 
 
-def point_image(drawing, image_name):
+def point_image(drawing, image_name, do_a_shuffle=False):
     # load image from file
     image = Image.open(image_name)
 
@@ -27,6 +27,9 @@ def point_image(drawing, image_name):
             else:
                 colour.append(1)
                 drawing.add_point(Pos((x + 0.5) * x_diff, (y + 0.5) * y_diff), colour, x_diff * pow(2, 0.5) / 2)
+
+    if do_a_shuffle:
+        drawing.shuffle_lines()
 
     return drawing
 
