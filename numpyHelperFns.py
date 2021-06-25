@@ -8,7 +8,7 @@ def np_dim(np_obj):
 # Find a metric for vector or matrix
 # = square root of sum of all entries in the vector or matrix
 def array_rms_metric(mx):
-    return np.sum(mx * mx) ** 0.5
+    return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
 # Easy syntax for generating 2D or 3D vectors
 def vect(x, y, z=None):
