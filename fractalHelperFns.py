@@ -4,7 +4,7 @@ import random
 from Pos import Pos
 from constants import DRAWING_SIZE
 from helperFns import interpolate_colour
-from numpyHelperFns import vect, mx_rotd, mx_refl_x, mx_sq, mx_dh
+from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_x, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -13,9 +13,16 @@ from numpyHelperFns import vect, mx_rotd, mx_refl_x, mx_sq, mx_dh
 
 # Turn Numpy vector into Pos
 def get_canvas_pos(v1, mx, v2, wobble_px=0, scale=1):
-    wobble_x = wobble_px * (random.random() - 0.5)
-    wobble_y = wobble_px * (random.random() - 0.5)
-    v3 = v1 + (mx @ v2) * scale + vect(wobble_x, wobble_y)
+    def get_wobble():
+        return wobble_px * (random.random() - 0.5)
+    vw = None
+    if np_dim(v1) == 2:
+        vw = vect(get_wobble(), get_wobble())
+    elif np_dim(v1) == 3:
+        vw = vect(get_wobble(), get_wobble(), get_wobble())
+    else:
+        raise TypeError('Vector must be 2 or 3 dimensional')
+    v3 = v1 + (mx @ v2) * scale + vw
     pos1 = Pos(v3[0], DRAWING_SIZE - v3[1])
     return pos1
 
