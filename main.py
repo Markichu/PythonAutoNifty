@@ -20,13 +20,16 @@ def main():
     # # Optional - Reduce scale to prevent drawing from touching the edge
     # drawing *= 0.95
 
+    # # Select an import method for the output data
+    output_data = drawing.to_nifty_fast_import()  # Replace previous canvas contents in Nifty.Ink
+    # output_data = drawing.to_nifty_add_layer_import()  # Keep previous canvas contents, write a layer on top
+
     # # Write the drawing to output file
     # # that can be pasted into the console
     # # in the Developer pane on Nifty Ink website
-    print(f"Lines: {len(drawing.object['lines'])}, Size: {len(drawing.to_nifty_fast_import())}")
+    print(f"Lines: {len(drawing.object['lines'])}, Size: {len(output_data)}")
     with open("output.txt", "w") as file:
-        file.write(drawing.to_nifty_fast_import())
-
+        file.write(output_data)
 
     # # Optional - Render and save the image in pygame,\
     # #   increase pygame_scale for higher RES output images,\
