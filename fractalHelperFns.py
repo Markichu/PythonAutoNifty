@@ -2,7 +2,7 @@ import math
 import random
 
 from Pos import Pos
-from constants import DRAWING_SIZE
+from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
 from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
@@ -34,6 +34,27 @@ def get_colour(cols, progress, alpha=1):
     colour_end = cols[math.ceil(prog2)]
     colour_this = interpolate_colour(colour_start, colour_end, prog_rem, alpha)
     return colour_this
+
+
+# -------------------------------------
+# Colouring functions
+
+# Colour by progress through list from FractalSystem
+def colour_by_progress(colour_list):
+    def inner_fn(piece, progress):
+        return get_colour(colour_list, progress)
+    return inner_fn
+
+# Colour by a function of the piece's affine transformation (vector, matrix)
+# tsfm_to_num_fn(vect, matrix) should output a number
+def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
+    def inner_fn(piece, progress):
+        if not callable(tsfm_to_num_fn):
+            return BLACK
+        this_val = min(max_val, max(min_val, tsfm_to_num_fn(piece.get_vect(), piece.get_mx())))
+        this_tsfm_progress = (this_val - min_val) / (max_val - min_val)
+        return get_colour(colour_list, this_tsfm_progress)
+    return inner_fn
 
 
 # -------------------------------------

@@ -1,8 +1,10 @@
+import math
+
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
-from numpyHelperFns import mx_id, vect, mx_rotd, mx_sq
-from fractalHelperFns import idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from numpyHelperFns import array_rms_metric, mx_id, vect, mx_rotd, mx_sq
+from fractalHelperFns import colour_by_progress, colour_by_tsfm, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
 def fractalRunner(drawing):
@@ -39,14 +41,14 @@ def fractalRunner(drawing):
     # no children
     fp0 = fd0.plotter
     fp0.draw = False
-    fp0.colours = [RED]
+    fp0.colouring_fn = colour_by_progress([RED])
 
     # Definition #1 - iterates to itself
     fd1 = fs.defns[1]
     fd1.add_child(FractalPiece(1, vect(0, 0), mx_id()))
     fd1.iterates = False
     fp1 = fd1.plotter
-    fp1.colours = [LIGHT_GREEN]
+    fp1.colouring_fn = colour_by_progress([LIGHT_GREEN])
     fp1.draw = False
 
     # Definition #2 - use as wrapper to display 1 or more other fractals
@@ -69,7 +71,8 @@ def fractalRunner(drawing):
     fd3.iterates = True
     # Set up plotter
     fp3 = fd3.plotter
-    fp3.colours = [BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE]
+    colour_by_x_minus_y = lambda vect, mx: vect[0] - vect[1]
+    fp3.colouring_fn = colour_by_tsfm(-150, 150, colour_by_x_minus_y, [RED, BLACK])
     fp3.add_path_vectors([vect(-1, 1), vect(-1, -1), vect(1, -1)])
     fp3.path_close = True
 
@@ -82,7 +85,8 @@ def fractalRunner(drawing):
     fd4.add_child(FractalPiece(4, vect(1, 1) * sc, mxgen_rand_sq(sc ** 1.7)))
     # Set up plotter
     fp4 = fd4.plotter
-    fp4.colours = [BLACK, BLACK, LIGHT_BLUE, LIGHT_BLUE, LIGHT_BLUE, LIGHT_BLUE]
+    colour_by_size_log_2 = lambda vect, mx: math.log(array_rms_metric(mx), 2)
+    fp4.colouring_fn = colour_by_tsfm(2, 3, colour_by_size_log_2, [GREEN, BLUE])
     fp4.hand_wobble_px = 2
     fp4.add_path_vectors([vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)])
     fp4.path_close = True
@@ -103,7 +107,7 @@ def fractalRunner(drawing):
     fd5.add_child(FractalPiece(idgen_rand(id_list), vect(0, 0) * sc, mxgen_rand_circ(sc)))
     # Set up plotter
     fp5 = fd5.plotter
-    fp5.colours = [BLACK, BLACK, BLACK, PINK, PINK, PINK]
+    fp5.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, PINK, PINK, PINK])
     fp5.dot_expand_factor = 0.65  # make dots distinct
 
     # Definition #6 - demo of random vector shift
@@ -114,7 +118,7 @@ def fractalRunner(drawing):
     fd6.add_child(FractalPiece(6, vectgen_rand([-sc, sc], [sc, sc]), mx_id() * sc))
     # Set up plotter
     fp6 = fd6.plotter
-    fp6.colours = [BLACK, BLACK, BLACK, BLACK, GREEN, GREEN]
+    fp6.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, BLACK, GREEN, GREEN])
     fp6.dot_expand_factor = 1.1  # make dots overlap
 
     # Definition #7 - Dragon curve
@@ -124,7 +128,7 @@ def fractalRunner(drawing):
     fd7.add_child(FractalPiece(7, vect(0.5, 0.5), mx_rotd(-135) * sc))
     # Set up plotter
     fp7 = fd7.plotter
-    fp7.colours = [BLACK, BLACK, BLACK, BLACK, BLACK, RED]
+    fp7.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, BLACK, BLACK, RED])
     fp7.add_path_vectors([vect(-1, 0), vect(1, 0)])
     fp7.path_width = 3
 
