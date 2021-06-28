@@ -44,7 +44,7 @@ def fractalRunner(drawing):
     # Definition #1 - iterates to itself
     fd1 = fs.defns[1]
     fd1.add_child(FractalPiece(1, vect(0, 0), mx_id()))
-    fd1.iterate = False
+    fd1.iterates = False
     fp1 = fd1.plotter
     fp1.colours = [LIGHT_GREEN]
     fp1.draw = False
@@ -66,7 +66,7 @@ def fractalRunner(drawing):
     fd3.add_child(FractalPiece(3, vect(-1, 1) * sc, mx_id() * sc))
     fd3.add_child(FractalPiece(3, vect(1, -1) * sc, mx_sq(1) * sc))
     fd3.relative_size = 1  # occupies [-1, 1] x [-1, 1] so "radius" = 1
-    fd3.iterate = True
+    fd3.iterates = True
     # Set up plotter
     fp3 = fd3.plotter
     fp3.colours = [BLACK, ORANGE, ORANGE, ORANGE, ORANGE, ORANGE]

@@ -4,7 +4,7 @@ from FractalPiece import FractalPiece
 
 class FractalDefn:
     def __init__(self):
-        self.iterate = True
+        self.iterates = True
         self.children = []
         self.plotter = FractalPlotter()
 
