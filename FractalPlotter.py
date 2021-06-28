@@ -1,12 +1,11 @@
 from constants import BLACK
-from fractalHelperFns import get_canvas_pos, get_colour
+from fractalHelperFns import get_canvas_pos
 
 
 class FractalPlotter:
     def __init__(self):
         self.draw = True
-        self.colours = [BLACK]
-        self.alpha = 1
+        self.colouring_fn = None
         self.hand_wobble_px = 0
         self.dot_expand_factor = 1
         self.path_vectors = []
@@ -23,8 +22,11 @@ class FractalPlotter:
             self.add_path_vector(vect)
         return self
 
-    def plot(self, piece, drawing, progress):
-        this_colour = get_colour(self.colours, progress, self.alpha)
+    def plot(self, piece, drawing, progress_counter, total_pieces):
+        if not self.draw:
+            return
+        progress = progress_counter / total_pieces
+        this_colour = self.colouring_fn(piece, progress) if callable(self.colouring_fn) else BLACK
         # Plot
         path_vects = self.path_vectors
         path_len = len(path_vects)
@@ -48,4 +50,4 @@ class FractalPlotter:
             drawing.add_point(pos, this_colour, circle_radius)
 
     def __repr__(self):
-        return f"FP: draw {self.draw}, dot rel. size {self.dot_expand_factor}, path width {self.path_width}, path vectors {self.path_vectors}, colours {self.colours}"
+        return f"FP: draw {self.draw}, dot rel. size {self.dot_expand_factor}, path width {self.path_width}, path vectors {self.path_vectors}"
