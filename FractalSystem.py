@@ -12,6 +12,7 @@ class FractalSystem:
         self.max_defns = DEFAULT_MAX_DEFNS
         self.initial_pieces = []  # Set this one to a list of Fractal Pieces
         self.iterated_pieces = []  # Do not set this one, call fs.do_iterations() to generate it automatically
+        self.piece_sorter = None
     
     def is_id_valid(self, id):
         if isinstance(id, int):
@@ -67,27 +68,15 @@ class FractalSystem:
         return len(self.iterated_pieces)
 
     def plot(self, drawing):
-        if self.final_size() > 0:
-            # Make a list of pieces to plot, excluding non-drawing pieces
-            pieces_to_plot = []
-            for piece1 in self.iterated_pieces:
-                defn1 = self.defns[piece1.id]
-                plotter1 = defn1.plotter
-                if plotter1.draw == True:
-                    pieces_to_plot.append(piece1)
-            piece_count_plot = len(pieces_to_plot)
-            if piece_count_plot > 0:
-                # Plot them
-                progress_counter = 0
-                for piece2 in pieces_to_plot:
-                    defn2 = self.defns[piece2.id]
-                    plotter2 = defn2.plotter
-                    if piece_count_plot > 1:
-                        progress = progress_counter / (piece_count_plot - 1)
-                    else:
-                        progress = 0.5
-                    progress_counter += 1
-                    plotter2.plot(piece2, drawing, progress)
+        pieces_to_plot = self.iterated_pieces
+        total_pieces = self.final_size()
+        if callable(self.piece_sorter):
+            pieces_to_plot.sort(reverse=False, key=self.piece_sorter)
+        progress_counter = 0
+        for piece_to_plot in pieces_to_plot:
+            plotter = self.defns[piece_to_plot.id].plotter
+            plotter.plot(piece_to_plot, drawing, progress_counter, total_pieces)
+            progress_counter += 1
 
     def __repr__(self):
         result = "FS: "

@@ -37,6 +37,18 @@ def get_colour(cols, progress, alpha=1):
 
 
 # -------------------------------------
+# FractalSystem sorters
+
+# Sort pieces randomly
+def sort_randomly(piece):
+    return random.random()
+    
+# Sort by z-coordinate (reversed)
+def sort_by_z(piece):
+    return -piece.get_vect()[2]
+    
+
+# -------------------------------------
 # Methods to calculate a random id
 
 # Select an id at random from a list, equal weights

@@ -23,7 +23,10 @@ class FractalPlotter:
             self.add_path_vector(vect)
         return self
 
-    def plot(self, piece, drawing, progress):
+    def plot(self, piece, drawing, progress_counter, total_pieces):
+        if not self.draw:
+            return
+        progress = progress_counter / total_pieces
         this_colour = get_colour(self.colours, progress, self.alpha)
         # Plot
         path_vects = self.path_vectors
