@@ -71,24 +71,24 @@ def plot_lines(path_vects, path_close=False, path_width=1, path_expand_factor=1,
 
 # Colour by progress through list from FractalSystem
 def colour_by_progress(colour_list):
-    def inner_fn(piece, progress):
+    def result_fn(piece, progress):
         return get_colour(colour_list, progress)
-    return inner_fn
+    return result_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm_to_num_fn(vect, matrix) should output a number
 def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
-    def inner_fn(piece, progress):
+    def result_fn(piece, progress):
         if not callable(tsfm_to_num_fn):
             return BLACK
         this_val = min(max_val, max(min_val, tsfm_to_num_fn(piece.get_vect(), piece.get_mx())))
         this_tsfm_progress = (this_val - min_val) / (max_val - min_val)
         return get_colour(colour_list, this_tsfm_progress)
-    return inner_fn
+    return result_fn
 
 
 # -------------------------------------
-# FractalSystem sorters
+# Sorting functions for lists of fractal pieces
 
 # Sort pieces randomly
 def sort_randomly(piece):
