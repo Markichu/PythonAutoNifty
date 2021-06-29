@@ -15,12 +15,6 @@ from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 def vect_to_canvas_pos(vect):
     return Pos(vect[0], DRAWING_SIZE - vect[1])
 
-# Allow calculation of a Pos from a base vector v1, and
-# an offset vector v2 transformed by matrix mx
-# and then scaled in or out from v1 by a scale factor
-def get_canvas_pos(v1, mx1, v2, scale=1):
-    return vect_to_canvas_pos(v1 + (mx1 @ v2) * scale)
-
 # Get an interpolated colour using: a list of colours, a progress factor of how far we are through the list
 def get_colour(cols, progress, alpha=1):
     len_col = len(cols) - 1
@@ -55,11 +49,8 @@ def plot_dot(dot_expand_factor=1):
     def result_fn(drawing, piece, wobble_fn, colour=BLACK):
         piece_vect = piece.get_vect()
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-        piece_mx = piece.get_mx()
-        piece_radius = piece.get_radius()
-        offset_vect = piece_vect * 0
-        pos = get_canvas_pos(piece_vect + wobble_vect, piece_mx, offset_vect, 1)
-        circle_radius = dot_expand_factor * piece_radius
+        pos = vect_to_canvas_pos(piece_vect + wobble_vect)
+        circle_radius = dot_expand_factor * piece.get_radius()
         drawing.add_point(pos, colour, circle_radius)
     return result_fn
 
@@ -67,11 +58,12 @@ def plot_dot(dot_expand_factor=1):
 def plot_lines(path_vects, path_close=False, path_width=1, path_expand_factor=1):
     def result_fn(drawing, piece, wobble_fn, colour=BLACK):
         piece_vect = piece.get_vect()
-        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         piece_mx = piece.get_mx()
         pos_list = []
         for i in range(0, len(path_vects)):
-            pos_list.append(get_canvas_pos(piece_vect + wobble_vect, piece_mx, path_vects[i], path_expand_factor))
+            wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+            draw_vect = piece_vect + wobble_vect + (piece_mx @ path_vects[i]) * path_expand_factor
+            pos_list.append(vect_to_canvas_pos(draw_vect))
         if path_close:
             pos_list.append(pos_list[0])
         drawing.add_line(pos_list, colour, path_width)
