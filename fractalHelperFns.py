@@ -11,21 +11,17 @@ from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 # General methods
 
 # Turn Numpy vector into Pos
-def get_canvas_pos(v1, mx, v2, wobble_px=0, scale=1):
-    def get_wobble():
-        return random.uniform(-0.5 * wobble_px, 0.5 * wobble_px)
-    vw = None
-    if np_dim(v1) == 2:
-        vw = vect(get_wobble(), get_wobble())
-    elif np_dim(v1) == 3:
-        vw = vect(get_wobble(), get_wobble(), get_wobble())
-    else:
-        raise TypeError('Vector must be 2 or 3 dimensional')
-    v3 = v1 + (mx @ v2) * scale + vw
-    pos1 = Pos(v3[0], DRAWING_SIZE - v3[1])
-    return pos1
+# Pos has origin in top left, vectors in bottom left, so invert in y-axis
+def vect_to_canvas_pos(vect):
+    return Pos(vect[0], DRAWING_SIZE - vect[1])
 
-# Get an interpolated colour using a list of colours, and the progress through the list
+# Allow calculation of a Pos from a base vector v1, and
+# an offset vector v2 transformed by matrix mx
+# and then scaled in or out from v1 by a scale factor
+def get_canvas_pos(v1, mx1, v2, scale=1):
+    return vect_to_canvas_pos(v1 + (mx1 @ v2) * scale)
+
+# Get an interpolated colour using: a list of colours, a progress factor of how far we are through the list
 def get_colour(cols, progress, alpha=1):
     len_col = len(cols) - 1
     prog2 = progress * len_col
@@ -36,35 +32,51 @@ def get_colour(cols, progress, alpha=1):
     return colour_this
 
 
+# -------------------------------------
+# Random vector functions for drawing-by-hand "hand wobble" effect
+
+# Return 2D square or 3D cube uniform distribution
+def wobble_square(px=0, dim=2):
+    def get_rand_unif():
+        return random.uniform(-0.5 * px, 0.5 * px)
+    def result_fn():
+        x, y, z = get_rand_unif(), get_rand_unif(), get_rand_unif()
+        return vect(x, y, z) if dim == 3 else vect(x, y)
+    return result_fn
+
+# TODO: 2D circle uniform, 3D sphere uniform, 2D concentrated at centre, etc
+
 
 # -------------------------------------
 # Plotting functions
 
 # Plot a single dot for a fractal piece
-def plot_dot(dot_expand_factor=1, wobble_px=0):
-    def result_fn(drawing, piece, colour=BLACK):
+def plot_dot(dot_expand_factor=1):
+    def result_fn(drawing, piece, wobble_fn, colour=BLACK):
         piece_vect = piece.get_vect()
+        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         piece_mx = piece.get_mx()
         piece_radius = piece.get_radius()
         offset_vect = piece_vect * 0
-        pos = get_canvas_pos(piece_vect, piece_mx, offset_vect, wobble_px, 1)
+        pos = get_canvas_pos(piece_vect + wobble_vect, piece_mx, offset_vect, 1)
         circle_radius = dot_expand_factor * piece_radius
         drawing.add_point(pos, colour, circle_radius)
     return result_fn
 
 # Plot a series of line segments for a fractal piece
-def plot_lines(path_vects, path_close=False, path_width=1, path_expand_factor=1, wobble_px=0):
-    def result_fn(drawing, piece, colour=BLACK):
-        path_len = len(path_vects)
+def plot_lines(path_vects, path_close=False, path_width=1, path_expand_factor=1):
+    def result_fn(drawing, piece, wobble_fn, colour=BLACK):
         piece_vect = piece.get_vect()
+        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         piece_mx = piece.get_mx()
         pos_list = []
-        for i in range(0, path_len):
-            pos_list.append(get_canvas_pos(piece_vect, piece_mx, path_vects[i], wobble_px, path_expand_factor))
+        for i in range(0, len(path_vects)):
+            pos_list.append(get_canvas_pos(piece_vect + wobble_vect, piece_mx, path_vects[i], path_expand_factor))
         if path_close:
             pos_list.append(pos_list[0])
         drawing.add_line(pos_list, colour, path_width)
     return result_fn
+
 
 # -------------------------------------
 # Colouring functions

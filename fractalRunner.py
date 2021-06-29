@@ -4,7 +4,7 @@ from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
 from numpyHelperFns import array_rms_metric, mx_id, vect, mx_rotd, mx_sq
-from fractalHelperFns import plot_dot, plot_lines, colour_by_progress, colour_by_tsfm, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from fractalHelperFns import wobble_square, plot_dot, plot_lines, colour_by_progress, colour_by_tsfm, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
 def fractalRunner(drawing):
@@ -92,10 +92,10 @@ def fractalRunner(drawing):
     path_close = True
     path_width = 2
     path_expand_factor = 1.1
-    wobble_px = 2
     path_vects = [vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)]
-    fp4.plotting_fn = plot_lines(path_vects, path_close, path_width, path_expand_factor, wobble_px)
-
+    fp4.plotting_fn = plot_lines(path_vects, path_close, path_width, path_expand_factor)
+    wobble_px = 2
+    fp4.hand_wobble_fn = wobble_square(wobble_px)
 
     # Definition #5 - demo of random hexagon dot fractal
     fd5 = fs.defns[5]
@@ -139,6 +139,8 @@ def fractalRunner(drawing):
     path_close = False # default
     path_width = 3
     fp7.plotting_fn = plot_lines(path_vects, path_close, path_width)
+    wobble_px = 3
+    fp7.hand_wobble_fn = wobble_square(wobble_px)
 
     # --------------------
 
