@@ -71,7 +71,7 @@ class FractalSystem:
         pieces_to_plot = self.iterated_pieces
         total_pieces = self.final_size()
         if callable(self.piece_sorter):
-            pieces_to_plot.sort(reverse=False, key=self.piece_sorter)
+            pieces_to_plot.sort(key=self.piece_sorter)
         progress_counter = 0
         for piece_to_plot in pieces_to_plot:
             plotter = self.defns[piece_to_plot.id].plotter
