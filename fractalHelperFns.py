@@ -4,7 +4,7 @@ import random
 from Pos import Pos
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -12,16 +12,18 @@ from numpyHelperFns import np_dim, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 # Turn Numpy vector into Pos
 # Pos has origin in top left, vectors in bottom left, so invert in y-axis
-def vect_to_canvas_pos(vect):
+def get_canvas_pos_from_vect(vect):
     return Pos(vect[0], DRAWING_SIZE - vect[1])
 
-# Get an interpolated colour using: a list of colours, a progress factor of how far we are through the list
-def get_colour(cols, progress, alpha=1):
-    len_col = len(cols) - 1
-    prog2 = progress * len_col
+# Get an interpolated colour using:
+# - a list of colours,
+# - a progress factor between 0 and 1 representing how far we are through the list
+def get_colour(colour_list, progress, alpha=1):
+    max_prog = len(colour_list) - 1
+    prog2 = max(0, min(max_prog, progress * max_prog))
     prog_rem = prog2 - math.floor(prog2)
-    colour_start = cols[math.floor(prog2)]
-    colour_end = cols[math.ceil(prog2)]
+    colour_start = colour_list[math.floor(prog2)]
+    colour_end = colour_list[math.ceil(prog2)]
     colour_this = interpolate_colour(colour_start, colour_end, prog_rem, alpha)
     return colour_this
 
@@ -30,9 +32,9 @@ def get_colour(cols, progress, alpha=1):
 # Random vector functions for drawing-by-hand "hand wobble" effect
 
 # Return 2D square or 3D cube uniform distribution
-def wobble_square(px=0, dim=2):
+def wobble_square(pixels=2, dim=2):
     def get_rand_unif():
-        return random.uniform(-0.5 * px, 0.5 * px)
+        return random.uniform(-0.5 * pixels, 0.5 * pixels)
     def result_fn():
         x, y, z = get_rand_unif(), get_rand_unif(), get_rand_unif()
         return vect(x, y, z) if dim == 3 else vect(x, y)
@@ -44,29 +46,30 @@ def wobble_square(px=0, dim=2):
 # -------------------------------------
 # Plotting functions
 
-# Plot a single dot for a fractal piece
-def plot_dot(dot_expand_factor=1):
-    def result_fn(drawing, piece, wobble_fn, colour=BLACK):
+# Plot a dot (small circle) for each fractal piece
+# Optional parameter expand_factor is to fine-tune control of dot size
+def plot_dot(expand_factor=1, wobble_fn=None):
+    def result_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-        pos = vect_to_canvas_pos(piece_vect + wobble_vect)
-        circle_radius = dot_expand_factor * piece.get_radius()
-        drawing.add_point(pos, colour, circle_radius)
+        pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
+        dot_radius = expand_factor * piece.get_radius()
+        drawing.add_point(pos, colour, dot_radius)
     return result_fn
 
-# Plot a series of line segments for a fractal piece
-def plot_lines(path_vects, path_close=False, path_width=1, path_expand_factor=1):
-    def result_fn(drawing, piece, wobble_fn, colour=BLACK):
+# Plot a path (series of line segments) for each fractal piece
+def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None):
+    def result_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
         pos_list = []
-        for i in range(0, len(path_vects)):
+        for i in range(0, len(vector_list)):
             wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-            draw_vect = piece_vect + wobble_vect + (piece_mx @ path_vects[i]) * path_expand_factor
-            pos_list.append(vect_to_canvas_pos(draw_vect))
-        if path_close:
+            draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
+            pos_list.append(get_canvas_pos_from_vect(draw_vect))
+        if closed:
             pos_list.append(pos_list[0])
-        drawing.add_line(pos_list, colour, path_width)
+        drawing.add_line(pos_list, colour, width)
     return result_fn
 
 
@@ -85,7 +88,8 @@ def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
     def result_fn(piece, progress):
         if not callable(tsfm_to_num_fn):
             return BLACK
-        this_val = min(max_val, max(min_val, tsfm_to_num_fn(piece.get_vect(), piece.get_mx())))
+        # this_val = min(max_val, max(min_val, tsfm_to_num_fn(piece.get_vect(), piece.get_mx())))
+        this_val = tsfm_to_num_fn(piece.get_vect(), piece.get_mx())
         this_tsfm_progress = (this_val - min_val) / (max_val - min_val)
         return get_colour(colour_list, this_tsfm_progress)
     return result_fn
@@ -98,9 +102,15 @@ def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
 def sort_randomly(piece):
     return random.random()
     
-# Sort by z-coordinate (reversed)
-def sort_by_z(piece):
-    return -piece.get_vect()[2]
+# Sort by function of the piece's affine transformation (vector, matrix)
+def sort_by_tsfm(tsfm_to_num_fn):
+    def result_fn(piece):
+        return tsfm_to_num_fn(piece.get_vect(), piece.get_mx())
+    return result_fn
+    
+# Sort by z-coordinate (reversed), e.g. for 3D fractals
+def sort_by_z():
+    return sort_by_tsfm(lambda vect, mx: -vect[2])
     
 
 # -------------------------------------
