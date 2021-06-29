@@ -4,7 +4,7 @@ from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
 from numpyHelperFns import array_rms_metric, mx_id, vect, mx_rotd, mx_sq
-from fractalHelperFns import colour_by_progress, colour_by_tsfm, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from fractalHelperFns import plot_dot, plot_lines, colour_by_progress, colour_by_tsfm, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
 def fractalRunner(drawing):
@@ -60,6 +60,7 @@ def fractalRunner(drawing):
     fd2.add_child(FractalPiece(5, vect(-1, 1) * scv, mx_id() * scm * 0.8))
     fd2.add_child(FractalPiece(6, vect(1, 1) * scv, mx_id() * scm))
     fd2.add_child(FractalPiece(7, vect(-0.5, -0.8) * scv, mx_rotd(30) * 0.5 * scm))
+    # keep default plotting options, this definition will iterate and likely won't plot
 
     # Definition #3 - demo Sierpinski Sieve
     fd3 = fs.defns[3]
@@ -73,8 +74,9 @@ def fractalRunner(drawing):
     fp3 = fd3.plotter
     colour_by_x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp3.colouring_fn = colour_by_tsfm(-150, 150, colour_by_x_minus_y, [RED, BLACK])
-    fp3.add_path_vectors([vect(-1, 1), vect(-1, -1), vect(1, -1)])
-    fp3.path_close = True
+    path_close = True
+    path_vects = [vect(-1, 1), vect(-1, -1), vect(1, -1)]
+    fp3.plotting_fn = plot_lines(path_vects, path_close)
 
     # Definition #4 - demo of random square matrix transformations
     fd4 = fs.defns[4]
@@ -87,11 +89,13 @@ def fractalRunner(drawing):
     fp4 = fd4.plotter
     colour_by_size_log_2 = lambda vect, mx: math.log(array_rms_metric(mx), 2)
     fp4.colouring_fn = colour_by_tsfm(2, 3, colour_by_size_log_2, [GREEN, BLUE])
-    fp4.hand_wobble_px = 2
-    fp4.add_path_vectors([vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)])
-    fp4.path_close = True
-    fp4.path_expand_factor = 1.1
-    fp4.path_width = 2
+    path_close = True
+    path_width = 2
+    path_expand_factor = 1.1
+    wobble_px = 2
+    path_vects = [vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)]
+    fp4.plotting_fn = plot_lines(path_vects, path_close, path_width, path_expand_factor, wobble_px)
+
 
     # Definition #5 - demo of random hexagon dot fractal
     fd5 = fs.defns[5]
@@ -108,7 +112,8 @@ def fractalRunner(drawing):
     # Set up plotter
     fp5 = fd5.plotter
     fp5.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, PINK, PINK, PINK])
-    fp5.dot_expand_factor = 0.65  # make dots distinct
+    dot_expand_factor = 0.65  # make dots distinct
+    fp5.plotting_fn = plot_dot(dot_expand_factor)
 
     # Definition #6 - demo of random vector shift
     fd6 = fs.defns[6]
@@ -119,7 +124,8 @@ def fractalRunner(drawing):
     # Set up plotter
     fp6 = fd6.plotter
     fp6.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, BLACK, GREEN, GREEN])
-    fp6.dot_expand_factor = 1.1  # make dots overlap
+    dot_expand_factor = 1.25  # make dots overlap
+    fp6.plotting_fn = plot_dot(dot_expand_factor)
 
     # Definition #7 - Dragon curve
     fd7 = fs.defns[7]
@@ -129,9 +135,10 @@ def fractalRunner(drawing):
     # Set up plotter
     fp7 = fd7.plotter
     fp7.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, BLACK, BLACK, RED])
-    fp7.add_path_vectors([vect(-1, 0), vect(1, 0)])
-    fp7.path_width = 3
-
+    path_vects = [vect(-1, 0), vect(1, 0)]
+    path_close = False # default
+    path_width = 3
+    fp7.plotting_fn = plot_lines(path_vects, path_close, path_width)
 
     # --------------------
 

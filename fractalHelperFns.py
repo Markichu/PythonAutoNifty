@@ -36,6 +36,36 @@ def get_colour(cols, progress, alpha=1):
     return colour_this
 
 
+
+# -------------------------------------
+# Plotting functions
+
+# Plot a single dot for a fractal piece
+def plot_dot(dot_expand_factor=1, wobble_px=0):
+    def result_fn(drawing, piece, colour=BLACK):
+        piece_vect = piece.get_vect()
+        piece_mx = piece.get_mx()
+        piece_radius = piece.get_radius()
+        offset_vect = piece_vect * 0
+        pos = get_canvas_pos(piece_vect, piece_mx, offset_vect, wobble_px, 1)
+        circle_radius = dot_expand_factor * piece_radius
+        drawing.add_point(pos, colour, circle_radius)
+    return result_fn
+
+# Plot a series of line segments for a fractal piece
+def plot_lines(path_vects, path_close=False, path_width=1, path_expand_factor=1, wobble_px=0):
+    def result_fn(drawing, piece, colour=BLACK):
+        path_len = len(path_vects)
+        piece_vect = piece.get_vect()
+        piece_mx = piece.get_mx()
+        pos_list = []
+        for i in range(0, path_len):
+            pos_list.append(get_canvas_pos(piece_vect, piece_mx, path_vects[i], wobble_px, path_expand_factor))
+        if path_close:
+            pos_list.append(pos_list[0])
+        drawing.add_line(pos_list, colour, path_width)
+    return result_fn
+
 # -------------------------------------
 # Colouring functions
 
