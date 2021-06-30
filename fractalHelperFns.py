@@ -2,9 +2,10 @@ import math
 import random
 
 from Pos import Pos
+from FractalPiece import FractalPiece
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import array_rms_metric, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import array_rms_metric, vect, mx_id, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -126,6 +127,25 @@ def sort_by_z():
 def sort_by_size():
     return sort_by_tsfm(lambda vect, mx: -array_rms_metric(mx))
     
+
+# -------------------------------------
+# Methods to calculate callback for children on fractal definitions
+
+# For a square [-1, 1] x [-1, 1]
+# split it into n^2 tiles (nxn)
+# and then keep m out of n^2 at random
+def defngen_rand_small_squares(id, m, n):
+    sc = 1 / n
+    def callback():
+        children = []
+        for x in range(n):
+            for y in range(n):
+                x0 = 2*x - (n-1)
+                y0 = 2*y - (n-1)
+                children.append(FractalPiece(id, vect(x0, y0) * sc, mx_id() * sc))
+        return random.sample(children, m)
+    return callback
+
 
 # -------------------------------------
 # Methods to calculate a random id
