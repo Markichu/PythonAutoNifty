@@ -14,7 +14,7 @@ def array_rms_metric(mx):
     return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
 # Easy syntax for generating 2D or 3D vectors
-def vect(x, y, z=None):
+def vect(x=0, y=0, z=None):
     if z is None:
         return np.array((x, y))
     return np.array((x, y, z))
