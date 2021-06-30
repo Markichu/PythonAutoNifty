@@ -1,11 +1,9 @@
-import math
-
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
-from numpyHelperFns import array_rms_metric, mx_id, vect, mx_rotd, mx_sq
-from fractalHelperFns import wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm, sort_by_tsfm,\
-    idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from numpyHelperFns import mx_angle, vect, mx_id, mx_rotd, mx_sq
+from fractalHelperFns import colour_by_log2_size, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
+    defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
 def fractalRunner(drawing):
@@ -35,9 +33,13 @@ def fractalRunner(drawing):
     fs = FractalSystem(max_iterations, min_radius, max_pieces)
     fs.make_defns(number_of_defns)
 
-    # Choose a sort order for final list of fractal pieces
-    # fs.piece_sorter = sort_by_tsfm(lambda vect, mx: -vect[0]) # by x-coord descending
-
+    # Choose a sort order for final list of fractal pieces, which affects drawing order.
+    # Examples:
+    # fs.piece_sorter = sort_by_tsfm(lambda vect, mx: -vect[0])  # Draw by x-coord descending, e.g. from right to left
+    # fs.piece_sorter = sort_by_size()  # Draw from largest at back, to smallest at front
+    # fs.piece_sorter = sort_by_z()  # Draw from furthest back to furthest forward (3D only)
+    # fs.piece_sorter = sort_randomly()  # Draw in a random order
+    
     # --------------------
 
     # Definition #0 - empty fractal
@@ -64,7 +66,8 @@ def fractalRunner(drawing):
     fd2.add_child(FractalPiece(4, vect(1, -1) * scv, mx_id() * scm))
     fd2.add_child(FractalPiece(5, vect(-1, 1) * scv, mx_id() * scm * 0.8))
     fd2.add_child(FractalPiece(6, vect(1, 1) * scv, mx_id() * scm))
-    fd2.add_child(FractalPiece(7, vect(-0.5, -0.8) * scv, mx_rotd(30) * 0.5 * scm))
+    fd2.add_child(FractalPiece(7, vect(-1.2, -0.3) * scv, mx_rotd(30) * 0.4 * scm))
+    fd2.add_child(FractalPiece(8, vect(-0.3, -0.5) * scv, mx_id() * 0.45 * scm))
     # keep default plotting setup, this definition likely won't plot since it is only in first iteration
 
     # Definition #3 - demo Sierpinski Sieve
@@ -90,8 +93,7 @@ def fractalRunner(drawing):
     fd4.add_child(FractalPiece(4, vect(1, 1) * sc, mxgen_rand_sq(sc ** 1.7)))
     # Set up plotter
     fp4 = fd4.plotter
-    size_log_2 = lambda vect, mx: math.log(array_rms_metric(mx), 2)
-    fp4.colouring_fn = colour_by_tsfm(2, 3, size_log_2, [GREEN, BLUE])
+    fp4.colouring_fn = colour_by_log2_size(2, 3, [GREEN, BLUE])
     fp4.plotting_fn = plot_path(
         closed=True,
         width=2,
@@ -114,7 +116,7 @@ def fractalRunner(drawing):
     fd5.add_child(FractalPiece(idgen_rand(id_list), vect(0, 0) * sc, mxgen_rand_circ(sc)))
     # Set up plotter
     fp5 = fd5.plotter
-    fp5.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, PINK, PINK, PINK])
+    fp5.colouring_fn = colour_by_progress([BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
     fp5.plotting_fn = plot_dot(expand_factor=0.65)  # make dots distinct
 
     # Definition #6 - demo of random vector shift
@@ -136,8 +138,17 @@ def fractalRunner(drawing):
     fd7.add_child(FractalPiece(7, vect(0.5, 0.5), mx_rotd(-135) * sc))
     # Set up plotter
     fp7 = fd7.plotter
-    fp7.colouring_fn = colour_by_progress([BLACK, BLACK, BLACK, BLACK, BLACK, RED])
+    piece_angle = lambda vect, mx: mx_angle(mx)
+    fp7.colouring_fn = colour_by_tsfm(-90, 270, piece_angle, [RED, YELLOW, GREEN, BLUE])
     fp7.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
+
+    # Definition #8 - Random Sierpinski Carpet - 7 out of 9 little squares, in 3x3 big square
+    fd8 = fs.defns[8]
+    fd8.children = defngen_rand_small_squares(id=8, m=7, n=3)  # This is a callback, dynamically calculated
+    fp8 = fd8.plotter
+    distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
+    fp8.colouring_fn = colour_by_tsfm(450, 700, distance_from_origin, [BLACK, RED, BLUE])
+    fp8.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
     # --------------------
 
