@@ -103,10 +103,14 @@ def colour_by_log2_size(min_val, max_val, colour_list):
 
 # -------------------------------------
 # Sorting functions for lists of fractal pieces
+# Usage:
+# fractal_system.piece_sorter = sort_function(arguments_if_needed)
 
 # Sort pieces randomly
-def sort_randomly(piece):
-    return random.random()
+def sort_randomly():
+    def result_fn(piece):
+        return random.random()
+    return result_fn
     
 # Sort by function of the piece's affine transformation (vector, matrix)
 def sort_by_tsfm(tsfm_to_num_fn):
