@@ -56,7 +56,7 @@ class FractalSystem:
                     next_iterated_pieces.append(this_piece)
                 else:
                     iteration_finished = False
-                    for child_piece in this_defn.children:
+                    for child_piece in this_defn.get_children():
                         child_id = child_piece.get_id()
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()

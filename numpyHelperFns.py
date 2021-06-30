@@ -13,8 +13,17 @@ def np_dim(np_obj):
 def array_rms_metric(mx):
     return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
+# Find angle of vect(1, 0) under transformation by mx
+# Returns value between -90 and 270
+def mx_angle(mx):
+    x = mx[0][0]
+    y = mx[0][1]
+    deg_from_sign = 180 if x < 0 else 0
+    deg_from_angle = 90 if y==0 else np.degrees(np.arctan(x/y))
+    return deg_from_sign + deg_from_angle
+
 # Easy syntax for generating 2D or 3D vectors
-def vect(x, y, z=None):
+def vect(x=0, y=0, z=None):
     if z is None:
         return np.array((x, y))
     return np.array((x, y, z))

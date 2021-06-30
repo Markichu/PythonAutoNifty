@@ -2,9 +2,10 @@ import math
 import random
 
 from Pos import Pos
+from FractalPiece import FractalPiece
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import array_rms_metric, vect, mx_id, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -94,13 +95,23 @@ def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
         return get_colour(colour_list, this_tsfm_progress)
     return result_fn
 
+# Colour by a function of the piece's affine transformation (vector, matrix)
+# tsfm_to_num_fn(vect, matrix) should output a number
+def colour_by_log2_size(min_val, max_val, colour_list):
+    fn = lambda vect, mx: math.log(array_rms_metric(mx), 2)
+    return colour_by_tsfm(min_val, max_val, fn, colour_list)
+
 
 # -------------------------------------
 # Sorting functions for lists of fractal pieces
+# Usage:
+# fractal_system.piece_sorter = sort_function(arguments_if_needed)
 
 # Sort pieces randomly
-def sort_randomly(piece):
-    return random.random()
+def sort_randomly():
+    def result_fn(piece):
+        return random.random()
+    return result_fn
     
 # Sort by function of the piece's affine transformation (vector, matrix)
 def sort_by_tsfm(tsfm_to_num_fn):
@@ -112,6 +123,29 @@ def sort_by_tsfm(tsfm_to_num_fn):
 def sort_by_z():
     return sort_by_tsfm(lambda vect, mx: -vect[2])
     
+# Sort by size
+def sort_by_size():
+    return sort_by_tsfm(lambda vect, mx: -array_rms_metric(mx))
+    
+
+# -------------------------------------
+# Methods to calculate callback for children on fractal definitions
+
+# For a square [-1, 1] x [-1, 1]
+# split it into n^2 tiles (nxn)
+# and then keep m out of n^2 at random
+def defngen_rand_small_squares(id, m, n):
+    sc = 1 / n
+    def callback():
+        children = []
+        for x in range(n):
+            for y in range(n):
+                x0 = 2*x - (n-1)
+                y0 = 2*y - (n-1)
+                children.append(FractalPiece(id, vect(x0, y0) * sc, mx_id() * sc))
+        return random.sample(children, m)
+    return callback
+
 
 # -------------------------------------
 # Methods to calculate a random id
