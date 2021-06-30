@@ -30,5 +30,8 @@ class FractalPiece:
         return array_rms_metric(self.get_mx())
 
     def __repr__(self):
-        mxprint = f"{self.mx}".replace("\n", ",")
-        return f"(id {self.id}, vect {self.vect}, mx {mxprint})"
+        id = "function" if callable(self.id) else self.id
+        vect = "function" if callable(self.vect) else self.vect
+        mx = "function" if callable(self.mx) else self.mx
+        mxprint = f"{mx}".replace("\n", ",")
+        return f"(id {id}, vect {vect}, mx {mxprint})"
