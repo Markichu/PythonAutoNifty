@@ -4,7 +4,7 @@ import random
 from Pos import Pos
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import array_rms_metric, vect, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -94,6 +94,12 @@ def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
         return get_colour(colour_list, this_tsfm_progress)
     return result_fn
 
+# Colour by a function of the piece's affine transformation (vector, matrix)
+# tsfm_to_num_fn(vect, matrix) should output a number
+def colour_by_log2_size(min_val, max_val, colour_list):
+    fn = lambda vect, mx: math.log(array_rms_metric(mx), 2)
+    return colour_by_tsfm(min_val, max_val, fn, colour_list)
+
 
 # -------------------------------------
 # Sorting functions for lists of fractal pieces
@@ -111,6 +117,10 @@ def sort_by_tsfm(tsfm_to_num_fn):
 # Sort by z-coordinate (reversed), e.g. for 3D fractals
 def sort_by_z():
     return sort_by_tsfm(lambda vect, mx: -vect[2])
+    
+# Sort by size
+def sort_by_size():
+    return sort_by_tsfm(lambda vect, mx: -array_rms_metric(mx))
     
 
 # -------------------------------------
