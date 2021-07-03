@@ -61,6 +61,9 @@ class FractalSystem:
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()
                         next_iterated_pieces.append(FractalPiece(child_id, this_vect + this_mx @ child_vect, this_mx @ child_mx))
+        if self.max_pieces < counter:
+            iteration_finished = True
+            print("Warning - max pieces exceeded")
         self.iterated_pieces = next_iterated_pieces
         return iteration_finished
 

@@ -1,8 +1,8 @@
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
-from numpyHelperFns import mx_angle, vect, mx_id, mx_rotd, mx_sq
-from fractalHelperFns import colour_by_log2_size, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
+from numpyHelperFns import mx_angle, vect, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
+from fractalHelperFns import colour_by_log2_size, grid_generator, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
     defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
@@ -13,23 +13,28 @@ def fractalRunner(drawing):
     # which each contain a list of FractalPiece (controlling next iteration)
     # as well as a FractalPlotter to control how each fractal definition is drawn
 
-    # Number of fractal definition slots set up
+    # Set up fractal system
+    max_iterations = 10  # Maximum iterations
+    min_radius = 10  # px, fractal pieces below this size/radius will stop iterating
+    max_pieces = 100000  # Stop iterating after this number of fractal pieces calculated
     number_of_defns = 10  # Total number of fractal definitions in the linked fractal system
 
-    # Iteration control parameters
-    max_iterations = 10  # Maximum iterations
-    min_radius = 10  # px, smallest iteration allowed
-    max_pieces = 100000  # Stop iterating after this number of fractal pieces calculated
-
     # Set up which fractal is drawn, and its position and orientation
-    init_defn_id = 2  # between 0 and number_of_defns - 1
+    init_defn_id = 2  # between 0 and number_of_defns-1
     init_scale = DRAWING_SIZE / 2
     margin_factor = 0.98  # if less than 1, leaves a small gap around the outside of canvas
-    init_vect = vect(1, 1) * init_scale
-    init_mx = mx_id(2) * (init_scale * margin_factor)
+    init_vect = vect(
+        x = 1,
+        y = 1,
+        scale = init_scale
+    )
+    init_mx = mx_scale(
+        dim = 2,
+        scale = init_scale * margin_factor
+    )
     # This is setup for 2-dimensional fractal
 
-    # Set up linked fractal system
+    # Create linked fractal system
     fs = FractalSystem(max_iterations, min_radius, max_pieces)
     fs.make_defns(number_of_defns)
 
@@ -43,58 +48,72 @@ def fractalRunner(drawing):
     # --------------------
 
     # Definition #0 - empty fractal
-    fd0 = fs.defns[0]
+    id = 0
+    fd = fs.defns[id]
     # no children, iterates to nothing
-    fp0 = fd0.plotter
-    fp0.draws = False
-    fp0.colouring_fn = colour_by_progress([RED])
-    # will use default plotting function `plot_dot`
+    fp = fd.plotter
+    fp.draws = False  # specify to prevent drawing
+    # if it did draw, it would use default plotting function `plot_dot`
+    fp.colouring_fn = colour_by_progress([RED])  # if it did draw, it would be a red dot
 
     # Definition #1 - identity fractal (doesn't change upon iteration)
-    fd1 = fs.defns[1]
-    fd1.add_child(FractalPiece(1, vect(0, 0), mx_id()))  # this is the identity. Not actually used, since iteration prevented.
-    fd1.iterates = False  # specify to prevent further calculation of iterations
-    fp1 = fd1.plotter
-    fp1.draws = False
-    fp1.colouring_fn = colour_by_progress([LIGHT_GREEN])
+    id = 1
+    fd = fs.defns[id]
+    fd.add_child(FractalPiece(id, vect(0, 0), mx_id()))  # this is the identity. Not actually used, since iteration prevented.
+    fd.iterates = False  # specify to prevent further calculation of iterations
+    fp = fd.plotter
+    fp.draws = False
+    fp.colouring_fn = colour_by_progress([LIGHT_GREEN])
 
     # Definition #2 - use as wrapper to display 1 or more other fractals
-    fd2 = fs.defns[2]
+    id = 2
+    fd = fs.defns[id]
     scv = 0.5
     scm = 0.45
-    fd2.add_child(FractalPiece(3, vect(-1, -1) * scv, mx_id() * scm))
-    fd2.add_child(FractalPiece(4, vect(1, -1) * scv, mx_id() * scm))
-    fd2.add_child(FractalPiece(5, vect(-1, 1) * scv, mx_id() * scm * 0.8))
-    fd2.add_child(FractalPiece(6, vect(1, 1) * scv, mx_id() * scm))
-    fd2.add_child(FractalPiece(7, vect(-1.2, -0.3) * scv, mx_rotd(30) * 0.4 * scm))
-    fd2.add_child(FractalPiece(8, vect(-0.3, -0.5) * scv, mx_id() * 0.45 * scm))
-    # keep default plotting setup, this definition likely won't plot since it is only in first iteration
+    fd.add_child(FractalPiece(3, vect(-1, -1) * scv, mx_scale(scm)))
+    fd.add_child(FractalPiece(4, vect(1, -1) * scv, mx_scale(scm)))
+    fd.add_child(FractalPiece(5, vect(-1, 1) * scv, mx_scale(scm * 0.8)))
+    fd.add_child(FractalPiece(6, vect(1, 1) * scv, mx_scale(scm)))
+    fd.add_child(FractalPiece(7, vect(-1.2, -0.3) * scv, mx_rotd(angle=30, scale=0.4 * scm)))
+    fd.add_child(FractalPiece(8, vect(-0.3, -0.5) * scv, mx_scale(0.45 * scm)))
+    # keep default plotting setup, this definition likely won't plot
+    # since it iterates to other things
 
     # Definition #3 - demo Sierpinski Sieve
-    fd3 = fs.defns[3]
-    sc = 0.5
-    fd3.add_child(FractalPiece(3, vect(-1, -1) * sc, mx_id() * sc))
-    fd3.add_child(FractalPiece(3, vect(-1, 1) * sc, mx_id() * sc))
-    fd3.add_child(FractalPiece(3, vect(1, -1) * sc, mx_sq(1) * sc))
-    fd3.relative_size = 1  # occupies [-1, 1] x [-1, 1] so "radius" = 1
-    fd3.iterates = True  # this is default value
+    id = 3
+    fd = fs.defns[id]
+    n = 2
+    sc = 1/n
+    grid = grid_generator(x_steps=n, y_steps=n, x_min=-1, y_min=-1, x_max=1, y_max=1)
+    # Grid generator generates coordinates at square midpoints from -1 to 1, total steps 2
+    # grid(0, 0) = (-0.5, -0.5)
+    # grid(1, 0) = (0.5, -0.5)
+    # etc
+    fd.add_child(FractalPiece(id, grid(0, 0), mx_id() * sc))  # Same scale matrix result, three ways of writing
+    fd.add_child(FractalPiece(id, grid(0, 1), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, grid(1, 0), mx_sq(num=1, scale=sc)))
+    fd.relative_size = 1  # this controls size vs min_radius during calculation; fractal occupies [-1, 1] x [-1, 1] so "radius" = 1
+    fd.iterates = True  # this is default value, so this line is optional
     # Set up plotter
-    fp3 = fd3.plotter
+    fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
-    fp3.colouring_fn = colour_by_tsfm(-150, 150, x_minus_y, [RED, BLACK])
-    fp3.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
+    fp.colouring_fn = colour_by_tsfm(-150, 150, x_minus_y, [RED, BLACK])
+    fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
 
     # Definition #4 - demo of random square matrix transformations
-    fd4 = fs.defns[4]
-    sc = 0.5
-    fd4.add_child(FractalPiece(4, vect(-1, -1) * sc, mx_id() * sc))
-    fd4.add_child(FractalPiece(4, vect(1, -1) * sc, mx_id() * sc))
-    fd4.add_child(FractalPiece(4, vect(-1, 1) * sc, mxgen_rand_sq(sc ** 1.3)))
-    fd4.add_child(FractalPiece(4, vect(1, 1) * sc, mxgen_rand_sq(sc ** 1.7)))
+    id = 4
+    fd = fs.defns[id]
+    n = 2
+    sc = 1/n
+    grid = grid_generator(x_steps=n, y_steps=n, x_min=-1, y_min=-1, x_max=1, y_max=1)
+    fd.add_child(FractalPiece(id, grid(0, 0), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, grid(1, 0), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, grid(0, 1), mxgen_rand_sq(scale=sc**1.3)))
+    fd.add_child(FractalPiece(id, grid(1, 1), mxgen_rand_sq(scale=sc**1.7)))
     # Set up plotter
-    fp4 = fd4.plotter
-    fp4.colouring_fn = colour_by_log2_size(2, 3, [GREEN, BLUE])
-    fp4.plotting_fn = plot_path(
+    fp = fd.plotter
+    fp.colouring_fn = colour_by_log2_size(2, 3, [GREEN, BLUE])
+    fp.plotting_fn = plot_path(
         closed=True,
         width=2,
         expand_factor=1.1,
@@ -103,52 +122,59 @@ def fractalRunner(drawing):
     )
 
     # Definition #5 - demo of random hexagon dot fractal
-    fd5 = fs.defns[5]
+    id_exit = 1
+    id_iterate = 5
+    fd = fs.defns[id_iterate]
     sc = 1/3
     h = 3 ** 0.5
-    id_list = [1, 5, 5, 5, 5]
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(2, 0) * sc, mxgen_rand_circ(sc)))
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(1, h) * sc, mxgen_rand_circ(sc)))
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(-1, h) * sc, mxgen_rand_circ(sc)))
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(-2, 0) * sc, mxgen_rand_circ(sc)))
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(-1, -h) * sc, mxgen_rand_circ(sc)))
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(1, -h) * sc, mxgen_rand_circ(sc)))
-    fd5.add_child(FractalPiece(idgen_rand(id_list), vect(0, 0) * sc, mxgen_rand_circ(sc)))
+    id_list = [id_exit, id_iterate, id_iterate, id_iterate, id_iterate]
+    id_callback = idgen_rand(id_list)
+    mx_callback = mxgen_rand_circ(sc)
+    fd.add_child(FractalPiece(id_callback, vect(2, 0) * sc, mx_callback))
+    fd.add_child(FractalPiece(id_callback, vect(1, h) * sc, mx_callback))
+    fd.add_child(FractalPiece(id_callback, vect(-1, h) * sc, mx_callback))
+    fd.add_child(FractalPiece(id_callback, vect(-2, 0) * sc, mx_callback))
+    fd.add_child(FractalPiece(id_callback, vect(-1, -h) * sc, mx_callback))
+    fd.add_child(FractalPiece(id_callback, vect(1, -h) * sc, mx_callback))
+    fd.add_child(FractalPiece(id_callback, vect(0, 0) * sc, mx_callback))
     # Set up plotter
-    fp5 = fd5.plotter
-    fp5.colouring_fn = colour_by_progress([BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
-    fp5.plotting_fn = plot_dot(expand_factor=0.65)  # make dots distinct
+    fp = fd.plotter
+    fp.colouring_fn = colour_by_progress([BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
+    fp.plotting_fn = plot_dot(expand_factor=0.65)  # make dots distinct
 
     # Definition #6 - demo of random vector shift
-    fd6 = fs.defns[6]
+    id = 6
+    fd = fs.defns[id]
     sc = 0.5
-    fd6.add_child(FractalPiece(6, vect(-1, -1) * sc, mx_id() * sc))
-    fd6.add_child(FractalPiece(6, vect(1, -1) * sc, mx_id() * sc))
-    fd6.add_child(FractalPiece(6, vectgen_rand([-sc, sc], [sc, sc]), mx_id() * sc))
+    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_scale(sc)))  # Two versions of same scale matrix here
+    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_diag(sc, sc)))
+    fd.add_child(FractalPiece(id, vectgen_rand([-sc, sc], [sc, sc]), mx_scale(sc)))
     # Set up plotter
-    fp6 = fd6.plotter
+    fp = fd.plotter
     distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
-    fp6.colouring_fn = colour_by_tsfm(50, 250, distance_from_700_700, [MAGENTA, YELLOW, CYAN])
-    fp6.plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
+    fp.colouring_fn = colour_by_tsfm(50, 250, distance_from_700_700, [MAGENTA, YELLOW, CYAN])
+    fp.plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
 
     # Definition #7 - Dragon curve
-    fd7 = fs.defns[7]
+    id = 7
+    fd = fs.defns[id]
     sc = 0.5 ** 0.5
-    fd7.add_child(FractalPiece(7, vect(-0.5, 0.5), mx_rotd(-45) * sc))
-    fd7.add_child(FractalPiece(7, vect(0.5, 0.5), mx_rotd(-135) * sc))
+    fd.add_child(FractalPiece(id, vect(-0.5, 0.5), mx_rotd(angle=-45, scale=sc)))
+    fd.add_child(FractalPiece(id, vect(0.5, 0.5), mx_rotd(angle=-135, scale=sc)))
     # Set up plotter
-    fp7 = fd7.plotter
+    fp = fd.plotter
     piece_angle = lambda vect, mx: mx_angle(mx)
-    fp7.colouring_fn = colour_by_tsfm(-90, 270, piece_angle, [RED, YELLOW, GREEN, BLUE])
-    fp7.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
+    fp.colouring_fn = colour_by_tsfm(-90, 270, piece_angle, [RED, YELLOW, GREEN, BLUE])
+    fp.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
 
     # Definition #8 - Random Sierpinski Carpet - 7 out of 9 little squares, in 3x3 big square
-    fd8 = fs.defns[8]
-    fd8.children = defngen_rand_small_squares(id=8, m=7, n=3)  # This is a callback, dynamically calculated
-    fp8 = fd8.plotter
+    idr = 8
+    fd = fs.defns[idr]
+    fd.children = defngen_rand_small_squares(id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
+    fp = fd.plotter
     distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
-    fp8.colouring_fn = colour_by_tsfm(450, 700, distance_from_origin, [BLACK, RED, BLUE])
-    fp8.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+    fp.colouring_fn = colour_by_tsfm(450, 700, distance_from_origin, [BLACK, RED, BLUE])
+    fp.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
     # --------------------
 

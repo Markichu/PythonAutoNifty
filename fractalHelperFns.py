@@ -5,7 +5,7 @@ from Pos import Pos
 from FractalPiece import FractalPiece
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import array_rms_metric, vect, mx_id, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import array_rms_metric, vect, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -43,16 +43,34 @@ def wobble_square(pixels=2, dim=2):
 
 # TODO: 2D circle uniform, 3D sphere uniform, 2D concentrated at centre, etc
 
+# Return vector in a rectangular grid. Example (considering x-coord only):
+# x_steps = 4
+# x_min = -1
+# x_max = 1
+# Then supply x_pos = 0, 1, 2, 3
+# Output is x_this = -0.75, -0.25, 0.25, 0.75
+def grid_generator(x_steps, y_steps, x_min, y_min, x_max, y_max):
+    def grid(x_pos, y_pos):
+        x_progress = (x_pos + 0.5) / x_steps
+        y_progress = (y_pos + 0.5) / y_steps
+        x_this = x_min + x_progress * (x_max - x_min)
+        y_this = y_min + y_progress * (y_max - y_min)
+        return vect(x_this, y_this)
+    return grid
+
 
 # -------------------------------------
 # Plotting functions
 
 # Plot a dot (small circle) for each fractal piece
 # Optional parameter expand_factor is to fine-tune control of dot size
-def plot_dot(expand_factor=1, wobble_fn=None):
+def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     def result_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+        if not offset_vect is None:
+            mx = piece.get_mx()
+            piece_vect = piece_vect + mx @ offset_vect
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
         dot_radius = expand_factor * piece.get_radius()
         drawing.add_point(pos, colour, dot_radius)
@@ -142,7 +160,7 @@ def defngen_rand_small_squares(id, m, n):
             for y in range(n):
                 x0 = 2*x - (n-1)
                 y0 = 2*y - (n-1)
-                children.append(FractalPiece(id, vect(x0, y0) * sc, mx_id() * sc))
+                children.append(FractalPiece(id, vect(x0, y0, scale=sc), mx_scale(sc)))
         return random.sample(children, m)
     return callback
 
@@ -179,10 +197,13 @@ def vectgen_rand(x_range, y_range, z_range=None):
 # Any rotation or reflection in the circle
 def mxgen_rand_circ(scale=1, reflect=True):
     def callback():
-        mx = mx_rotd(random.uniform(0, 360))
+        mx = mx_rotd(
+            angle=random.uniform(0, 360),
+            scale=scale
+        )
         if reflect and (random.random() < 0.5):
             mx = mx @ mx_refl_X()
-        return mx * scale
+        return mx
     return callback
 
 # Any rotation or reflection in a square with a flat edge down
@@ -191,7 +212,10 @@ def mxgen_rand_sq(scale=1, reflect=True):
     if reflect:
         max_num = 8
     def callback():
-        return mx_sq(random.randint(1, max_num)) * scale
+        return mx_sq(
+            num=random.randint(1, max_num),
+            scale=scale
+        )
     return callback
 
 # Any rotation or reflection in a triangle with a flat edge down
@@ -200,7 +224,11 @@ def mxgen_rand_tri(scale=1, reflect=True):
     if reflect:
         max_num = 6
     def callback():
-        return mx_dh(3, random.randint(1, max_num)) * scale
+        return mx_dh(
+            sides=3,
+            num=random.randint(1, max_num),
+            scale=scale
+        )
     return callback
 
 # Any rotation or reflection in a <sides>-sided polygon with a flat edge down
@@ -209,5 +237,9 @@ def mxgen_rand_dihedral(sides, scale=1, reflect=True):
     if reflect:
         max_num = sides * 2
     def callback():
-        return mx_dh(sides, random.randint(1, max_num)) * scale
+        return mx_dh(
+            sides=sides,
+            num=random.randint(1, max_num),
+            scale=scale
+        )
     return callback
