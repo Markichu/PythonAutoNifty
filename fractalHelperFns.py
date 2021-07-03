@@ -43,6 +43,21 @@ def wobble_square(pixels=2, dim=2):
 
 # TODO: 2D circle uniform, 3D sphere uniform, 2D concentrated at centre, etc
 
+# Return vector in a rectangular grid. Example (considering x-coord only):
+# x_steps = 4
+# x_min = -1
+# x_max = 1
+# Then supply x_pos = 0, 1, 2, 3
+# Output is x_this = -0.75, -0.25, 0.25, 0.75
+def grid_generator(x_steps, y_steps, x_min, y_min, x_max, y_max):
+    def grid(x_pos, y_pos):
+        x_progress = (x_pos + 0.5) / x_steps
+        y_progress = (y_pos + 0.5) / y_steps
+        x_this = x_min + x_progress * (x_max - x_min)
+        y_this = y_min + y_progress * (y_max - y_min)
+        return vect(x_this, y_this)
+    return grid
+
 
 # -------------------------------------
 # Plotting functions
