@@ -4,7 +4,7 @@ import numpy as np
 # ---------------------------------------
 # General helper methods such as easily generate a vector or identity matrix
 
-# Get dimension of vector or matrix
+# Get dimension of vector or matrix (assuming matrix is square)
 def np_dim(np_obj):
     return np_obj.shape[0]
 
@@ -13,6 +13,7 @@ def np_dim(np_obj):
 def array_rms_metric(mx):
     return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
+# Angle calculator for matrices in O(2) (symmetries of a 2D circle)
 # Find angle of vect(1, 0) under transformation by mx
 # Returns value between -90 and 270
 def mx_angle(mx):
@@ -29,9 +30,21 @@ def vect(x=0, y=0, z=None):
     return np.array((x, y, z))
 
 # Easy syntax for generating matrix identity
-# Defaults to 2D matrix
-def mx_id(n=2):
-    return np.identity(n)
+# Defaults to 2D identity matrix
+def mx_id(dim=2):
+    return np.identity(dim)
+
+# Scale matrix, which is mx_id * scale
+# Defaults to 2D identity matrix
+def mx_scale(scale=1, dim=2):
+    return mx_id(dim) * scale
+
+# Diagonal matrix in 2D or 3D
+# Defaults to 2D identity matrix
+def mx_diag(x=1, y=1, z=None):
+    if z is None:
+        return np.diag((x, y))
+    return np.diag((x, y, z))
 
 
 # ---------------------------------------
@@ -73,14 +86,14 @@ def mx_rotd_3D(ang_xy, ang_xz, scale=1):
 # Generate reflection matrices in 2D or 3D
 
 # Reflection matrix in x-axis
-def mx_refl_X(n=2):
-    if n == 3:
+def mx_refl_X(dim=2):
+    if dim == 3:
         return np.array(((-1, 0, 0), (0, 1, 0), (0, 0, 1)))
     return np.array(((-1, 0), (0, 1)))
 
 # Reflection matrix in y-axis
-def mx_refl_Y(n=2):
-    if n == 3:
+def mx_refl_Y(dim=2):
+    if dim == 3:
         return np.array(((1, 0, 0), (0, -1, 0), (0, 0, 1)))
     return np.array(((1, 0), (0, -1)))
 
