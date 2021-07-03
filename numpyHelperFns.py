@@ -51,26 +51,26 @@ def mx_diag(x=1, y=1, z=None):
 # Generate rotation matrices in 2D or 3D
 
 # 2D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
-def mx_rotd(angle_in_degrees=0, scale=1):
-    angle_in_radians = np.radians(angle_in_degrees)
+def mx_rotd(angle=0, scale=1):
+    angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((c, s), (-s, c))) * scale
 
 # 3D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
-def mx_rotd_XY(angle_in_degrees=0, scale=1):
-    angle_in_radians = np.radians(angle_in_degrees)
+def mx_rotd_XY(angle=0, scale=1):
+    angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((c, s, 0), (-s, c, 0), (0, 0, 1))) * scale
 
 # 3D clockwise rotation matrix in XZ plane, angle in degrees, +1° rotates Z towards X
-def mx_rotd_XZ(angle_in_degrees=0, scale=1):
-    angle_in_radians = np.radians(angle_in_degrees)
+def mx_rotd_XZ(angle=0, scale=1):
+    angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((c, 0, s), (0, 1, 0), (-s, 0, c))) * scale
 
 # 3D clockwise rotation matrix in YZ plane, angle in degrees, +1° rotates Z towards Y
-def mx_rotd_YZ(angle_in_degrees=0, scale=1):
-    angle_in_radians = np.radians(angle_in_degrees)
+def mx_rotd_YZ(angle=0, scale=1):
+    angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((1, 0, 0), (0, c, s), (0, -s, c))) * scale
 
