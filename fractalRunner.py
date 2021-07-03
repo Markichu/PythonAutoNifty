@@ -1,7 +1,7 @@
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
-from numpyHelperFns import mx_angle, vect, mx_id, mx_rotd, mx_sq
+from numpyHelperFns import mx_angle, vect, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_log2_size, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
     defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
@@ -13,23 +13,21 @@ def fractalRunner(drawing):
     # which each contain a list of FractalPiece (controlling next iteration)
     # as well as a FractalPlotter to control how each fractal definition is drawn
 
-    # Number of fractal definition slots set up
+    # Set up fractal system
+    max_iterations = 10  # Maximum iterations
+    min_radius = 10  # px, fractal pieces below this size/radius will stop iterating
+    max_pieces = 100000  # Stop iterating after this number of fractal pieces calculated
     number_of_defns = 10  # Total number of fractal definitions in the linked fractal system
 
-    # Iteration control parameters
-    max_iterations = 10  # Maximum iterations
-    min_radius = 10  # px, smallest iteration allowed
-    max_pieces = 100000  # Stop iterating after this number of fractal pieces calculated
-
     # Set up which fractal is drawn, and its position and orientation
-    init_defn_id = 2  # between 0 and number_of_defns - 1
+    init_defn_id = 2  # between 0 and number_of_defns-1
     init_scale = DRAWING_SIZE / 2
     margin_factor = 0.98  # if less than 1, leaves a small gap around the outside of canvas
     init_vect = vect(1, 1) * init_scale
     init_mx = mx_id(2) * (init_scale * margin_factor)
     # This is setup for 2-dimensional fractal
 
-    # Set up linked fractal system
+    # Create linked fractal system
     fs = FractalSystem(max_iterations, min_radius, max_pieces)
     fs.make_defns(number_of_defns)
 
