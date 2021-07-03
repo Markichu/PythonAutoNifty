@@ -51,55 +51,55 @@ def mx_diag(x=1, y=1, z=None):
 # Generate rotation matrices in 2D or 3D
 
 # 2D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
-def mx_rotd(angle_in_degrees):
+def mx_rotd(angle_in_degrees=0, scale=1):
     angle_in_radians = np.radians(angle_in_degrees)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
-    return np.array(((c, s), (-s, c)))
+    return np.array(((c, s), (-s, c))) * scale
 
 # 3D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
-def mx_rotd_XY(angle_in_degrees):
+def mx_rotd_XY(angle_in_degrees=0, scale=1):
     angle_in_radians = np.radians(angle_in_degrees)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
-    return np.array(((c, s, 0), (-s, c, 0), (0, 0, 1)))
+    return np.array(((c, s, 0), (-s, c, 0), (0, 0, 1))) * scale
 
 # 3D clockwise rotation matrix in XZ plane, angle in degrees, +1° rotates Z towards X
-def mx_rotd_XZ(angle_in_degrees):
+def mx_rotd_XZ(angle_in_degrees=0, scale=1):
     angle_in_radians = np.radians(angle_in_degrees)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
-    return np.array(((c, 0, s), (0, 1, 0), (-s, 0, c)))
+    return np.array(((c, 0, s), (0, 1, 0), (-s, 0, c))) * scale
 
 # 3D clockwise rotation matrix in YZ plane, angle in degrees, +1° rotates Z towards Y
-def mx_rotd_YZ(angle_in_degrees):
+def mx_rotd_YZ(angle_in_degrees=0, scale=1):
     angle_in_radians = np.radians(angle_in_degrees)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
-    return np.array(((1, 0, 0), (0, c, s), (0, -s, c)))
+    return np.array(((1, 0, 0), (0, c, s), (0, -s, c))) * scale
 
 # Utility method to do an XY rotation, then a XZ rotation, then an optional scale
 # Applying a matrix transformation is _pre_multiplication, so XZ goes first.
 # Scaling is commutative, so can go anywhere.
 # Angles are in degrees
-def mx_rotd_3D(ang_xy, ang_xz, scale=1):
-    return mx_rotd_XZ(ang_xz) @ (mx_rotd_XY(ang_xy) * scale)
+def mx_rotd_3D(ang_xy=0, ang_xz=0, scale=1):
+    return mx_rotd_XZ(ang_xz) @ mx_rotd_XY(ang_xy, scale)
 
 
 # ---------------------------------------
 # Generate reflection matrices in 2D or 3D
 
 # Reflection matrix in x-axis
-def mx_refl_X(dim=2):
+def mx_refl_X(dim=2, scale=1):
     if dim == 3:
-        return np.array(((-1, 0, 0), (0, 1, 0), (0, 0, 1)))
-    return np.array(((-1, 0), (0, 1)))
+        return np.array(((-1, 0, 0), (0, 1, 0), (0, 0, 1))) * scale
+    return np.array(((-1, 0), (0, 1))) * scale
 
 # Reflection matrix in y-axis
-def mx_refl_Y(dim=2):
+def mx_refl_Y(dim=2, scale=1):
     if dim == 3:
-        return np.array(((1, 0, 0), (0, -1, 0), (0, 0, 1)))
-    return np.array(((1, 0), (0, -1)))
+        return np.array(((1, 0, 0), (0, -1, 0), (0, 0, 1))) * scale
+    return np.array(((1, 0), (0, -1))) * scale
 
 # Reflection matrix in z-axis
-def mx_refl_Z():
-    return np.array(((1, 0, 0), (0, 1, 0), (0, 0, -1)))
+def mx_refl_Z(scale=1):
+    return np.array(((1, 0, 0), (0, 1, 0), (0, 0, -1))) * scale
 
 
 # ---------------------------------------
@@ -112,7 +112,7 @@ def mx_refl_Z():
 # dh(5, 2) for 72 degree rotation anticlockwise
 # dh(5, 6) for horizontal reflection
 # dh(8, 6) for 225 (45 * 5) degree rotation anticlockwise
-def mx_dh(sides, num):
+def mx_dh(sides=3, num=1, scale=1):
     if not isinstance(sides, int):
         raise TypeError("Number of sides must be an integer")
     if sides < 2:
@@ -129,13 +129,13 @@ def mx_dh(sides, num):
     rotation_mx = mx_rotd((-360/sides) * rotation_num)
     refl_x_mx = np.array( (((-1) ** reflection_num, 0), (0, 1)) )
     result = rotation_mx @ refl_x_mx
-    return result
+    return result * scale
 
 # Square transformations 1 to 8
 # sq(1) for identity
 # sq(2) for 90 degree rotation anticlockwise
 # sq(5) for *vertical* reflection (should have been horizontal... but already published on Nifty Ink)
-def mx_sq(num):
+def mx_sq(num=1, scale=1):
     if not isinstance(num, int):
         raise TypeError("Argument is not integer")
     if num < 1:
@@ -147,4 +147,4 @@ def mx_sq(num):
     rotation_mx = mx_rotd((-90) * rotation_num)
     refl_y_mx = np.array(((1, 0), (0, (-1) ** reflection_num)))
     result = rotation_mx @ refl_y_mx
-    return result
+    return result * scale
