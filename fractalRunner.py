@@ -23,8 +23,15 @@ def fractalRunner(drawing):
     init_defn_id = 2  # between 0 and number_of_defns-1
     init_scale = DRAWING_SIZE / 2
     margin_factor = 0.98  # if less than 1, leaves a small gap around the outside of canvas
-    init_vect = vect(1, 1) * init_scale
-    init_mx = mx_id(2) * (init_scale * margin_factor)
+    init_vect = vect(
+        x = 1,
+        y = 1,
+        scale = init_scale
+    )
+    init_mx = mx_scale(
+        dim = 2,
+        scale = init_scale * margin_factor
+    )
     # This is setup for 2-dimensional fractal
 
     # Create linked fractal system
@@ -63,12 +70,12 @@ def fractalRunner(drawing):
     fd = fs.defns[id]
     scv = 0.5
     scm = 0.45
-    fd.add_child(FractalPiece(3, vect(-1, -1) * scv, mx_id() * scm))
-    fd.add_child(FractalPiece(4, vect(1, -1) * scv, mx_id() * scm))
-    fd.add_child(FractalPiece(5, vect(-1, 1) * scv, mx_id() * scm * 0.8))
-    fd.add_child(FractalPiece(6, vect(1, 1) * scv, mx_id() * scm))
-    fd.add_child(FractalPiece(7, vect(-1.2, -0.3) * scv, mx_rotd(30) * 0.4 * scm))
-    fd.add_child(FractalPiece(8, vect(-0.3, -0.5) * scv, mx_id() * 0.45 * scm))
+    fd.add_child(FractalPiece(3, vect(-1, -1) * scv, mx_scale(scm)))
+    fd.add_child(FractalPiece(4, vect(1, -1) * scv, mx_scale(scm)))
+    fd.add_child(FractalPiece(5, vect(-1, 1) * scv, mx_scale(scm * 0.8)))
+    fd.add_child(FractalPiece(6, vect(1, 1) * scv, mx_scale(scm)))
+    fd.add_child(FractalPiece(7, vect(-1.2, -0.3) * scv, mx_rotd(angle=30, scale=0.4 * scm)))
+    fd.add_child(FractalPiece(8, vect(-0.3, -0.5) * scv, mx_scale(0.45 * scm)))
     # keep default plotting setup, this definition likely won't plot
     # since it iterates to other things
 
@@ -76,9 +83,9 @@ def fractalRunner(drawing):
     id = 3
     fd = fs.defns[id]
     sc = 0.5
-    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_id() * sc))
-    fd.add_child(FractalPiece(id, vect(-1, 1) * sc, mx_id() * sc))
-    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_sq(1) * sc))
+    fd.add_child(FractalPiece(id, vect(-1, -1, scale=sc), mx_id() * sc))  # Same scale matrix result, three ways of writing
+    fd.add_child(FractalPiece(id, vect(-1, 1, scale=sc), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, vect(1, -1, scale=sc), mx_sq(num=1, scale=sc)))
     fd.relative_size = 1  # this controls size vs min_radius during calculation; fractal occupies [-1, 1] x [-1, 1] so "radius" = 1
     fd.iterates = True  # this is default value, so this line is optional
     # Set up plotter
@@ -91,10 +98,10 @@ def fractalRunner(drawing):
     id = 4
     fd = fs.defns[id]
     sc = 0.5
-    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_id() * sc))
-    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_id() * sc))
-    fd.add_child(FractalPiece(id, vect(-1, 1) * sc, mxgen_rand_sq(sc ** 1.3)))
-    fd.add_child(FractalPiece(id, vect(1, 1) * sc, mxgen_rand_sq(sc ** 1.7)))
+    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_scale(sc)))
+    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_scale(sc)))
+    fd.add_child(FractalPiece(id, vect(-1, 1) * sc, mxgen_rand_sq(scale=sc**1.3)))
+    fd.add_child(FractalPiece(id, vect(1, 1) * sc, mxgen_rand_sq(scale=sc**1.7)))
     # Set up plotter
     fp = fd.plotter
     fp.colouring_fn = colour_by_log2_size(2, 3, [GREEN, BLUE])
@@ -131,9 +138,9 @@ def fractalRunner(drawing):
     id = 6
     fd = fs.defns[id]
     sc = 0.5
-    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_id() * sc))
-    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_id() * sc))
-    fd.add_child(FractalPiece(id, vectgen_rand([-sc, sc], [sc, sc]), mx_id() * sc))
+    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_scale(sc)))  # Two versions of same scale matrix here
+    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_diag(sc, sc)))
+    fd.add_child(FractalPiece(id, vectgen_rand([-sc, sc], [sc, sc]), mx_scale(sc)))
     # Set up plotter
     fp = fd.plotter
     distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
@@ -144,8 +151,8 @@ def fractalRunner(drawing):
     id = 7
     fd = fs.defns[id]
     sc = 0.5 ** 0.5
-    fd.add_child(FractalPiece(id, vect(-0.5, 0.5), mx_rotd(-45) * sc))
-    fd.add_child(FractalPiece(id, vect(0.5, 0.5), mx_rotd(-135) * sc))
+    fd.add_child(FractalPiece(id, vect(-0.5, 0.5), mx_rotd(angle=-45, scale=sc)))
+    fd.add_child(FractalPiece(id, vect(0.5, 0.5), mx_rotd(angle=-135, scale=sc)))
     # Set up plotter
     fp = fd.plotter
     piece_angle = lambda vect, mx: mx_angle(mx)
