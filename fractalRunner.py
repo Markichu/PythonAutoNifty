@@ -2,7 +2,7 @@ from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
 from numpyHelperFns import mx_angle, vect, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
-from fractalHelperFns import colour_by_log2_size, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
+from fractalHelperFns import colour_by_log2_size, grid_generator, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
     defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
@@ -82,10 +82,16 @@ def fractalRunner(drawing):
     # Definition #3 - demo Sierpinski Sieve
     id = 3
     fd = fs.defns[id]
-    sc = 0.5
-    fd.add_child(FractalPiece(id, vect(-1, -1, scale=sc), mx_id() * sc))  # Same scale matrix result, three ways of writing
-    fd.add_child(FractalPiece(id, vect(-1, 1, scale=sc), mx_scale(sc)))
-    fd.add_child(FractalPiece(id, vect(1, -1, scale=sc), mx_sq(num=1, scale=sc)))
+    n = 2
+    sc = 1/n
+    grid = grid_generator(x_steps=n, y_steps=n, x_min=-1, y_min=-1, x_max=1, y_max=1)
+    # Grid generator generates coordinates at square midpoints from -1 to 1, total steps 2
+    # grid(0, 0) = (-0.5, -0.5)
+    # grid(1, 0) = (0.5, -0.5)
+    # etc
+    fd.add_child(FractalPiece(id, grid(0, 0), mx_id() * sc))  # Same scale matrix result, three ways of writing
+    fd.add_child(FractalPiece(id, grid(0, 1), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, grid(1, 0), mx_sq(num=1, scale=sc)))
     fd.relative_size = 1  # this controls size vs min_radius during calculation; fractal occupies [-1, 1] x [-1, 1] so "radius" = 1
     fd.iterates = True  # this is default value, so this line is optional
     # Set up plotter
@@ -97,11 +103,13 @@ def fractalRunner(drawing):
     # Definition #4 - demo of random square matrix transformations
     id = 4
     fd = fs.defns[id]
-    sc = 0.5
-    fd.add_child(FractalPiece(id, vect(-1, -1) * sc, mx_scale(sc)))
-    fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_scale(sc)))
-    fd.add_child(FractalPiece(id, vect(-1, 1) * sc, mxgen_rand_sq(scale=sc**1.3)))
-    fd.add_child(FractalPiece(id, vect(1, 1) * sc, mxgen_rand_sq(scale=sc**1.7)))
+    n = 2
+    sc = 1/n
+    grid = grid_generator(x_steps=n, y_steps=n, x_min=-1, y_min=-1, x_max=1, y_max=1)
+    fd.add_child(FractalPiece(id, grid(0, 0), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, grid(1, 0), mx_scale(sc)))
+    fd.add_child(FractalPiece(id, grid(0, 1), mxgen_rand_sq(scale=sc**1.3)))
+    fd.add_child(FractalPiece(id, grid(1, 1), mxgen_rand_sq(scale=sc**1.7)))
     # Set up plotter
     fp = fd.plotter
     fp.colouring_fn = colour_by_log2_size(2, 3, [GREEN, BLUE])
