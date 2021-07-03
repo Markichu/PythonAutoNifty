@@ -2,6 +2,7 @@ import json
 import random
 import pygame
 import os
+import time
 
 from Pos import Pos
 from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
@@ -307,6 +308,7 @@ class Drawing:
                 if event.type == pygame.QUIT:
                     running = False
                     break
+            time.sleep(0.2)  # Sleep for a short time. Prevents continual use of CPU.
 
     def to_nifty_import(self):
         return "drawingCanvas.current.loadSaveData(\"" + json.dumps(self.object).replace('"', '\\"') + "\", false)"
