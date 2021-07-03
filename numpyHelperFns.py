@@ -8,9 +8,9 @@ import numpy as np
 def np_dim(np_obj):
     return np_obj.shape[0]
 
-# Find a metric for vector or matrix
-# where identity matrix in 2D or 3D has metric 1
-def array_rms_metric(mx):
+# Find a metric for matrix using square root of sum of squares of matrix entries
+# Identity matrix in 2D or 3D has metric 1
+def metric_matrix_rms(mx):
     return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
 # Angle calculator for matrices in O(2) (symmetries of a 2D circle)
