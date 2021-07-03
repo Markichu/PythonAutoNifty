@@ -24,10 +24,10 @@ def mx_angle(mx):
     return deg_from_sign + deg_from_angle
 
 # Easy syntax for generating 2D or 3D vectors
-def vect(x=0, y=0, z=None):
+def vect(x=0, y=0, z=None, scale=1):
     if z is None:
-        return np.array((x, y))
-    return np.array((x, y, z))
+        return np.array((x, y)) * scale
+    return np.array((x, y, z)) * scale
 
 # Easy syntax for generating matrix identity
 # Defaults to 2D identity matrix
