@@ -49,10 +49,13 @@ def wobble_square(pixels=2, dim=2):
 
 # Plot a dot (small circle) for each fractal piece
 # Optional parameter expand_factor is to fine-tune control of dot size
-def plot_dot(expand_factor=1, wobble_fn=None):
+def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     def result_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+        if not offset_vect is None:
+            mx = piece.get_mx()
+            piece_vect = piece_vect + mx @ offset_vect
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
         dot_radius = expand_factor * piece.get_radius()
         drawing.add_point(pos, colour, dot_radius)
