@@ -13,10 +13,14 @@ def np_dim(np_obj):
 def metric_matrix_rms(mx):
     return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
 
-# Find a metric for matrix which is the minimum absolute value of the eigenvalues for this matrix
+# Construct metric for matrix using absolute values of the eigenvalues
 # Identity matrix in 2D or 3D has metric 1
+# Metric using minimum
 def metric_matrix_min_eig_val(mx):
     return min(abs(np.linalg.eig(mx)[0]))
+# Metric using maximum
+def metric_matrix_max_eig_val(mx):
+    return max(abs(np.linalg.eig(mx)[0]))
 
 # Angle calculator for matrices in O(2) (symmetries of a 2D circle)
 # Find angle of vect(1, 0) under transformation by mx
