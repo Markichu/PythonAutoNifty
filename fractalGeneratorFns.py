@@ -14,11 +14,12 @@ def defngen_rand_small_squares(id, m, n):
     sc = 1 / n
     def callback():
         children = []
-        for x in range(n):
-            for y in range(n):
-                x0 = 2*x - (n-1)
-                y0 = 2*y - (n-1)
-                children.append(FractalPiece(id, vect(x0, y0, scale=sc), mx_scale(sc)))
+        n0 = n - 1
+        for x0 in range(n):
+            for y0 in range(n):
+                x1 = 2 * x0 - n0
+                y1 = 2 * y0 - n0
+                children.append(FractalPiece(id, vect(x1, y1, scale=sc), mx_scale(sc)))
         return random.sample(children, m)
     return callback
 
