@@ -1,4 +1,4 @@
-from numpyHelperFns import metric_matrix_rms
+from numpyHelperFns import metric_matrix_min_eig_val
 
 
 class FractalPiece:
@@ -27,7 +27,7 @@ class FractalPiece:
         return self._get_instance_var(self.mx)
 
     def get_radius(self):
-        return metric_matrix_rms(self.get_mx())
+        return metric_matrix_min_eig_val(self.get_mx())
 
     def __repr__(self):
         id = "function" if callable(self.id) else self.id
