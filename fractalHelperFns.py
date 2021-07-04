@@ -5,7 +5,7 @@ from Pos import Pos
 from FractalPiece import FractalPiece
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import metric_matrix_rms, vect, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import metric_matrix_min_eig_val, vect, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------
@@ -103,7 +103,7 @@ def colour_by_progress(colour_list):
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm_to_num_fn(vect, matrix) should output a number
-def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
+def colour_by_tsfm(min_val, max_val, colour_list, tsfm_to_num_fn):
     def result_fn(piece, progress):
         if not callable(tsfm_to_num_fn):
             return BLACK
@@ -115,9 +115,9 @@ def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm_to_num_fn(vect, matrix) should output a number
-def colour_by_log2_size(min_val, max_val, colour_list):
-    fn = lambda vect, mx: math.log(metric_matrix_rms(mx), 2)
-    return colour_by_tsfm(min_val, max_val, fn, colour_list)
+def colour_by_log2_size(min_val, max_val, colour_list, metric=metric_matrix_min_eig_val):
+    fn = lambda vect, mx: math.log(metric(mx), 2)
+    return colour_by_tsfm(min_val, max_val, colour_list, fn)
 
 
 # -------------------------------------
