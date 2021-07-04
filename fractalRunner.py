@@ -1,9 +1,9 @@
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
-from constants import DRAWING_SIZE, BLACK, BLUE, LIGHT_BLUE, RED, GREEN, YELLOW, CYAN, MAGENTA, ORANGE, LIGHT_GREEN, SPRING_GREEN, PURPLE, PINK
+from constants import DRAWING_SIZE, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import mx_angle, vect, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
-from fractalHelperFns import colour_by_log2_size, grid_generator, wobble_square, plot_dot, plot_path, colour_by_progress, colour_by_tsfm,\
-    defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, plot_dot, plot_path, grid_generator, wobble_square
+from fractalGeneratorFns import defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
 def fractalRunner(drawing):
@@ -54,7 +54,7 @@ def fractalRunner(drawing):
     fp = fd.plotter
     fp.draws = False  # specify to prevent drawing
     # if it did draw, it would use default plotting function `plot_dot`
-    fp.colouring_fn = colour_by_progress([RED])  # if it did draw, it would be a red dot
+    fp.colouring_fn = colour_by_progress(colours=[RED])  # if it did draw, it would be a red dot
 
     # Definition #1 - identity fractal (doesn't change upon iteration)
     id = 1
@@ -63,7 +63,7 @@ def fractalRunner(drawing):
     fd.iterates = False  # specify to prevent further calculation of iterations
     fp = fd.plotter
     fp.draws = False
-    fp.colouring_fn = colour_by_progress([LIGHT_GREEN])
+    fp.colouring_fn = colour_by_progress(colours=[LIGHT_GREEN])
 
     # Definition #2 - use as wrapper to display 1 or more other fractals
     id = 2
@@ -97,7 +97,7 @@ def fractalRunner(drawing):
     # Set up plotter
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
-    fp.colouring_fn = colour_by_tsfm(-150, 150, x_minus_y, [RED, BLACK])
+    fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
     fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
 
     # Definition #4 - demo of random square matrix transformations
@@ -112,7 +112,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id, grid(1, 1), mxgen_rand_sq(scale=sc**1.7)))
     # Set up plotter
     fp = fd.plotter
-    fp.colouring_fn = colour_by_log2_size(2, 3, [GREEN, BLUE])
+    fp.colouring_fn = colour_by_log2_size(2, 3, colours=[GREEN, BLUE])
     fp.plotting_fn = plot_path(
         closed=True,
         width=2,
@@ -139,7 +139,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id_callback, vect(0, 0) * sc, mx_callback))
     # Set up plotter
     fp = fd.plotter
-    fp.colouring_fn = colour_by_progress([BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
+    fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
     fp.plotting_fn = plot_dot(expand_factor=0.65)  # make dots distinct
 
     # Definition #6 - demo of random vector shift
@@ -152,7 +152,7 @@ def fractalRunner(drawing):
     # Set up plotter
     fp = fd.plotter
     distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
-    fp.colouring_fn = colour_by_tsfm(50, 250, distance_from_700_700, [MAGENTA, YELLOW, CYAN])
+    fp.colouring_fn = colour_by_tsfm(50, 250, tsfm=distance_from_700_700, colours=[MAGENTA, YELLOW, CYAN])
     fp.plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
 
     # Definition #7 - Dragon curve
@@ -164,7 +164,7 @@ def fractalRunner(drawing):
     # Set up plotter
     fp = fd.plotter
     piece_angle = lambda vect, mx: mx_angle(mx)
-    fp.colouring_fn = colour_by_tsfm(-90, 270, piece_angle, [RED, YELLOW, GREEN, BLUE])
+    fp.colouring_fn = colour_by_tsfm(-90, 270, tsfm=piece_angle, colours=[RED, YELLOW, GREEN, BLUE])
     fp.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
 
     # Definition #8 - Random Sierpinski Carpet - 7 out of 9 little squares, in 3x3 big square
@@ -173,7 +173,7 @@ def fractalRunner(drawing):
     fd.children = defngen_rand_small_squares(id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
     fp = fd.plotter
     distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
-    fp.colouring_fn = colour_by_tsfm(450, 700, distance_from_origin, [BLACK, RED, BLUE])
+    fp.colouring_fn = colour_by_tsfm(450, 700, tsfm=distance_from_origin, colours=[BLACK, RED, BLUE])
     fp.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
     # --------------------
