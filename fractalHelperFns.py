@@ -2,10 +2,9 @@ import math
 import random
 
 from Pos import Pos
-from FractalPiece import FractalPiece
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import array_rms_metric, vect, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from numpyHelperFns import metric_matrix_min_eig_val, vect
 
 
 # -------------------------------------
@@ -19,14 +18,26 @@ def get_canvas_pos_from_vect(vect):
 # Get an interpolated colour using:
 # - a list of colours,
 # - a progress factor between 0 and 1 representing how far we are through the list
-def get_colour(colour_list, progress, alpha=1):
-    max_prog = len(colour_list) - 1
+def get_colour(colours, progress, alpha=1):
+    max_prog = len(colours) - 1
     prog2 = max(0, min(max_prog, progress * max_prog))
     prog_rem = prog2 - math.floor(prog2)
-    colour_start = colour_list[math.floor(prog2)]
-    colour_end = colour_list[math.ceil(prog2)]
+    colour_start = colours[math.floor(prog2)]
+    colour_end = colours[math.ceil(prog2)]
     colour_this = interpolate_colour(colour_start, colour_end, prog_rem, alpha)
     return colour_this
+
+
+# -------------------------------------
+# Metrics for Fractal Pieces
+# Currently using only the matrix, but could depend on many things,
+# such as minimum diameter of convex hull after shear/stretching
+
+# Use the minimum eigenvalue of the matrix
+def metric_piece_min_eig():
+    def callback(piece):
+        return metric_matrix_min_eig_val(piece.get_mx())
+    return callback
 
 
 # -------------------------------------
@@ -36,10 +47,10 @@ def get_colour(colour_list, progress, alpha=1):
 def wobble_square(pixels=2, dim=2):
     def get_rand_unif():
         return random.uniform(-0.5 * pixels, 0.5 * pixels)
-    def result_fn():
+    def callback():
         x, y, z = get_rand_unif(), get_rand_unif(), get_rand_unif()
         return vect(x, y, z) if dim == 3 else vect(x, y)
-    return result_fn
+    return callback
 
 # TODO: 2D circle uniform, 3D sphere uniform, 2D concentrated at centre, etc
 
@@ -65,20 +76,20 @@ def grid_generator(x_steps, y_steps, x_min, y_min, x_max, y_max):
 # Plot a dot (small circle) for each fractal piece
 # Optional parameter expand_factor is to fine-tune control of dot size
 def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
-    def result_fn(drawing, piece, colour=BLACK):
+    def callback(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         if not offset_vect is None:
             mx = piece.get_mx()
             piece_vect = piece_vect + mx @ offset_vect
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
-        dot_radius = expand_factor * piece.get_radius()
+        dot_radius = expand_factor * piece.get_metric()
         drawing.add_point(pos, colour, dot_radius)
-    return result_fn
+    return callback
 
 # Plot a path (series of line segments) for each fractal piece
 def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None):
-    def result_fn(drawing, piece, colour=BLACK):
+    def callback(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
         pos_list = []
@@ -89,35 +100,34 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
         if closed:
             pos_list.append(pos_list[0])
         drawing.add_line(pos_list, colour, width)
-    return result_fn
+    return callback
 
 
 # -------------------------------------
 # Colouring functions
 
 # Colour by progress through list from FractalSystem
-def colour_by_progress(colour_list):
-    def result_fn(piece, progress):
-        return get_colour(colour_list, progress)
-    return result_fn
+def colour_by_progress(colours):
+    def callback(piece, progress):
+        return get_colour(colours, progress)
+    return callback
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
-# tsfm_to_num_fn(vect, matrix) should output a number
-def colour_by_tsfm(min_val, max_val, tsfm_to_num_fn, colour_list):
-    def result_fn(piece, progress):
-        if not callable(tsfm_to_num_fn):
+# tsfm(vect, matrix) should output a number
+def colour_by_tsfm(min_val, max_val, colours, tsfm):
+    def callback(piece, progress):
+        if not callable(tsfm):
             return BLACK
-        # this_val = min(max_val, max(min_val, tsfm_to_num_fn(piece.get_vect(), piece.get_mx())))
-        this_val = tsfm_to_num_fn(piece.get_vect(), piece.get_mx())
-        this_tsfm_progress = (this_val - min_val) / (max_val - min_val)
-        return get_colour(colour_list, this_tsfm_progress)
-    return result_fn
+        this_val = tsfm(piece.get_vect(), piece.get_mx())
+        tsfm_progress = (this_val - min_val) / (max_val - min_val)
+        return get_colour(colours, tsfm_progress)
+    return callback
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
-# tsfm_to_num_fn(vect, matrix) should output a number
-def colour_by_log2_size(min_val, max_val, colour_list):
-    fn = lambda vect, mx: math.log(array_rms_metric(mx), 2)
-    return colour_by_tsfm(min_val, max_val, fn, colour_list)
+# metric(matrix) should output a number
+def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val):
+    fn = lambda vect, mx: math.log(metric(mx), 2)
+    return colour_by_tsfm(min_val, max_val, colours, fn)
 
 
 # -------------------------------------
@@ -127,15 +137,19 @@ def colour_by_log2_size(min_val, max_val, colour_list):
 
 # Sort pieces randomly
 def sort_randomly():
-    def result_fn(piece):
+    def callback(piece):
         return random.random()
-    return result_fn
+    return callback
     
 # Sort by function of the piece's affine transformation (vector, matrix)
-def sort_by_tsfm(tsfm_to_num_fn):
-    def result_fn(piece):
-        return tsfm_to_num_fn(piece.get_vect(), piece.get_mx())
-    return result_fn
+# Random factor is optional
+def sort_by_tsfm(tsfm, rand=False):
+    def callback(piece):
+        random_factor, main_factor = 0, tsfm(piece.get_vect(), piece.get_mx())
+        if rand:
+            random_factor = random.random()
+        return main_factor + random_factor
+    return callback
     
 # Sort by z-coordinate (reversed), e.g. for 3D fractals
 def sort_by_z():
@@ -143,103 +157,5 @@ def sort_by_z():
     
 # Sort by size
 def sort_by_size():
-    return sort_by_tsfm(lambda vect, mx: -array_rms_metric(mx))
+    return sort_by_tsfm(lambda vect, mx: -metric_matrix_min_eig_val(mx))
     
-
-# -------------------------------------
-# Methods to calculate callback for children on fractal definitions
-
-# For a square [-1, 1] x [-1, 1]
-# split it into n^2 tiles (nxn)
-# and then keep m out of n^2 at random
-def defngen_rand_small_squares(id, m, n):
-    sc = 1 / n
-    def callback():
-        children = []
-        for x in range(n):
-            for y in range(n):
-                x0 = 2*x - (n-1)
-                y0 = 2*y - (n-1)
-                children.append(FractalPiece(id, vect(x0, y0, scale=sc), mx_scale(sc)))
-        return random.sample(children, m)
-    return callback
-
-
-# -------------------------------------
-# Methods to calculate a random id
-
-# Select an id at random from a list, equal weights
-def idgen_rand(list_of_ids):
-    def callback():
-        return random.choice(list_of_ids)
-    return callback
-
-
-# -------------------------------------
-# 2D or 3D methods to calculate a random vector
-
-# Calculate a random continuous 2D or 3D vector in (x1, x2) x (y1, y2) [x (z1, z2)]
-# Example: vectgen_rand([1, 2], [3, 4], [5, 6])
-def vectgen_rand(x_range, y_range, z_range=None):
-    def callback():
-        x = random.uniform(x_range[0], x_range[1])
-        y = random.uniform(y_range[0], y_range[1])
-        if z_range is None:
-            return vect(x, y)
-        z = random.uniform(z_range[0], z_range[1])
-        return vect(x, y, z)
-    return callback
-
-
-# -------------------------------------
-# 2D methods to calculate a random matrix
-
-# Any rotation or reflection in the circle
-def mxgen_rand_circ(scale=1, reflect=True):
-    def callback():
-        mx = mx_rotd(
-            angle=random.uniform(0, 360),
-            scale=scale
-        )
-        if reflect and (random.random() < 0.5):
-            mx = mx @ mx_refl_X()
-        return mx
-    return callback
-
-# Any rotation or reflection in a square with a flat edge down
-def mxgen_rand_sq(scale=1, reflect=True):
-    max_num = 4
-    if reflect:
-        max_num = 8
-    def callback():
-        return mx_sq(
-            num=random.randint(1, max_num),
-            scale=scale
-        )
-    return callback
-
-# Any rotation or reflection in a triangle with a flat edge down
-def mxgen_rand_tri(scale=1, reflect=True):
-    max_num = 3
-    if reflect:
-        max_num = 6
-    def callback():
-        return mx_dh(
-            sides=3,
-            num=random.randint(1, max_num),
-            scale=scale
-        )
-    return callback
-
-# Any rotation or reflection in a <sides>-sided polygon with a flat edge down
-def mxgen_rand_dihedral(sides, scale=1, reflect=True):
-    max_num = sides
-    if reflect:
-        max_num = sides * 2
-    def callback():
-        return mx_dh(
-            sides=sides,
-            num=random.randint(1, max_num),
-            scale=scale
-        )
-    return callback

@@ -47,11 +47,11 @@ class FractalSystem:
             this_id = this_piece.get_id()
             this_vect = this_piece.get_vect()
             this_mx = this_piece.get_mx()
-            this_radius = this_piece.get_radius()
+            this_metric = this_piece.get_metric()
             if self.is_id_valid(this_id):
                 this_defn = self.defns[this_id]
                 does_not_iterate = not this_defn.iterates
-                this_size_px = this_defn.relative_size * this_radius
+                this_size_px = this_defn.relative_size * this_metric
                 if this_size_px <= self.min_radius or self.max_pieces < counter or does_not_iterate:
                     next_iterated_pieces.append(this_piece)
                 else:
