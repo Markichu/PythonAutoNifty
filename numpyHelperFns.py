@@ -8,6 +8,17 @@ import numpy as np
 def np_dim(np_obj):
     return np_obj.shape[0]
 
+# Easy syntax for generating 2D or 3D vectors
+def vect(x=0, y=0, z=None, scale=1):
+    if z is None:
+        return np.array((x, y)) * scale
+    return np.array((x, y, z)) * scale
+
+# Find length of vector (using RMS of vector entries, e.g. Pythagoras's theorem)
+# Unit vectors in 2D or 3D have metric 1
+def vect_len(vect):
+    return np.sum(vect * vect) ** 0.5
+
 # Find a metric for matrix using square root of sum of squares of matrix entries
 # Identity matrix in 2D or 3D has metric 1
 def metric_matrix_rms(mx):
@@ -31,12 +42,6 @@ def mx_angle(mx):
     deg_from_sign = 180 if x < 0 else 0
     deg_from_angle = 90 if y==0 else np.degrees(np.arctan(x/y))
     return deg_from_sign + deg_from_angle
-
-# Easy syntax for generating 2D or 3D vectors
-def vect(x=0, y=0, z=None, scale=1):
-    if z is None:
-        return np.array((x, y)) * scale
-    return np.array((x, y, z)) * scale
 
 # Easy syntax for generating matrix identity
 # Defaults to 2D identity matrix

@@ -142,9 +142,13 @@ def sort_randomly():
     return callback
     
 # Sort by function of the piece's affine transformation (vector, matrix)
-def sort_by_tsfm(tsfm_to_num_fn):
+# Random factor is optional
+def sort_by_tsfm(tsfm, rand=False):
     def callback(piece):
-        return tsfm_to_num_fn(piece.get_vect(), piece.get_mx())
+        random_factor, main_factor = 0, tsfm(piece.get_vect(), piece.get_mx())
+        if rand:
+            random_factor = random.random()
+        return main_factor + random_factor
     return callback
     
 # Sort by z-coordinate (reversed), e.g. for 3D fractals
