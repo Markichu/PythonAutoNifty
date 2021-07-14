@@ -19,6 +19,11 @@ def vect(x=0, y=0, z=None, scale=1):
 def vect_len(vect):
     return np.sum(vect * vect) ** 0.5
 
+# Find a metric for matrix using length of transformation of x-coord (1, 0)
+# Currently 2D only
+def metric_matrix_x_coord(mx):
+    return (mx[0][0]**2 + mx[1][0]**2) ** 0.5
+
 # Find a metric for matrix using square root of sum of squares of matrix entries
 # Identity matrix in 2D or 3D has metric 1
 def metric_matrix_rms(mx):
@@ -32,6 +37,10 @@ def metric_matrix_min_eig_val(mx):
 # Metric using maximum
 def metric_matrix_max_eig_val(mx):
     return max(abs(np.linalg.eig(mx)[0]))
+# Metric using ratio of max/min
+def metric_matrix_ratio_eig_val(mx):
+    result = abs(np.linalg.eig(mx)[0])  # Save the intermediate calculation
+    return max(result)/min(result)
 
 # Angle calculator for matrices in O(2) (symmetries of a 2D circle)
 # Find angle of vect(1, 0) under transformation by mx

@@ -4,7 +4,7 @@ import random
 from Pos import Pos
 from constants import DRAWING_SIZE, BLACK
 from helperFns import interpolate_colour
-from numpyHelperFns import metric_matrix_min_eig_val, vect
+from numpyHelperFns import metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord, vect
 
 
 # -------------------------------------
@@ -30,14 +30,30 @@ def get_colour(colours, progress, alpha=1):
 
 # -------------------------------------
 # Metrics for Fractal Pieces
-# Currently using only the matrix, but could depend on many things,
+# Default metric is set on the FractalSystem
+# Can override for any particular FractalDefn
+# Currently using only the piece's matrix, but could depend on many things,
 # such as minimum diameter of convex hull after shear/stretching
 
 # Use the minimum eigenvalue of the matrix
-def metric_piece_min_eig():
+def get_metric_fn_piece_min_eig():
     def callback(piece):
         return metric_matrix_min_eig_val(piece.get_mx())
     return callback
+
+# Use the RMS of the matrix entries
+def get_metric_fn_piece_rms():
+    def callback(piece):
+        return metric_matrix_rms(piece.get_mx())
+    return callback
+
+# Use the length of x-coord (1, 0) under mx transformation, e.g. for line fractals
+def get_metric_fn_piece_x_coord():
+    def callback(piece):
+        return metric_matrix_x_coord(piece.get_mx())
+    return callback
+
+DEFAULT_METRIC_FN = get_metric_fn_piece_min_eig()
 
 
 # -------------------------------------
