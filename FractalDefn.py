@@ -21,6 +21,9 @@ class FractalDefn:
     def get_plotter(self):
         return self.plotter
 
+    def set_plotter(self, plotter):
+        self.plotter = plotter
+
     def get_system(self):
         return self.system
 
