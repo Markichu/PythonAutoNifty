@@ -23,12 +23,14 @@ class FractalDefn:
 
     def set_plotter(self, plotter):
         self.plotter = plotter
+        return self
 
     def get_system(self):
         return self.system
 
     def set_system(self, system):
         self.system = system
+        return self
 
     def add_child(self, fractal_piece):
         if isinstance(fractal_piece, FractalPiece):
