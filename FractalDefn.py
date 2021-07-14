@@ -35,6 +35,12 @@ class FractalDefn:
     def get_metric_fn(self):
         return self.get_system().get_metric_fn() if self.metric_fn is None else self.metric_fn
 
+    def set_metric_fn(self, metric_fn=None):
+        # metric_fn should be a function that maps from FractalPieces to numeric
+        # Supply no argument to clear this metric function, and use the default in the system
+        self.metric_fn = metric_fn
+        return self
+
     def get_plotter(self):
         return self.plotter
 

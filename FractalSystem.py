@@ -25,6 +25,11 @@ class FractalSystem:
     def get_metric_fn(self):
         return self.metric_fn
 
+    def set_metric_fn(self, metric_fn):
+        # metric_fn should be a function that maps from FractalPieces to numeric
+        self.metric_fn = metric_fn
+        return self
+
     def is_id_valid(self, id):
         if isinstance(id, int):
             if id >= 0 and id < len(self.defns):
