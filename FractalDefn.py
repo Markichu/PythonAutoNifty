@@ -5,9 +5,9 @@ from FractalPiece import FractalPiece
 class FractalDefn:
     def __init__(self, system=None):
         self.iterates = True  # if False, do not iterate the FractalPiece further
-        self.children = []  # Either a list, or a function that evaluates to a list
-        self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
         self.system = system  # the FractalSystem this FractalDefn is contained within
+        self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
+        self.children = []  # Either a list, or a function that evaluates to a list
 
         # How big is this definition?
         self.relative_size = 1
@@ -15,8 +15,12 @@ class FractalDefn:
         # either definition occupies circle of radius n,
         # or definition occupies square of size [-n, n] x [-n, n]
     
-    def get_children(self):
-        return self.children() if callable(self.children) else self.children
+    def get_system(self):
+        return self.system
+
+    def set_system(self, system):
+        self.system = system
+        return self
 
     def get_plotter(self):
         return self.plotter
@@ -25,12 +29,8 @@ class FractalDefn:
         self.plotter = plotter
         return self
 
-    def get_system(self):
-        return self.system
-
-    def set_system(self, system):
-        self.system = system
-        return self
+    def get_children(self):
+        return self.children() if callable(self.children) else self.children
 
     def add_child(self, fractal_piece):
         if isinstance(fractal_piece, FractalPiece):
