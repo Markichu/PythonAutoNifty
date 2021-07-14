@@ -61,7 +61,7 @@ def fractalRunner(drawing):
     id = 1
     fd = fs.defns[id]
     fd.add_child(FractalPiece(id, vect(0, 0), mx_id()))  # this is the identity. Not actually used, since iteration prevented.
-    fd.iterates = False  # specify to prevent further calculation of iterations
+    fd.set_iterates(False)  # specify to prevent further calculation of iterations
     fp = fd.get_plotter()
     fp.draws = False
     fp.colouring_fn = colour_by_progress(colours=[LIGHT_GREEN])
@@ -94,7 +94,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id, grid(0, 1), mx_scale(sc)))
     fd.add_child(FractalPiece(id, grid(1, 0), mx_sq(num=1, scale=sc)))
     fd.relative_size = 1  # this controls size vs min_radius during calculation; fractal occupies [-1, 1] x [-1, 1] so "radius" = 1
-    fd.iterates = True  # this is default value, so this line is optional
+    fd.set_iterates(True)  # this is default value, so this line is optional
     # Set up plotter
     fp = fd.get_plotter()
     x_minus_y = lambda vect, mx: vect[0] - vect[1]

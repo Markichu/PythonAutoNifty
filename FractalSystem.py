@@ -54,7 +54,7 @@ class FractalSystem:
             this_metric = this_piece.get_metric()
             if self.is_id_valid(this_id):
                 this_defn = self.defns[this_id]
-                does_not_iterate = not this_defn.iterates
+                does_not_iterate = not this_defn.get_iterates()
                 this_size_px = this_defn.relative_size * this_metric
                 if this_size_px <= self.min_radius or self.max_pieces < counter or does_not_iterate:
                     next_iterated_pieces.append(this_piece)
