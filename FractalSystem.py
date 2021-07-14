@@ -22,13 +22,17 @@ class FractalSystem:
 
     def add_defn(self, fractal_defn):
         self.defns.append(fractal_defn)
+        # Make sure that definition is linked to this Fractal System,
+        # overwriting any previous link
+        if fractal_defn.get_system() != self:
+            fractal_defn.set_system(self)
         return self
         
     def make_defns(self, n):
         if isinstance(n, int):
             if n > 0 and n <= self.max_defns:
                 for i in range(0, n):
-                    self.add_defn(FractalDefn())
+                    self.add_defn(FractalDefn(system=self))
         return self
 
     def do_iterations(self):
