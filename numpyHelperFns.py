@@ -32,6 +32,10 @@ def metric_matrix_min_eig_val(mx):
 # Metric using maximum
 def metric_matrix_max_eig_val(mx):
     return max(abs(np.linalg.eig(mx)[0]))
+# Metric using ratio of max/min
+def metric_matrix_ratio_eig_val(mx):
+    result = abs(np.linalg.eig(mx)[0])  # Save the intermediate calculation
+    return max(result)/min(result)
 
 # Angle calculator for matrices in O(2) (symmetries of a 2D circle)
 # Find angle of vect(1, 0) under transformation by mx
