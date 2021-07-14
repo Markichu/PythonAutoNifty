@@ -36,24 +36,24 @@ def get_colour(colours, progress, alpha=1):
 # such as minimum diameter of convex hull after shear/stretching
 
 # Use the minimum eigenvalue of the matrix
-def metric_piece_min_eig():
+def get_metric_fn_piece_min_eig():
     def callback(piece):
         return metric_matrix_min_eig_val(piece.get_mx())
     return callback
 
 # Use the RMS of the matrix entries
-def metric_piece_rms():
+def get_metric_fn_piece_rms():
     def callback(piece):
         return metric_matrix_rms(piece.get_mx())
     return callback
 
-# Use the length of x-coord (1, 0) under mx transformation
-def metric_piece_x_coord():
+# Use the length of x-coord (1, 0) under mx transformation, e.g. for line fractals
+def get_metric_fn_piece_x_coord():
     def callback(piece):
         return metric_matrix_x_coord(piece.get_mx())
     return callback
 
-DEFAULT_METRIC_FN = metric_piece_min_eig()
+DEFAULT_METRIC_FN = get_metric_fn_piece_min_eig()
 
 
 # -------------------------------------
