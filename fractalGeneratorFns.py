@@ -10,7 +10,7 @@ from numpyHelperFns import vect, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
 # For a square [-1, 1] x [-1, 1]
 # split it into n^2 tiles (nxn)
 # and then keep m out of n^2 at random
-def defngen_rand_small_squares(id, m, n):
+def defngen_rand_small_squares(system, id, m, n):
     sc = 1 / n
     def callback():
         children = []
@@ -19,7 +19,8 @@ def defngen_rand_small_squares(id, m, n):
             for y0 in range(n):
                 x1 = 2 * x0 - n0
                 y1 = 2 * y0 - n0
-                children.append(FractalPiece(id, vect(x1, y1, scale=sc), mx_scale(sc)))
+                piece = FractalPiece(system=system, id=id, vect=vect(x1, y1, scale=sc), mx=mx_scale(sc))
+                children.append(piece)
         return random.sample(children, m)
     return callback
 

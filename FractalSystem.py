@@ -1,6 +1,7 @@
 from FractalDefn import FractalDefn
 from FractalPiece import FractalPiece
 from fractalConstants import DEFAULT_MAX_ITERATIONS, DEFAULT_MIN_RADIUS, DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
+from fractalHelperFns import DEFAULT_METRIC_FN
 
 
 class FractalSystem:
@@ -10,10 +11,20 @@ class FractalSystem:
         self.min_radius = min_radius
         self.max_pieces = max_pieces
         self.max_defns = DEFAULT_MAX_DEFNS
+        self.metric_fn = DEFAULT_METRIC_FN  # Function from piece to number (metric, radius, size). Can override on the definition.
         self.initial_pieces = []  # Set this one to a list of Fractal Pieces
         self.iterated_pieces = []  # Do not set this one, call fs.do_iterations() to generate it automatically
         self.piece_sorter = None
+
+    def is_fractal_system(self):
+        return True
     
+    def get_defn(self, id):
+        return self.defns[id]
+
+    def get_metric_fn(self):
+        return self.metric_fn
+
     def is_id_valid(self, id):
         if isinstance(id, int):
             if id >= 0 and id < len(self.defns):
@@ -53,7 +64,7 @@ class FractalSystem:
             this_mx = this_piece.get_mx()
             this_metric = this_piece.get_metric()
             if self.is_id_valid(this_id):
-                this_defn = self.defns[this_id]
+                this_defn = self.get_defn(this_id)
                 does_not_iterate = not this_defn.get_iterates()
                 this_size_px = this_defn.relative_size * this_metric
                 if this_size_px <= self.min_radius or self.max_pieces < counter or does_not_iterate:
@@ -64,7 +75,10 @@ class FractalSystem:
                         child_id = child_piece.get_id()
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()
-                        next_iterated_pieces.append(FractalPiece(child_id, this_vect + this_mx @ child_vect, this_mx @ child_mx))
+                        next_vect = this_vect + this_mx @ child_vect
+                        next_mx = this_mx @ child_mx
+                        next_piece = FractalPiece(system=self, id=child_id, vect=next_vect, mx=next_mx)
+                        next_iterated_pieces.append(next_piece)
         if self.max_pieces < counter:
             iteration_finished = True
             print("Warning - max pieces exceeded")
@@ -81,7 +95,7 @@ class FractalSystem:
             pieces_to_plot.sort(key=self.piece_sorter)
         progress_counter = 0
         for piece_to_plot in pieces_to_plot:
-            plotter = self.defns[piece_to_plot.id].get_plotter()
+            plotter = self.get_defn(piece_to_plot.id).get_plotter()
             plotter.plot(piece_to_plot, drawing, progress_counter, total_pieces)
             progress_counter += 1
 

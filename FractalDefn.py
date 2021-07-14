@@ -3,9 +3,10 @@ from FractalPiece import FractalPiece
 
 
 class FractalDefn:
-    def __init__(self, system=None):
+    def __init__(self, system=None, metric_fn=None):
         self.iterates = True  # Either a Boolean, or a function that evaluates to a Boolean; if False, do not iterate the FractalPiece further
         self.system = system  # the FractalSystem this FractalDefn is contained within
+        self.metric_fn = metric_fn  # Use this to override the metric function set at system level
         self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
         self.children = []  # Either a list, or a function that evaluates to a list
 
@@ -31,6 +32,9 @@ class FractalDefn:
         self.system = system
         return self
 
+    def get_metric_fn(self):
+        return self.get_system().get_metric_fn() if self.metric_fn is None else self.metric_fn
+
     def get_plotter(self):
         return self.plotter
 
@@ -42,13 +46,12 @@ class FractalDefn:
     def get_children(self):
         return self.children() if callable(self.children) else self.children
 
-    def add_child(self, fractal_piece):
-        # fractal_piece should be a FractalPiece
-        if isinstance(fractal_piece, FractalPiece):
-            if callable(self.children):
-                # If self.children is a function, remove the function and replace by list
-                self.children = []
-            self.children.append(fractal_piece)
+    def create_child(self, id, vect, mx):
+        piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx)
+        if callable(self.children):
+            # If self.children is a function, remove the function and replace by list
+            self.children = []
+        self.children.append(piece)
         return self
 
     def __repr__(self):
