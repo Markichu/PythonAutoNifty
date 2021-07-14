@@ -52,7 +52,7 @@ def fractalRunner(drawing):
     id = 0
     fd = fs.defns[id]
     # no children, iterates to nothing
-    fp = fd.plotter
+    fp = fd.get_plotter()
     fp.draws = False  # specify to prevent drawing
     # if it did draw, it would use default plotting function `plot_dot`
     fp.colouring_fn = colour_by_progress(colours=[RED])  # if it did draw, it would be a red dot
@@ -62,7 +62,7 @@ def fractalRunner(drawing):
     fd = fs.defns[id]
     fd.add_child(FractalPiece(id, vect(0, 0), mx_id()))  # this is the identity. Not actually used, since iteration prevented.
     fd.iterates = False  # specify to prevent further calculation of iterations
-    fp = fd.plotter
+    fp = fd.get_plotter()
     fp.draws = False
     fp.colouring_fn = colour_by_progress(colours=[LIGHT_GREEN])
 
@@ -96,7 +96,7 @@ def fractalRunner(drawing):
     fd.relative_size = 1  # this controls size vs min_radius during calculation; fractal occupies [-1, 1] x [-1, 1] so "radius" = 1
     fd.iterates = True  # this is default value, so this line is optional
     # Set up plotter
-    fp = fd.plotter
+    fp = fd.get_plotter()
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
     fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
@@ -112,7 +112,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id, grid(0, 1), mxgen_rand_sq(scale=sc**1.3)))
     fd.add_child(FractalPiece(id, grid(1, 1), mxgen_rand_sq(scale=sc**1.7)))
     # Set up plotter
-    fp = fd.plotter
+    fp = fd.get_plotter()
     fp.colouring_fn = colour_by_log2_size(2, 3, colours=[GREEN, BLUE])
     fp.plotting_fn = plot_path(
         closed=True,
@@ -139,7 +139,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id_callback, vect(1, -h) * sc, mx_callback))
     fd.add_child(FractalPiece(id_callback, vect(0, 0) * sc, mx_callback))
     # Set up plotter
-    fp = fd.plotter
+    fp = fd.get_plotter()
     fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
     fp.plotting_fn = plot_dot(expand_factor=0.65)  # make dots distinct
 
@@ -151,7 +151,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id, vect(1, -1) * sc, mx_diag(sc, sc)))
     fd.add_child(FractalPiece(id, vectgen_rand([-sc, sc], [sc, sc]), mx_scale(sc)))
     # Set up plotter
-    fp = fd.plotter
+    fp = fd.get_plotter()
     distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(50, 250, tsfm=distance_from_700_700, colours=[MAGENTA, YELLOW, CYAN])
     fp.plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
@@ -163,7 +163,7 @@ def fractalRunner(drawing):
     fd.add_child(FractalPiece(id, vect(-0.5, 0.5), mx_rotd(angle=-45, scale=sc)))
     fd.add_child(FractalPiece(id, vect(0.5, 0.5), mx_rotd(angle=-135, scale=sc)))
     # Set up plotter
-    fp = fd.plotter
+    fp = fd.get_plotter()
     piece_angle = lambda vect, mx: mx_angle(mx)
     fp.colouring_fn = colour_by_tsfm(-90, 270, tsfm=piece_angle, colours=[RED, YELLOW, GREEN, BLUE])
     fp.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
@@ -172,7 +172,7 @@ def fractalRunner(drawing):
     idr = 8
     fd = fs.defns[idr]
     fd.children = defngen_rand_small_squares(id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
-    fp = fd.plotter
+    fp = fd.get_plotter()
     distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(450, 700, tsfm=distance_from_origin, colours=[BLACK, RED, BLUE])
     fp.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])

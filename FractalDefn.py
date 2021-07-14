@@ -18,6 +18,9 @@ class FractalDefn:
     def get_children(self):
         return self.children() if callable(self.children) else self.children
 
+    def get_plotter(self):
+        return self.plotter
+
     def get_system(self):
         return self.system
 
