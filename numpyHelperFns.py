@@ -14,10 +14,12 @@ def vect(x=0, y=0, z=None, scale=1):
         return np.array((x, y)) * scale
     return np.array((x, y, z)) * scale
 
-# Find length of vector (using RMS of vector entries, e.g. Pythagoras's theorem)
-# Unit vectors in 2D or 3D have metric 1
-def vect_len(vect):
-    return np.sum(vect * vect) ** 0.5
+# Find length of vector 
+# Default power = 2 has 'unit circle' as an actual circle, e.g. Euclidean geometry / Pythagoras' theorem
+# Other powers give different shapes of unit circle,
+# e.g. power = 0.5 gives a 4 pointed star, 1 gives a diamond, 4 for squircle, 10 is nearly a square
+def vect_len(vect, power=2):
+    return np.sum(abs(np.float_power(abs(vect), power))) ** (1/power)
 
 # Find a metric for matrix using length of transformation of x-coord (1, 0)
 # Currently 2D only
