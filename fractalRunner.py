@@ -1,6 +1,6 @@
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
-from constants import DRAWING_SIZE, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
+from constants import DRAWING_SIZE, WHITE, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, plot_dot, plot_path, grid_generator, wobble_square
 from fractalHelperFns import sort_by_tsfm
@@ -42,7 +42,10 @@ def fractalRunner(drawing):
     # Choose a sort order for final list of fractal pieces, which affects drawing order.
     # Examples:
     # fs.piece_sorter = sort_randomly()  # Draw in a random order
-    fs.piece_sorter = sort_by_tsfm(tsfm=lambda vect, mx: vect_len(init_vect-vect)/100, rand=True)  # Draw by distance from centre, with 100 pixel random boundary
+    sort_len = 100
+    sort_pow = 4
+    sort_vect = init_vect
+    fs.piece_sorter = sort_by_tsfm(tsfm=lambda vect, mx: vect_len(vect=vect-sort_vect, power=sort_pow)/sort_len, rand=True)  # Draw by distance from sort_vect, with sort_len pixel random boundary
     # fs.piece_sorter = sort_by_z()  # Draw from furthest back to furthest forward (3D only)
     # fs.piece_sorter = sort_by_size()  # Draw from largest at back, to smallest at front
     
