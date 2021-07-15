@@ -1,6 +1,6 @@
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
-from constants import DRAWING_SIZE, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
+from constants import DRAWING_SIZE, WHITE, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, plot_dot, plot_path, grid_generator, wobble_square
 from fractalHelperFns import sort_by_tsfm
