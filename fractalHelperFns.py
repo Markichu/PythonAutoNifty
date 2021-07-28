@@ -76,7 +76,7 @@ def wobble_square(pixels=2, dim=2):
 # x_max = 1
 # Then supply x_pos = 0, 1, 2, 3
 # Output is x_this = -0.75, -0.25, 0.25, 0.75
-def grid_generator(x_steps, y_steps, x_min, y_min, x_max, y_max):
+def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
     def grid(x_pos, y_pos):
         x_progress = (x_pos + 0.5) / x_steps
         y_progress = (y_pos + 0.5) / y_steps
