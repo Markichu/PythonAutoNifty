@@ -60,6 +60,14 @@ class FractalDefn:
         self.children.append(piece)
         return self
 
+    def count_children(self):
+        return 0 if callable(self.children) else len(self.children)
+
+    def remove_child(self, position):
+        if not callable(self.children):
+            self.children.pop(position)
+        return self
+
     def __repr__(self):
         result = "FD: ["
         first = True
