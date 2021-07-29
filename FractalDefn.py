@@ -9,7 +9,9 @@ class FractalDefn:
         self.system = system  # the FractalSystem this FractalDefn is contained within
         self.metric_fn = metric_fn  # Use this to override the metric function set at system level
         self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
-        self.children = []  # Either a list, or a function that evaluates to a list
+        self.children = []  # Either a list of FractalPieces, or a function that evaluates to a list of FractalPieces
+        self.hull = None  # Convex Hull; set of coordinates describing shape of definition at vector (0, 0), matrix ((1, 0), (0, 1))
+        self._next_hull = None  # Temporary variable for calculating next iteration of convex hull
 
         # How big is this definition?
         self.relative_size = 1
@@ -52,6 +54,9 @@ class FractalDefn:
 
     def get_children(self):
         return self.children() if callable(self.children) else self.children
+
+    def get_hull(self):
+        return self.hull
 
     def create_child(self, id, vect, mx):
         piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx)
