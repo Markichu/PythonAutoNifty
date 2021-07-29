@@ -1,6 +1,10 @@
+import numpy as np
+from scipy.spatial import ConvexHull
+
 from FractalDefn import FractalDefn
 from FractalPiece import FractalPiece
 from fractalConstants import DEFAULT_MAX_ITERATIONS, DEFAULT_MIN_RADIUS, DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
+from fractalConstants import DEFAULT_INITIAL_HULL, DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_HULL_MIN_LEN
 from fractalHelperFns import DEFAULT_METRIC_FN
 
 
@@ -49,6 +53,67 @@ class FractalSystem:
             if n > 0 and n <= self.max_defns:
                 for i in range(0, n):
                     self.add_defn(FractalDefn(system=self))
+        return self
+
+    # To make a convex hull
+    # 1. Start with any 2D shape (e.g. a triangle around the origin) for a hull for each definition
+    # 2. At each calculation iteration, for each definition, take union of previous hulls under fractal maps
+    # 3. Use a convex hull algorithm to remove all interior points
+    # 4. Replace previous hull points with new hull points, and iterate several times
+
+    # Note (*) - currently "vect" is actually not a column vector, but is a row coordinate
+    # which mean that premultiplying by matrix -> postmultiplying by matrix transpose
+    # (all the matrix arithmetic is backwards!)
+    # This probably ought to be fixed later on...
+
+    # Also note that for random fractals the hull will not converge so nicely
+    # This could be alleviated by using multiple (random) copies of the hull points at each stage
+
+    # Since the min_len introduces rounding into the coords, it would be possible to stop early
+    # if the previous and next rounded coords were identical
+
+    def calculate_hulls(self, max_iterations=DEFAULT_HULL_MAX_ITERATIONS, min_len=DEFAULT_HULL_MIN_LEN, initial_hull=DEFAULT_INITIAL_HULL):
+        # Initialise all defns
+        for defn in self.defns:
+            # Initialise convex hull to at least 3 points around the origin, must use a 2D shape for ConvexHull algorithm 1st iteration
+            defn.hull = initial_hull
+            defn._next_hull = None
+        # Iteratively work out the convex hull
+        for i in range(max_iterations):
+            # Calculate next hulls
+            for j in range(len(self.defns)):
+                defn = self.defns[j]
+                children = defn.get_children()
+                if len(children) < 1:
+                    continue
+                next_points = None
+                for child in children:
+                    id = child.get_id()
+                    vect = child.get_vect()
+                    mx = child.get_mx()
+                    prev_hull = self.defns[id].get_hull()
+                    next_points_partial = prev_hull @ np.transpose(mx) + vect  # Backwards arithmetic here (*)
+                    if next_points is None:
+                        next_points = next_points_partial
+                    else:
+                        next_points = np.concatenate((next_points, next_points_partial))
+                scaled_integer_points = np.rint(next_points * (1/min_len))
+                hull = ConvexHull(scaled_integer_points)  # object
+                vertices = hull.vertices  # array of point indices
+                defn._next_hull = next_points[vertices] # next_points and scaled_integer_points have same order
+            # Store next hulls
+            for defn in self.defns:
+                if defn._next_hull is not None:
+                    defn.hull = defn._next_hull
+                    defn._next_hull = None
+        print("")
+        print(f"Results of Convex Hull calculations:")
+        for j in range(len(self.defns)):
+            defn = self.defns[j]
+            children = defn.get_children()
+            if len(children) < 1:
+                continue
+            print(f"Definition {j} has length {len(defn.get_hull())}")
         return self
 
     def do_iterations(self):
