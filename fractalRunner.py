@@ -2,8 +2,8 @@ from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
-from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, plot_dot, plot_path, grid_generator, wobble_square
-from fractalHelperFns import sort_by_tsfm
+from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, grid_generator, wobble_square
+from fractalHelperFns import plot_dot, plot_path, plot_hull, sort_by_tsfm
 from fractalGeneratorFns import defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
@@ -102,7 +102,12 @@ def fractalRunner(drawing):
     fp = fd.get_plotter()
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
-    fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
+
+    # # # Plotting method 1: set the corner points manually, plot a path
+    # fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
+
+    # Plotting method 2: take the corner points from a convex hull calculation
+    fp.plotting_fn = plot_hull(width=1.5, expand_factor=1)  # Must call fs.calculate_hulls() after definitions complete
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -179,6 +184,12 @@ def fractalRunner(drawing):
     distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(450, 700, tsfm=distance_from_origin, colours=[BLACK, RED, BLUE])
     fp.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+
+    # --------------------
+
+    # Calculate Convex Hulls after fractal definitions completed
+    # Need to do this if plot_hull method used
+    fs.calculate_hulls()
 
     # --------------------
 
