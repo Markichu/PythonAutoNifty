@@ -118,6 +118,22 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
         drawing.add_line(pos_list, colour, width)
     return callback
 
+# Plot a path (series of line segments) for each fractal piece
+def plot_hull(width=1, expand_factor=1, wobble_fn=None):
+    def callback(drawing, piece, colour=BLACK):
+        piece_vect = piece.get_vect()
+        piece_mx = piece.get_mx()
+        pos_list = []
+        hull = piece.get_defn().get_hull()
+        if hull is not None:
+            for i in range(0, len(hull)):
+                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
+                pos_list.append(get_canvas_pos_from_vect(draw_vect))
+            pos_list.append(pos_list[0])  # Close the hull outline
+            drawing.add_line(pos_list, colour, width)
+    return callback
+
 
 # -------------------------------------
 # Colouring functions
