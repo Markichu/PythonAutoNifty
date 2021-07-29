@@ -1,3 +1,4 @@
+import random
 from FractalPlotter import FractalPlotter
 from FractalPiece import FractalPiece
 
@@ -63,9 +64,18 @@ class FractalDefn:
     def count_children(self):
         return 0 if callable(self.children) else len(self.children)
 
-    def remove_child(self, position):
+    def shuffle_children(self):
         if not callable(self.children):
-            self.children.pop(position)
+            random.shuffle(self.children)
+        return self
+
+    def remove_child(self, position=None):
+        # If position not specified, will remove the last child
+        if not callable(self.children):
+            if position is None:
+                self.children.pop()
+            else:
+                self.children.pop(position)
         return self
 
     def __repr__(self):
