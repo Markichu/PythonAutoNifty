@@ -76,7 +76,7 @@ def wobble_square(pixels=2, dim=2):
 # x_max = 1
 # Then supply x_pos = 0, 1, 2, 3
 # Output is x_this = -0.75, -0.25, 0.25, 0.75
-def grid_generator(x_steps, y_steps, x_min, y_min, x_max, y_max):
+def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
     def grid(x_pos, y_pos):
         x_progress = (x_pos + 0.5) / x_steps
         y_progress = (y_pos + 0.5) / y_steps
@@ -116,6 +116,22 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
         if closed:
             pos_list.append(pos_list[0])
         drawing.add_line(pos_list, colour, width)
+    return callback
+
+# Plot a path (series of line segments) for each fractal piece
+def plot_hull(width=1, expand_factor=1, wobble_fn=None):
+    def callback(drawing, piece, colour=BLACK):
+        piece_vect = piece.get_vect()
+        piece_mx = piece.get_mx()
+        pos_list = []
+        hull = piece.get_defn().get_hull()
+        if hull is not None:
+            for i in range(0, len(hull)):
+                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
+                pos_list.append(get_canvas_pos_from_vect(draw_vect))
+            pos_list.append(pos_list[0])  # Close the hull outline
+            drawing.add_line(pos_list, colour, width)
     return callback
 
 
