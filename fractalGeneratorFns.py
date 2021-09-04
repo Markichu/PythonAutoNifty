@@ -6,12 +6,15 @@ from numpyHelperFns import vect, vect_len, mx_scale, mx_rotd, mx_refl_X, mx_sq, 
     
 
 # -------------------------------------
-# Methods to calculate callback for children on fractal definitions
+# Some fractal parameters are either values or functions
+# Use this file to store some common functions that return suitable values
+# Usually the function takes a fractal piece in as an optional parameter
+# to fine-tune the behaviour.
 
 # For a square [-1, 1] x [-1, 1]
 # split it into n^2 tiles (nxn)
 # and then keep m out of n^2 at random
-def defngen_rand_small_squares(system, id, m, n):
+def gen_children_rand_small_squares(system, id, m, n):
     grid = grid_generator(x_steps=n, y_steps=n)
     def calc_children(context_piece=None):
         # This function is probabilistic, so context piece is not used. Still need the parameter available!
@@ -30,7 +33,7 @@ def defngen_rand_small_squares(system, id, m, n):
 # depending on its distance from vect
 # For large pieces, iterate them with probability 1,
 # only apply the probabilistic iteration to scales (metrics) below the cutoff.
-def defngen_fade_out(system, id, n, centre_vect, cutoff_scale, d1=0, d2=2000, p1=1, p2=0):
+def gen_children_fade_out(system, id, n, centre_vect, cutoff_scale, d1=0, d2=2000, p1=1, p2=0):
     grid = grid_generator(x_steps=n, y_steps=n)
     def calc_children(context_piece=None):
         p = 1  # Default is to include all children, unless context is supplied and size (metric) is below cutoff
@@ -54,7 +57,7 @@ def defngen_fade_out(system, id, n, centre_vect, cutoff_scale, d1=0, d2=2000, p1
 # Methods to calculate a random id
 
 # Select an id at random from a list, equal weights
-def idgen_rand(list_of_ids):
+def gen_id_rand(list_of_ids):
     def calc_id(context_piece=None):
         return random.choice(list_of_ids)
     return calc_id
@@ -64,8 +67,8 @@ def idgen_rand(list_of_ids):
 # 2D or 3D methods to calculate a random vector
 
 # Calculate a random continuous 2D or 3D vector in (x1, x2) x (y1, y2) [x (z1, z2)]
-# Example: vectgen_rand([1, 2], [3, 4], [5, 6])
-def vectgen_rand(x_range, y_range, z_range=None):
+# Example: gen_vect_rand([1, 2], [3, 4], [5, 6])
+def gen_vect_rand(x_range, y_range, z_range=None):
     def calc_vect(context_piece=None):
         x = random.uniform(x_range[0], x_range[1])
         y = random.uniform(y_range[0], y_range[1])
@@ -80,7 +83,7 @@ def vectgen_rand(x_range, y_range, z_range=None):
 # 2D methods to calculate a random matrix
 
 # Any rotation or reflection in the circle
-def mxgen_rand_circ(scale=1, reflect=True):
+def gen_mx_rand_circ(scale=1, reflect=True):
     def calc_mx(context_piece=None):
         mx = mx_rotd(
             angle=random.uniform(0, 360),
@@ -92,7 +95,7 @@ def mxgen_rand_circ(scale=1, reflect=True):
     return calc_mx
 
 # Any rotation or reflection in a square with a flat edge down
-def mxgen_rand_sq(scale=1, reflect=True):
+def gen_mx_rand_sq(scale=1, reflect=True):
     max_num = 4
     if reflect:
         max_num = 8
@@ -104,7 +107,7 @@ def mxgen_rand_sq(scale=1, reflect=True):
     return calc_mx
 
 # Any rotation or reflection in a triangle with a flat edge down
-def mxgen_rand_tri(scale=1, reflect=True):
+def gen_mx_rand_tri(scale=1, reflect=True):
     max_num = 3
     if reflect:
         max_num = 6
@@ -117,7 +120,7 @@ def mxgen_rand_tri(scale=1, reflect=True):
     return calc_mx
 
 # Any rotation or reflection in a <sides>-sided polygon with a flat edge down
-def mxgen_rand_dihedral(sides, scale=1, reflect=True):
+def gen_mx_rand_dihedral(sides, scale=1, reflect=True):
     max_num = sides
     if reflect:
         max_num = sides * 2

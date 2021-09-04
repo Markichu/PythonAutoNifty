@@ -5,7 +5,7 @@ from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, R
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, grid_generator, wobble_square
 from fractalHelperFns import plot_dot, plot_path, plot_hull, sort_by_tsfm
-from fractalGeneratorFns import defngen_rand_small_squares, defngen_fade_out, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand, gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
 
 
 def fractalRunner(drawing):
@@ -123,8 +123,8 @@ def fractalRunner(drawing):
     grid = grid_generator(x_steps=n, y_steps=n)
     fd.create_child(id, grid(0, 0), mx_scale(sc))
     fd.create_child(id, grid(1, 0), mx_scale(sc))
-    fd.create_child(id, grid(0, 1), mxgen_rand_sq(scale=sc**1.3))
-    fd.create_child(id, grid(1, 1), mxgen_rand_sq(scale=sc**1.7))
+    fd.create_child(id, grid(0, 1), gen_mx_rand_sq(scale=sc**1.3))
+    fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc**1.7))
     # Set up plotter
     fp = fd.get_plotter()
     fp.colouring_fn = colour_by_log2_size(2, 3, colours=[GREEN, BLUE])
@@ -143,15 +143,15 @@ def fractalRunner(drawing):
     sc = 1/3
     h = 3 ** 0.5
     id_list = [id_exit, id_iterate, id_iterate, id_iterate, id_iterate]
-    id_callback = idgen_rand(id_list)
-    mx_callback = mxgen_rand_circ(sc)
-    fd.create_child(id_callback, vect(2, 0) * sc, mx_callback)
-    fd.create_child(id_callback, vect(1, h) * sc, mx_callback)
-    fd.create_child(id_callback, vect(-1, h) * sc, mx_callback)
-    fd.create_child(id_callback, vect(-2, 0) * sc, mx_callback)
-    fd.create_child(id_callback, vect(-1, -h) * sc, mx_callback)
-    fd.create_child(id_callback, vect(1, -h) * sc, mx_callback)
-    fd.create_child(id_callback, vect(0, 0) * sc, mx_callback)
+    id_fn = gen_id_rand(id_list)
+    mx_fn = gen_mx_rand_circ(sc)
+    fd.create_child(id_fn, vect(2, 0) * sc, mx_fn)
+    fd.create_child(id_fn, vect(1, h) * sc, mx_fn)
+    fd.create_child(id_fn, vect(-1, h) * sc, mx_fn)
+    fd.create_child(id_fn, vect(-2, 0) * sc, mx_fn)
+    fd.create_child(id_fn, vect(-1, -h) * sc, mx_fn)
+    fd.create_child(id_fn, vect(1, -h) * sc, mx_fn)
+    fd.create_child(id_fn, vect(0, 0) * sc, mx_fn)
     # Set up plotter
     fp = fd.get_plotter()
     fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
@@ -163,7 +163,7 @@ def fractalRunner(drawing):
     sc = 0.5
     fd.create_child(id, vect(-1, -1) * sc, mx_scale(sc))  # Two versions of same scale matrix here
     fd.create_child(id, vect(1, -1) * sc, mx_diag(sc, sc))
-    fd.create_child(id, vectgen_rand([-sc, sc], [sc, sc]), mx_scale(sc))
+    fd.create_child(id, gen_vect_rand([-sc, sc], [sc, sc]), mx_scale(sc))
     # Set up plotter
     fp = fd.get_plotter()
     distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
@@ -183,12 +183,12 @@ def fractalRunner(drawing):
     fp.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
 
     # Definition #8 - Random Sierpinski Carpet
-    # defngen_rand_small_squares - 7 out of 9 little squares, in 3x3 big square
-    # defngen_fade_out - Iterate with a probability depending on how far fractal piece is from a specified point
+    # gen_children_rand_small_squares - 7 out of 9 little squares, in 3x3 big square
+    # gen_children_fade_out - Iterate with a probability depending on how far fractal piece is from a specified point
     idr = 8
     fd = fs.get_defn(idr)
-    # fd.children = defngen_rand_small_squares(system=fs, id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
-    fd.children = defngen_fade_out(system=fs, id=idr, n=3, centre_vect=vect(750, 750), cutoff_scale=50, d1=75, d2=225, p1=1, p2=0)
+    # fd.children = gen_children_rand_small_squares(system=fs, id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
+    fd.children = gen_children_fade_out(system=fs, id=idr, n=3, centre_vect=vect(750, 750), cutoff_scale=50, d1=75, d2=225, p1=1, p2=0)
     fp = fd.get_plotter()
     distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(50, 250, tsfm=distance_from_700_700, colours=[MAGENTA, YELLOW, CYAN])
