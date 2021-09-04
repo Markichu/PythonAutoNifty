@@ -4,9 +4,12 @@ class FractalPiece:
             # Can remove this eventually, at the moment it catches any previous code that omitted the system
             raise TypeError("Must supply a FractalSystem to create a FractalPiece")
         self.system = system
-        self.id = id  # Integer list index (0, 1, 2...) in fractal system, or callback that returns an index
-        self.vect = vect  # Vector, or callback that returns a vector
-        self.mx = mx  # Matrix, or callback that returns a matrix
+
+        # These should be either a value of the specified type, or a function returning suitable value
+        # Function should accept an optional FractalPiece as context for evaluation.
+        self.id = id  # Should be a non-negative integer 0, 1, 2... representing definition position in fractal system
+        self.vect = vect  # Numpy vector (or is it coordinate?)
+        self.mx = mx  # Numpy matrix
 
     def get_system(self):
         return self.system
@@ -21,7 +24,8 @@ class FractalPiece:
     def _get_instance_var(self, arg):
         result = arg
         if callable(result):
-            result = result()
+            # Evaluate the function on the context, i.e. this fractal piece
+            result = result(self)
         return result
 
     def get_id(self):

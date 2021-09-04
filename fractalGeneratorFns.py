@@ -55,7 +55,7 @@ def defngen_fade_out(system, id, n, centre_vect, cutoff_scale, d1=0, d2=2000, p1
 
 # Select an id at random from a list, equal weights
 def idgen_rand(list_of_ids):
-    def calc_id():
+    def calc_id(context_piece=None):
         return random.choice(list_of_ids)
     return calc_id
 
@@ -66,7 +66,7 @@ def idgen_rand(list_of_ids):
 # Calculate a random continuous 2D or 3D vector in (x1, x2) x (y1, y2) [x (z1, z2)]
 # Example: vectgen_rand([1, 2], [3, 4], [5, 6])
 def vectgen_rand(x_range, y_range, z_range=None):
-    def calc_vect():
+    def calc_vect(context_piece=None):
         x = random.uniform(x_range[0], x_range[1])
         y = random.uniform(y_range[0], y_range[1])
         if z_range is None:
@@ -81,7 +81,7 @@ def vectgen_rand(x_range, y_range, z_range=None):
 
 # Any rotation or reflection in the circle
 def mxgen_rand_circ(scale=1, reflect=True):
-    def calc_mx():
+    def calc_mx(context_piece=None):
         mx = mx_rotd(
             angle=random.uniform(0, 360),
             scale=scale
@@ -96,7 +96,7 @@ def mxgen_rand_sq(scale=1, reflect=True):
     max_num = 4
     if reflect:
         max_num = 8
-    def calc_mx():
+    def calc_mx(context_piece=None):
         return mx_sq(
             num=random.randint(1, max_num),
             scale=scale
@@ -108,7 +108,7 @@ def mxgen_rand_tri(scale=1, reflect=True):
     max_num = 3
     if reflect:
         max_num = 6
-    def calc_mx():
+    def calc_mx(context_piece=None):
         return mx_dh(
             sides=3,
             num=random.randint(1, max_num),
@@ -121,7 +121,7 @@ def mxgen_rand_dihedral(sides, scale=1, reflect=True):
     max_num = sides
     if reflect:
         max_num = sides * 2
-    def calc_mx():
+    def calc_mx(context_piece=None):
         return mx_dh(
             sides=sides,
             num=random.randint(1, max_num),
