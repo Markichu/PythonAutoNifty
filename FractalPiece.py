@@ -1,5 +1,5 @@
 class FractalPiece:
-    def __init__(self, system, id, vect, mx, progress=None):
+    def __init__(self, system, id, vect, mx, progress=None, reverse_progress=False, reset_progress=False):
         if not system.is_fractal_system():
             # Can remove this eventually, at the moment it catches any previous code that omitted the system
             raise TypeError("Must supply a FractalSystem to create a FractalPiece")
@@ -9,6 +9,18 @@ class FractalPiece:
         # Default interval is [0, 1]. Interval is a list of [start, end] values of progress.
         # When iterating, this interval should be subdivided and become smaller and smaller within [0, 1].
         self.progress = progress if progress is not None else [0, 1]  # use None above and [0, 1] here to get new list each time
+
+        # In a fractal definition, for a child fractal, set reverse_progress directly to True
+        # if you want progress to be flipped when iterating.
+        # An example of when this is useful is for a dragon fractal, to get linear colouring.
+        self.reverse_progress = reverse_progress
+
+        # In a fractal definition, for a child fractal, set reset_progress directly to True
+        # if you want progress to revert back to [0, 1] on this fractal piece
+        # For example, if using an outer fractal to generate a lot of inner fractals,
+        # might want to reset the progress on each one. This could for example reset the colouring scheme on each inner fractal.
+        # Probably don't have reset_progress true for any fractal that iterates to itself.
+        self.reset_progress = reset_progress
 
         # These should be either a value of the specified type, or a function returning suitable value
         # Function should accept an optional FractalPiece as context for evaluation.

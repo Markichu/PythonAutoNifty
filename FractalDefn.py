@@ -73,10 +73,11 @@ class FractalDefn:
         # since for fractal iteration the piece is supplied, but for convex hull it is not.)
         return self.children(context_piece)
 
-    def create_child(self, id, vect, mx):
-        piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx)
+    def create_child(self, id, vect, mx, reverse_progress=False, reset_progress=False):
+        piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx, reverse_progress=reverse_progress, reset_progress=reset_progress)
         if callable(self.children):
             # If self.children is a function, remove the function and replace by list
+            # Could alternatively raise an error if try to create_child on a fractal defn with fn for children
             self.children = []
         self.children.append(piece)
         return self

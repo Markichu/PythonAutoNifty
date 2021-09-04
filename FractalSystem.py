@@ -153,6 +153,10 @@ class FractalSystem:
                             next_vect = this_vect + this_mx @ child_vect
                             next_mx = this_mx @ child_mx
                             next_progress = progress_splits[split_count]
+                            if child_piece.reverse_progress:
+                                next_progress = [next_progress[1], next_progress[0]]
+                            if child_piece.reset_progress:
+                                next_progress = [0, 1]
                             next_piece = FractalPiece(system=self, id=child_id, vect=next_vect, mx=next_mx, progress=next_progress)
                             next_iterated_pieces.append(next_piece)
                             split_count += 1
