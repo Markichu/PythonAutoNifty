@@ -202,11 +202,11 @@ def fractalRunner(drawing):
 
     # --------------------
 
-    # Provide a little output
-    print("")
-    print("Fractal System:")
-    print(fs)
-    print("")
+    # # Provide a little output
+    # print("")
+    # print("Fractal System:")
+    # print(fs)
+    # print("")
 
     # Calculate the iterations
     initial_piece = FractalPiece(system=fs, id=init_defn_id, vect=init_vect, mx=init_mx)

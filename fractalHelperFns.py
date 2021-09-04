@@ -140,14 +140,14 @@ def plot_hull(width=1, expand_factor=1, wobble_fn=None):
 
 # Colour by progress through list from FractalSystem
 def colour_by_progress(colours):
-    def callback(piece, progress):
-        return get_colour(colours, progress)
+    def callback(piece):
+        return get_colour(colours, piece.get_progress_value())
     return callback
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm(vect, matrix) should output a number
 def colour_by_tsfm(min_val, max_val, colours, tsfm):
-    def callback(piece, progress):
+    def callback(piece):
         if not callable(tsfm):
             return BLACK
         this_val = tsfm(piece.get_vect(), piece.get_mx())

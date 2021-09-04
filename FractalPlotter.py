@@ -8,11 +8,10 @@ class FractalPlotter:
         self.colouring_fn = colour_by_progress([BLACK, BLUE])
         self.plotting_fn = plot_dot()
 
-    def plot(self, piece, drawing, progress_counter, total_pieces):
+    def plot(self, drawing, piece):
         if not self.draws:
             return
-        progress = progress_counter / total_pieces
-        colour = self.colouring_fn(piece, progress) if callable(self.colouring_fn) else BLACK
+        colour = self.colouring_fn(piece) if callable(self.colouring_fn) else BLACK
         if callable(self.plotting_fn):
             self.plotting_fn(drawing, piece, colour)
 

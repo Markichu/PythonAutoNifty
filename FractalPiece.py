@@ -1,9 +1,14 @@
 class FractalPiece:
-    def __init__(self, system, id, vect, mx):
+    def __init__(self, system, id, vect, mx, progress=None):
         if not system.is_fractal_system():
             # Can remove this eventually, at the moment it catches any previous code that omitted the system
             raise TypeError("Must supply a FractalSystem to create a FractalPiece")
         self.system = system
+
+        # Keep track of "progress" through the fractal iteration using an interval [start, end]
+        # Default interval is [0, 1]. Interval is a list of [start, end] values of progress.
+        # When iterating, this interval should be subdivided and become smaller and smaller within [0, 1].
+        self.progress = progress if progress is not None else [0, 1]  # use None above and [0, 1] here to get new list each time
 
         # These should be either a value of the specified type, or a function returning suitable value
         # Function should accept an optional FractalPiece as context for evaluation.
@@ -13,6 +18,19 @@ class FractalPiece:
 
     def get_system(self):
         return self.system
+    
+    def get_progress_value(self):
+        return 0.5 * (self.progress[0] + self.progress[1])
+
+    # Return array of n intervals representing progress interval of this piece split into n chunks
+    def split_progress_interval(self, n):
+        prog_start = self.progress[0]
+        prog_end = self.progress[1]
+        prog_step = (prog_end - prog_start) / n
+        result = [None] * n
+        for i in range(n):
+            result[i] = [prog_start + i * prog_step, prog_start + (i+1) * prog_step]
+        return result
 
     def get_defn(self):
         return self.get_system().get_defn(self.get_id())
