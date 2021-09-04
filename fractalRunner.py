@@ -1,3 +1,4 @@
+import random
 from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
@@ -48,6 +49,11 @@ def fractalRunner(drawing):
     fs.piece_sorter = sort_by_tsfm(tsfm=lambda vect, mx: vect_len(vect=vect-sort_vect, power=sort_pow)/sort_len, rand=True)  # Draw by distance from sort_vect, with sort_len pixel random boundary
     # fs.piece_sorter = sort_by_z()  # Draw from furthest back to furthest forward (3D only)
     # fs.piece_sorter = sort_by_size()  # Draw from largest at back, to smallest at front
+
+    # In order to recreate a given fractal precisely, any randomness it contains must be generated from a fixed random seed.
+    # Enable/disable this section to turn seeding on or off.
+    random_seed = "My fractal 001"  # Try incrementing this number! Controls the fractal via which randomness it uses.
+    random.seed(random_seed)  # Comment this out if you don't want to control the seeding
     
     # --------------------
 
