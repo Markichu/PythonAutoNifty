@@ -7,6 +7,9 @@ GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
 
 # colours
 BLACK = (0, 0, 0, 1)
+DARK_GREY = (64, 64, 64, 1)
+GREY = (128, 128, 128, 1)
+LIGHT_GREY = (196, 196, 196, 1)
 WHITE = (255, 255, 255, 1)
 
 RED = (255, 0, 0, 1)

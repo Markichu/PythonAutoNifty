@@ -5,13 +5,16 @@ from FractalPiece import FractalPiece
 
 class FractalDefn:
     def __init__(self, system=None, metric_fn=None):
-        self.iterates = True  # Either a Boolean, or a function that evaluates to a Boolean; if False, do not iterate the FractalPiece further
         self.system = system  # the FractalSystem this FractalDefn is contained within
         self.metric_fn = metric_fn  # Use this to override the metric function set at system level
         self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
-        self.children = []  # Either a list of FractalPieces, or a function that evaluates to a list of FractalPieces
         self.hull = None  # Convex Hull; set of coordinates describing shape of definition at vector (0, 0), matrix ((1, 0), (0, 1))
         self._next_hull = None  # Temporary variable for calculating next iteration of convex hull
+
+        # These should be either a value, or a function returning suitable value
+        # Function should accept an optional FractalPiece as context for evaluation.
+        self.iterates = True  # Boolean (or function)
+        self.children = []  # List of FractalPieces (or function)
 
         # How big is this definition?
         self.relative_size = 1
@@ -19,14 +22,6 @@ class FractalDefn:
         # either definition occupies circle of radius n,
         # or definition occupies square of size [-n, n] x [-n, n]
     
-    def get_iterates(self):
-        return self.iterates() if callable(self.iterates) else self.iterates
-
-    def set_iterates(self, iterates):
-        # iterates should be a Boolean, or a function that evaluates to a Boolean
-        self.iterates = iterates
-        return self
-
     def get_system(self):
         return self.system
 
@@ -52,16 +47,37 @@ class FractalDefn:
         self.plotter = plotter
         return self
 
-    def get_children(self):
-        return self.children() if callable(self.children) else self.children
-
     def get_hull(self):
         return self.hull
 
-    def create_child(self, id, vect, mx):
-        piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx)
+    def get_iterates(self, context_piece=None):
+        # If self.iterates is not a function, it should be a Boolean value, so return that value directly
+        if not callable(self.iterates):
+            return self.iterates
+        # Otherwise, self.iterates is a function that accepts an optional context piece and returns a Boolean
+        # Currently the context piece should always be supplied.
+        return self.iterates(context_piece)
+
+    def set_iterates(self, iterates):
+        # iterates should be a Boolean, or a function that accepts an optional context piece and evaluates to a Boolean
+        self.iterates = iterates
+        return self
+
+    def get_children(self, context_piece=None):
+        # If self.children is not a function, it should be a list of FractalPieces, so return this list directly
+        if not callable(self.children):
+            return self.children
+        # Otherwise, self.children is a function that should return a list of FractalPieces,
+        # and accept an optional context_piece as context for evaluation
+        # (The function should be able to cope with and without the context_piece,
+        # since for fractal iteration the piece is supplied, but for convex hull it is not.)
+        return self.children(context_piece)
+
+    def create_child(self, id, vect, mx, reverse_progress=False, reset_progress=False):
+        piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx, reverse_progress=reverse_progress, reset_progress=reset_progress)
         if callable(self.children):
             # If self.children is a function, remove the function and replace by list
+            # Could alternatively raise an error if try to create_child on a fractal defn with fn for children
             self.children = []
         self.children.append(piece)
         return self
