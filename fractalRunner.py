@@ -4,7 +4,7 @@ from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, R
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, grid_generator, wobble_square
 from fractalHelperFns import plot_dot, plot_path, plot_hull, sort_by_tsfm
-from fractalGeneratorFns import defngen_rand_small_squares, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
+from fractalGeneratorFns import defngen_rand_small_squares, defngen_fade_out, idgen_rand, vectgen_rand, mxgen_rand_sq, mxgen_rand_circ
 
 
 def fractalRunner(drawing):
@@ -77,9 +77,9 @@ def fractalRunner(drawing):
     fd.create_child(3, vect(-1, -1) * scv, mx_scale(scm))
     fd.create_child(4, vect(1, -1) * scv, mx_scale(scm))
     fd.create_child(5, vect(-1, 1) * scv, mx_scale(scm * 0.8))
-    fd.create_child(6, vect(1, 1) * scv, mx_scale(scm))
+    fd.create_child(6, vect(-0.3, -0.5) * scv, mx_scale(0.45 * scm))
     fd.create_child(7, vect(-1.2, -0.3) * scv, mx_rotd(angle=30, scale=0.4 * scm))
-    fd.create_child(8, vect(-0.3, -0.5) * scv, mx_scale(0.45 * scm))
+    fd.create_child(8, vect(1, 1) * scv, mx_scale(scm))
     # keep default plotting setup, this definition likely won't plot
     # since it iterates to other things
 
@@ -88,7 +88,7 @@ def fractalRunner(drawing):
     fd = fs.get_defn(id)
     n = 2
     sc = 1/n
-    grid = grid_generator(x_steps=n, y_steps=n, x_min=-1, y_min=-1, x_max=1, y_max=1)
+    grid = grid_generator(x_steps=n, y_steps=n)  # Defaults from -1 to +1 in both x and y directions
     # Grid generator generates coordinates at square midpoints from -1 to 1, total steps 2
     # grid(0, 0) = (-0.5, -0.5)
     # grid(1, 0) = (0.5, -0.5)
@@ -114,7 +114,7 @@ def fractalRunner(drawing):
     fd = fs.get_defn(id)
     n = 2
     sc = 1/n
-    grid = grid_generator(x_steps=n, y_steps=n, x_min=-1, y_min=-1, x_max=1, y_max=1)
+    grid = grid_generator(x_steps=n, y_steps=n)
     fd.create_child(id, grid(0, 0), mx_scale(sc))
     fd.create_child(id, grid(1, 0), mx_scale(sc))
     fd.create_child(id, grid(0, 1), mxgen_rand_sq(scale=sc**1.3))
@@ -160,8 +160,8 @@ def fractalRunner(drawing):
     fd.create_child(id, vectgen_rand([-sc, sc], [sc, sc]), mx_scale(sc))
     # Set up plotter
     fp = fd.get_plotter()
-    distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
-    fp.colouring_fn = colour_by_tsfm(50, 250, tsfm=distance_from_700_700, colours=[MAGENTA, YELLOW, CYAN])
+    distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
+    fp.colouring_fn = colour_by_tsfm(500, 620, tsfm=distance_from_origin, colours=[BLACK, RED, BLUE])
     fp.plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
 
     # Definition #7 - Dragon curve
@@ -176,14 +176,17 @@ def fractalRunner(drawing):
     fp.colouring_fn = colour_by_tsfm(-90, 270, tsfm=piece_angle, colours=[RED, YELLOW, GREEN, BLUE])
     fp.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
 
-    # Definition #8 - Random Sierpinski Carpet - 7 out of 9 little squares, in 3x3 big square
+    # Definition #8 - Random Sierpinski Carpet
+    # defngen_rand_small_squares - 7 out of 9 little squares, in 3x3 big square
+    # defngen_fade_out - Iterate with a probability depending on how far fractal piece is from a specified point
     idr = 8
     fd = fs.get_defn(idr)
-    fd.children = defngen_rand_small_squares(system=fs, id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
+    # fd.children = defngen_rand_small_squares(system=fs, id=idr, m=7, n=3)  # Definition children is dynamically calculated by callback
+    fd.children = defngen_fade_out(system=fs, id=idr, n=3, centre_vect=vect(750, 750), cutoff_scale=50, d1=75, d2=225, p1=1, p2=0)
     fp = fd.get_plotter()
-    distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
-    fp.colouring_fn = colour_by_tsfm(450, 700, tsfm=distance_from_origin, colours=[BLACK, RED, BLUE])
-    fp.plotting_fn = plot_path(closed=True, width=1, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+    distance_from_700_700 = lambda vect, mx: ((vect[0]-700) ** 2 + (vect[1]-700) ** 2) ** 0.5
+    fp.colouring_fn = colour_by_tsfm(50, 250, tsfm=distance_from_700_700, colours=[MAGENTA, YELLOW, CYAN])
+    fp.plotting_fn = plot_path(closed=True, width=2, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
     # --------------------
 

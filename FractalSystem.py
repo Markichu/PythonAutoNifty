@@ -135,13 +135,13 @@ class FractalSystem:
             this_metric = this_piece.get_metric()
             if self.is_id_valid(this_id):
                 this_defn = self.get_defn(this_id)
-                does_not_iterate = not this_defn.get_iterates()
+                does_not_iterate = not this_defn.get_iterates(this_piece)
                 this_size_px = this_defn.relative_size * this_metric
                 if this_size_px <= self.min_radius or self.max_pieces < counter or does_not_iterate:
                     next_iterated_pieces.append(this_piece)
                 else:
                     iteration_finished = False
-                    for child_piece in this_defn.get_children():
+                    for child_piece in this_defn.get_children(this_piece):
                         child_id = child_piece.get_id()
                         child_vect = child_piece.get_vect()
                         child_mx = child_piece.get_mx()
