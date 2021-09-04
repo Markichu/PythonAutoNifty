@@ -165,7 +165,7 @@ class FractalSystem:
             pieces_to_plot.sort(key=self.piece_sorter)
         progress_counter = 0
         for piece_to_plot in pieces_to_plot:
-            plotter = self.get_defn(piece_to_plot.id).get_plotter()
+            plotter = self.get_defn(piece_to_plot.get_id()).get_plotter()
             plotter.plot(piece_to_plot, drawing, progress_counter, total_pieces)
             progress_counter += 1
 
