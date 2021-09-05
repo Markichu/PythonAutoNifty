@@ -2,7 +2,8 @@ import math
 import random
 
 from Pos import Pos
-from constants import DRAWING_SIZE, BLACK
+from constants import DRAWING_SIZE, BLACK, BLUE
+from fractalConstants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS
 from helperFns import interpolate_colour
 from numpyHelperFns import metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord, vect
 
@@ -29,6 +30,25 @@ def get_colour(colours, progress, alpha=1):
 
 
 # -------------------------------------
+# Iteration functions. On a piece, return True to iterate, False to not iterate
+
+# Standard function. Iterate if piece is not too small or too iterated
+def get_iteration_fn_standard(min_diameter, max_iterations):
+    def iteration_fn(piece):
+        return min_diameter < piece.get_minimum_diameter() and piece.iteration < max_iterations
+    return iteration_fn
+
+# Turn iteration off
+# Use as an override on a definition that should stop iterating
+def get_iteration_fn_stop():
+    def iteration_fn(piece):
+        return False
+    return iteration_fn
+
+DEFAULT_ITERATION_FN = get_iteration_fn_standard(DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS)
+
+
+# -------------------------------------
 # Metrics for Fractal Pieces
 # Default metric is set on the FractalSystem
 # Can override for any particular FractalDefn
@@ -37,21 +57,21 @@ def get_colour(colours, progress, alpha=1):
 
 # Use the minimum eigenvalue of the matrix
 def get_metric_fn_piece_min_eig():
-    def callback(piece):
+    def metric_fn(piece):
         return metric_matrix_min_eig_val(piece.get_mx())
-    return callback
+    return metric_fn
 
 # Use the RMS of the matrix entries
 def get_metric_fn_piece_rms():
-    def callback(piece):
+    def metric_fn(piece):
         return metric_matrix_rms(piece.get_mx())
-    return callback
+    return metric_fn
 
 # Use the length of x-coord (1, 0) under mx transformation, e.g. for line fractals
 def get_metric_fn_piece_x_coord():
-    def callback(piece):
+    def metric_fn(piece):
         return metric_matrix_x_coord(piece.get_mx())
-    return callback
+    return metric_fn
 
 DEFAULT_METRIC_FN = get_metric_fn_piece_min_eig()
 
@@ -63,10 +83,10 @@ DEFAULT_METRIC_FN = get_metric_fn_piece_min_eig()
 def wobble_square(pixels=2, dim=2):
     def get_rand_unif():
         return random.uniform(-0.5 * pixels, 0.5 * pixels)
-    def callback():
+    def wobble_fn():
         x, y, z = get_rand_unif(), get_rand_unif(), get_rand_unif()
         return vect(x, y, z) if dim == 3 else vect(x, y)
-    return callback
+    return wobble_fn
 
 # TODO: 2D circle uniform, 3D sphere uniform, 2D concentrated at centre, etc
 
@@ -92,20 +112,20 @@ def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
 # Plot a dot (small circle) for each fractal piece
 # Optional parameter expand_factor is to fine-tune control of dot size
 def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
-    def callback(drawing, piece, colour=BLACK):
+    def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         if not offset_vect is None:
             mx = piece.get_mx()
             piece_vect = piece_vect + mx @ offset_vect
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
-        dot_radius = expand_factor * piece.get_metric()
+        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()  # TODO: determine if we need extra factor of 0.5 for diameter -> radius?
         drawing.add_point(pos, colour, dot_radius)
-    return callback
+    return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
 def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None):
-    def callback(drawing, piece, colour=BLACK):
+    def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
         pos_list = []
@@ -116,15 +136,15 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
         if closed:
             pos_list.append(pos_list[0])
         drawing.add_line(pos_list, colour, width)
-    return callback
+    return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
 def plot_hull(width=1, expand_factor=1, wobble_fn=None):
-    def callback(drawing, piece, colour=BLACK):
+    def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
         pos_list = []
-        hull = piece.get_defn().get_hull()
+        hull = piece.get_defn().hull
         if hull is not None:
             for i in range(0, len(hull)):
                 wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
@@ -132,34 +152,37 @@ def plot_hull(width=1, expand_factor=1, wobble_fn=None):
                 pos_list.append(get_canvas_pos_from_vect(draw_vect))
             pos_list.append(pos_list[0])  # Close the hull outline
             drawing.add_line(pos_list, colour, width)
-    return callback
+    return plot_fn
 
+DEFAULT_PLOTTING_FN = plot_dot()
 
 # -------------------------------------
 # Colouring functions
 
-# Colour by progress through list from FractalSystem
+# Colour by progress, which is a property on each fractal piece
 def colour_by_progress(colours):
-    def callback(piece):
+    def colour_fn(piece):
         return get_colour(colours, piece.get_progress_value())
-    return callback
+    return colour_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm(vect, matrix) should output a number
 def colour_by_tsfm(min_val, max_val, colours, tsfm):
-    def callback(piece):
+    def colour_fn(piece):
         if not callable(tsfm):
             return BLACK
         this_val = tsfm(piece.get_vect(), piece.get_mx())
         tsfm_progress = (this_val - min_val) / (max_val - min_val)
         return get_colour(colours, tsfm_progress)
-    return callback
+    return colour_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # metric(matrix) should output a number
 def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val):
     fn = lambda vect, mx: math.log(metric(mx), 2)
     return colour_by_tsfm(min_val, max_val, colours, fn)
+
+DEFAULT_COLOURING_FN = colour_by_progress([BLACK, BLUE])
 
 
 # -------------------------------------
@@ -169,19 +192,19 @@ def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_
 
 # Sort pieces randomly
 def sort_randomly():
-    def callback(piece):
+    def sort_fn(piece):
         return random.random()
-    return callback
+    return sort_fn
     
 # Sort by function of the piece's affine transformation (vector, matrix)
 # Random factor is optional
 def sort_by_tsfm(tsfm, rand=False):
-    def callback(piece):
+    def sort_fn(piece):
         random_factor, main_factor = 0, tsfm(piece.get_vect(), piece.get_mx())
         if rand:
             random_factor = random.random()
         return main_factor + random_factor
-    return callback
+    return sort_fn
     
 # Sort by z-coordinate (reversed), e.g. for 3D fractals
 def sort_by_z():

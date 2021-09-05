@@ -1,12 +1,12 @@
-from constants import BLACK, BLUE
-from fractalHelperFns import colour_by_progress, plot_dot
+from constants import BLACK
+from fractalHelperFns import DEFAULT_PLOTTING_FN, DEFAULT_COLOURING_FN
 
 
 class FractalPlotter:
     def __init__(self):
         self.draws = True
-        self.colouring_fn = colour_by_progress([BLACK, BLUE])
-        self.plotting_fn = plot_dot()
+        self.colouring_fn = DEFAULT_COLOURING_FN
+        self.plotting_fn = DEFAULT_PLOTTING_FN
 
     def plot(self, drawing, piece):
         if not self.draws:
