@@ -174,8 +174,7 @@ class FractalSystem:
         if callable(self.piece_sorter):
             pieces_to_plot.sort(key=self.piece_sorter)
         for piece_to_plot in pieces_to_plot:
-            plotter = self.get_defn(piece_to_plot.get_id()).get_plotter()
-            plotter.plot(drawing, piece_to_plot)
+            piece_to_plot.plot(drawing)
 
     def __repr__(self):
         result = "FS: "

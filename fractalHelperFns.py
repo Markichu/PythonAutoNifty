@@ -2,7 +2,7 @@ import math
 import random
 
 from Pos import Pos
-from constants import DRAWING_SIZE, BLACK
+from constants import DRAWING_SIZE, BLACK, BLUE
 from helperFns import interpolate_colour
 from numpyHelperFns import metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord, vect
 
@@ -134,11 +134,12 @@ def plot_hull(width=1, expand_factor=1, wobble_fn=None):
             drawing.add_line(pos_list, colour, width)
     return callback
 
+DEFAULT_PLOTTING_FN = plot_dot()
 
 # -------------------------------------
 # Colouring functions
 
-# Colour by progress through list from FractalSystem
+# Colour by progress, which is a property on each fractal piece
 def colour_by_progress(colours):
     def callback(piece):
         return get_colour(colours, piece.get_progress_value())
@@ -160,6 +161,8 @@ def colour_by_tsfm(min_val, max_val, colours, tsfm):
 def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val):
     fn = lambda vect, mx: math.log(metric(mx), 2)
     return colour_by_tsfm(min_val, max_val, colours, fn)
+
+DEFAULT_COLOURING_FN = colour_by_progress([BLACK, BLUE])
 
 
 # -------------------------------------

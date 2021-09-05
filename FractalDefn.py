@@ -98,6 +98,9 @@ class FractalDefn:
             else:
                 self.children.pop(position)
         return self
+    
+    def plot(self, drawing, piece):
+        self.get_plotter().plot(drawing, piece)
 
     def __repr__(self):
         result = "FD: ["

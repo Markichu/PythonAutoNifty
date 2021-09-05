@@ -73,6 +73,9 @@ class FractalPiece:
     def get_metric(self):
         metric_fn = self.get_metric_fn()
         return metric_fn(self)
+    
+    def plot(self, drawing):
+        self.get_defn().plot(drawing, self)
 
     def __repr__(self):
         id = "function" if callable(self.id) else self.id
