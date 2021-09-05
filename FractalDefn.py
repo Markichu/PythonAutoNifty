@@ -4,64 +4,45 @@ from FractalPiece import FractalPiece
 
 
 class FractalDefn:
-    def __init__(self, system=None, metric_fn=None):
-        self.system = system  # the FractalSystem this FractalDefn is contained within
-        self.metric_fn = metric_fn  # Use this to override the metric function set at system level
+    def __init__(self, system=None):
+        self.system = system  # Link back to the system
+
+        # Fractal system contains default metric and iteration functions.
+        # Override here at the definition level if needed.
+        self.metric_fn = None
+        self.iteration_fn = None
+
         self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
         self.hull = None  # Convex Hull; set of coordinates describing shape of definition at vector (0, 0), matrix ((1, 0), (0, 1))
         self._next_hull = None  # Temporary variable for calculating next iteration of convex hull
 
-        # These should be either a value, or a function returning suitable value
-        # Function should accept an optional FractalPiece as context for evaluation.
-        self.iterates = True  # Boolean (or function)
-        self.children = []  # List of FractalPieces (or function)
+        # Children should be either a list of abstract Fractal Pieces, or a function returning a list of abstract Fractal Pieces
+        # If a function, it should accept an optional FractalPiece as context for evaluation.
+        self.children = []
 
-        # How big is this definition?
-        self.relative_size = 1
-        # for self.relative_size = n,
-        # either definition occupies circle of radius n,
-        # or definition occupies square of size [-n, n] x [-n, n]
-    
-    def get_system(self):
-        return self.system
-
-    def set_system(self, system):
-        # system should be a FractalSystem
-        self.system = system
-        return self
+        # What is the minimum diameter of the convex hull of a piece calculated
+        # on this definition with identity transformation (vect(0, 0), mx_id())?
+        # (Note that if shear or stretch transformations are used then we really ought to calculate
+        # diameter directly on the convex hull of each individual piece.)
+        # For now, allow this value to be overridden, since perhaps in some situations the convex hull cannot be calculated.
+        self.relative_diameter = 2
+        # Default value of 2 means that under some rotation the fractal can be fitted between two planes 2 units apart.
+        # or that approximately the fractal fits inside the 2x2 square [-1, 1] x [-1, 1]
 
     def get_metric_fn(self):
-        return self.get_system().get_metric_fn() if self.metric_fn is None else self.metric_fn
+        return self.system.metric_fn if self.metric_fn is None else self.metric_fn
+    
+    def should_piece_iterate(self, piece):
+        iteration_fn = self.system.iteration_fn if self.iteration_fn is None else self.iteration_fn
+        return iteration_fn(piece)
 
-    def set_metric_fn(self, metric_fn=None):
-        # metric_fn should be a function that maps from FractalPieces to numeric
-        # Supply no argument to clear this metric function, and use the default in the system
-        self.metric_fn = metric_fn
-        return self
-
-    def get_plotter(self):
-        return self.plotter
-
-    def set_plotter(self, plotter):
-        # plotter should be a FractalPlotter
-        self.plotter = plotter
-        return self
-
-    def get_hull(self):
-        return self.hull
-
-    def get_iterates(self, context_piece=None):
-        # If self.iterates is not a function, it should be a Boolean value, so return that value directly
-        if not callable(self.iterates):
-            return self.iterates
-        # Otherwise, self.iterates is a function that accepts an optional context piece and returns a Boolean
-        # Currently the context piece should always be supplied.
-        return self.iterates(context_piece)
-
-    def set_iterates(self, iterates):
-        # iterates should be a Boolean, or a function that accepts an optional context piece and evaluates to a Boolean
-        self.iterates = iterates
-        return self
+    def get_piece_minimum_diameter(self, piece):
+        # An alternative to the current method is calculating it directly
+        # on the convex hull from this definition
+        # transformed by the transformation on an individual piece.
+        # This would cope well with stretches and shears.
+        metric_fn = self.get_metric_fn()
+        return self.relative_diameter * metric_fn(piece)
 
     def get_children(self, context_piece=None):
         # If self.children is not a function, it should be a list of FractalPieces, so return this list directly
@@ -74,7 +55,8 @@ class FractalDefn:
         return self.children(context_piece)
 
     def create_child(self, id, vect, mx, reverse_progress=False, reset_progress=False):
-        piece = FractalPiece(system=self.get_system(), id=id, vect=vect, mx=mx, reverse_progress=reverse_progress, reset_progress=reset_progress)
+        # This will be an "Abstract" fractal piece
+        piece = FractalPiece(system=self.system, id=id, vect=vect, mx=mx, reverse_progress=reverse_progress, reset_progress=reset_progress)
         if callable(self.children):
             # If self.children is a function, remove the function and replace by list
             # Could alternatively raise an error if try to create_child on a fractal defn with fn for children
@@ -100,7 +82,7 @@ class FractalDefn:
         return self
     
     def plot(self, drawing, piece):
-        self.get_plotter().plot(drawing, piece)
+        self.plotter.plot(drawing, piece)
 
     def __repr__(self):
         result = "FD: ["

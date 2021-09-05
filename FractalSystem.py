@@ -2,57 +2,42 @@ import numpy as np
 from scipy.spatial import ConvexHull
 
 from FractalDefn import FractalDefn
-from FractalPiece import FractalPiece
-from fractalConstants import DEFAULT_MAX_ITERATIONS, DEFAULT_MIN_RADIUS, DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
-from fractalConstants import DEFAULT_INITIAL_HULL, DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_HULL_MIN_LEN
-from fractalHelperFns import DEFAULT_METRIC_FN
+from fractalConstants import DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
+from fractalConstants import DEFAULT_INITIAL_HULL, DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_HULL_MIN_LEN, BREAK_AFTER_ITERATIONS
+from fractalHelperFns import DEFAULT_METRIC_FN, DEFAULT_ITERATION_FN
 
+# There should only be 1 fractal system created,
+# link all fractal definitions and pieces back to this system
 
 class FractalSystem:
-    def __init__(self, max_iterations=DEFAULT_MAX_ITERATIONS, min_radius=DEFAULT_MIN_RADIUS, max_pieces=DEFAULT_MAX_PIECES):
+    def __init__(self, max_pieces=DEFAULT_MAX_PIECES):
         self.defns = []
-        self.max_iterations = max_iterations
-        self.min_radius = min_radius
         self.max_pieces = max_pieces
         self.max_defns = DEFAULT_MAX_DEFNS
-        self.metric_fn = DEFAULT_METRIC_FN  # Function from piece to number (metric, radius, size). Can override on the definition.
+        self.iteration_fn = DEFAULT_ITERATION_FN  # Function to tell a fractal piece if it should iterate or not
+        self.metric_fn = DEFAULT_METRIC_FN  # Function mapping from affine transformation (vect, mx) of a piece, to a numeric value. Can override on the definition.
         self.initial_pieces = []  # Set this one to a list of Fractal Pieces
         self.iterated_pieces = []  # Do not set this one, call fs.do_iterations() to generate it automatically
         self.piece_sorter = None
 
-    def is_fractal_system(self):
-        return True
-    
-    def get_defn(self, id):
-        return self.defns[id]
-
-    def get_metric_fn(self):
-        return self.metric_fn
-
-    def set_metric_fn(self, metric_fn):
-        # metric_fn should be a function that maps from FractalPieces to numeric
-        self.metric_fn = metric_fn
-        return self
-
-    def is_id_valid(self, id):
-        if isinstance(id, int):
-            if id >= 0 and id < len(self.defns):
-                return True
-        return False
+    def lookup_defn(self, id):
+        if isinstance(id, int) and id >= 0 and id < len(self.defns):
+            return self.defns[id]
+        else:
+            # If id is not found, fail gracefully by returning None.
+            # Should check for None and only take further action if a definition is returned.
+            return None
 
     def add_defn(self, fractal_defn):
         self.defns.append(fractal_defn)
-        # Make sure that definition is linked to this Fractal System,
-        # overwriting any previous link
-        if fractal_defn.get_system() != self:
-            fractal_defn.set_system(self)
+        fractal_defn.system = self  # Force definition to link back to this system
         return self
         
     def make_defns(self, n):
-        if isinstance(n, int):
-            if n > 0 and n <= self.max_defns:
-                for i in range(0, n):
-                    self.add_defn(FractalDefn(system=self))
+        if isinstance(n, int) and n > 0 and n <= self.max_defns:
+            self.defns = []
+            for i in range(n):
+                self.add_defn(FractalDefn(system=self))
         return self
 
     # To make a convex hull
@@ -71,6 +56,9 @@ class FractalSystem:
 
     # Since the min_len introduces rounding into the coords, it would be possible to stop early
     # if the previous and next rounded coords were identical
+
+    # Probably ought to limit the hull size to 20 or less points (in 2D) or a specified number of point (in 3D)
+    # and have a good algorithm to expand the hull slightly to find suitable fewer points
 
     def calculate_hulls(self, max_iterations=DEFAULT_HULL_MAX_ITERATIONS, min_len=DEFAULT_HULL_MIN_LEN, initial_hull=DEFAULT_INITIAL_HULL):
         # Initialise all defns
@@ -91,7 +79,7 @@ class FractalSystem:
                     id = child.get_id()
                     vect = child.get_vect()
                     mx = child.get_mx()
-                    prev_hull = self.defns[id].get_hull()
+                    prev_hull = self.defns[id].hull
                     next_points_partial = prev_hull @ np.transpose(mx) + vect  # Backwards arithmetic here (*)
                     if next_points is None:
                         next_points = next_points_partial
@@ -113,67 +101,51 @@ class FractalSystem:
             children = defn.get_children()
             if len(children) < 1:
                 continue
-            print(f"Definition {j} has length {len(defn.get_hull())}")
+            print(f"Definition {j} has length {len(defn.hull)}")
+        print("")
         return self
 
     def do_iterations(self):
         self.iterated_pieces = self.initial_pieces
-        for i in range(0, self.max_iterations):
+        iteration_finished = False
+        counter = 0
+        while not iteration_finished:
+            counter += 1
+            print(f"Calculating iteration {counter} on {len(self.iterated_pieces)} piece{'' if len(self.iterated_pieces) == 1 else 's'}")
             iteration_finished = self.iterate_once()
-            if iteration_finished:
+            if BREAK_AFTER_ITERATIONS <= counter:
+                print(f"Forced break after {counter} iterations")
                 break
+        print("")
 
     def iterate_once(self):
-        iteration_finished = True
-        next_iterated_pieces = []
-        counter = 0
-        for this_piece in self.iterated_pieces:
-            counter += 1
-            this_id = this_piece.get_id()
-            this_vect = this_piece.get_vect()
-            this_mx = this_piece.get_mx()
-            this_metric = this_piece.get_metric()
-            if self.is_id_valid(this_id):
-                this_defn = self.get_defn(this_id)
-                does_not_iterate = not this_defn.get_iterates(this_piece)
-                this_size_px = this_defn.relative_size * this_metric
-                if this_size_px <= self.min_radius or self.max_pieces < counter or does_not_iterate:
-                    next_iterated_pieces.append(this_piece)
-                else:
-                    iteration_finished = False
-                    children = this_defn.get_children(this_piece)
-                    count_children = len(children)
-                    if 0 < count_children:
-                        progress_splits = this_piece.split_progress_interval(count_children)
-                        split_count = 0
-                        for child_piece in children:
-                            child_id = child_piece.get_id()
-                            child_vect = child_piece.get_vect()
-                            child_mx = child_piece.get_mx()
-                            next_vect = this_vect + this_mx @ child_vect
-                            next_mx = this_mx @ child_mx
-                            next_progress = progress_splits[split_count]
-                            if child_piece.reverse_progress:
-                                next_progress = [next_progress[1], next_progress[0]]
-                            if child_piece.reset_progress:
-                                next_progress = [0, 1]
-                            next_piece = FractalPiece(system=self, id=child_id, vect=next_vect, mx=next_mx, progress=next_progress)
-                            next_iterated_pieces.append(next_piece)
-                            split_count += 1
-        if self.max_pieces < counter:
-            iteration_finished = True
+        iteration_finished = True  # Set to false if at least one piece was successfully iterated
+        exceeded_max_pieces = False  # Set to true if we run out of storage space
+        n = len(self.iterated_pieces)  # self.iterated_pieces is this iteration
+        collect_next_iteration = []  # collect_next_iteration is next iteration, updated by .iterate function below
+        for i in range(n):
+            piece_to_iterate = self.iterated_pieces[i]
+            if exceeded_max_pieces or self.max_pieces - (n - i) < len(collect_next_iteration):
+                # Have run out of space, just keep the same pieces without iterating
+                collect_next_iteration.append(piece_to_iterate)
+                exceeded_max_pieces = True
+                iteration_finished = True
+            else: 
+                was_iterated = piece_to_iterate.iterate(collect_next_iteration)  # returns Boolean, appends to collect_next_iteration
+                if was_iterated:
+                    iteration_finished = False  # keep going until no piece iterates any further
+        if exceeded_max_pieces:
             print("Warning - max pieces exceeded")
-        self.iterated_pieces = next_iterated_pieces
+        self.iterated_pieces = collect_next_iteration
         return iteration_finished
 
     def final_size(self):
         return len(self.iterated_pieces)
 
     def plot(self, drawing):
-        pieces_to_plot = self.iterated_pieces
         if callable(self.piece_sorter):
-            pieces_to_plot.sort(key=self.piece_sorter)
-        for piece_to_plot in pieces_to_plot:
+            self.iterated_pieces.sort(key=self.piece_sorter)
+        for piece_to_plot in self.iterated_pieces:
             piece_to_plot.plot(drawing)
 
     def __repr__(self):

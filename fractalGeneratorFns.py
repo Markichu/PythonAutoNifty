@@ -33,12 +33,12 @@ def gen_children_rand_small_squares(system, id, m, n):
 # depending on its distance from vect
 # For large pieces, iterate them with probability 1,
 # only apply the probabilistic iteration to scales (metrics) below the cutoff.
-def gen_children_fade_out(system, id, n, centre_vect, cutoff_scale, d1=0, d2=2000, p1=1, p2=0):
+def gen_children_fade_out(system, id, n, centre_vect, cutoff_diameter, d1=0, d2=2000, p1=1, p2=0):
     grid = grid_generator(x_steps=n, y_steps=n)
     def calc_children(context_piece=None):
         p = 1  # Default is to include all children, unless context is supplied and size (metric) is below cutoff
         if context_piece is not None:
-            if context_piece.get_metric() < cutoff_scale:
+            if context_piece.get_minimum_diameter() < cutoff_diameter:
                 outer_vect = context_piece.get_vect()
                 d = vect_len(outer_vect - centre_vect)
                 d_progress_1_to_2 = max(0, min(1, (d-d1)/(d2-d1)))
