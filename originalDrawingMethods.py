@@ -269,16 +269,16 @@ def square_fractal(drawing, master_key, iterations=5):
 
     return square_fractal_recursive(drawing, master_key, [Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE)], iterations)
 
-
-def big_text_boi(drawing):
+def text_drawing_example(drawing):
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
     drawing.add_gradient(Pos(150, 150), Pos(DRAWING_SIZE-150, DRAWING_SIZE-150), hsva_to_rgba(0, 0, 1), hsva_to_rgba(0, 0, 1), 200)
 
+    # Examples of writing:
     # title text
-    drawing.write(Pos(160, 170), ["***REMOVED***", "***REMOVED***"], 50)
-
-    drawing.write(Pos(160, 300), ["***REMOVED***",
-                                  "***REMOVED***",
-                                  "***REMOVED***"], 25, 1.35)
+    drawing.write(pos=Pos(160, 170), lines=["Add a title", "here!"], font_size=50)
+    # body text
+    drawing.write(pos=Pos(160, 300), lines=["Add some interesting",
+                                  "content and words",
+                                  "here!"], font_size=25, line_spacing=1.35, colour=(64, 64, 200, 1))
 
     return drawing

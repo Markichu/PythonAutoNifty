@@ -106,7 +106,7 @@ class Drawing:
         # add line to object
         self.object["lines"].append(line)
 
-    def write(self, pos, lines, font_size, line_spacing=1.15):
+    def write(self, pos, lines, font_size, line_spacing=1.15, colour=BLACK):
         line_pos = pos.copy()
         y_offset = Pos(0, font_size * line_spacing)
         font = {"a": ([[Pos(0.1, 1), Pos(0.5, 0)],
@@ -226,7 +226,7 @@ class Drawing:
 
             # draw character
             for line in this_char:
-                self.add_line(line, BLACK, font_size / 30)
+                self.add_line(line, colour, font_size / 30)
 
             return pos + x_offset
 
