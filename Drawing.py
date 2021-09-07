@@ -356,8 +356,10 @@ class Drawing:
 
                             var scale_height = saved_height / imported_height;
                             var scale_width = saved_width / imported_width;
+                            var scale_brush_radius = Math.max(scale_height, scale_width)
 
                             json_object['lines'].forEach(function(part, i) {
+                              this[i]['brushRadius'] = this[i]['brushRadius']*scale_brush_radius;
                               this[i]['points'].forEach(function(part, j) {
                                 this[j]['x'] = this[j]['x']*scale_width;
                                 this[j]['y'] = this[j]['y']*scale_height;
