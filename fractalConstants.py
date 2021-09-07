@@ -7,5 +7,5 @@ DEFAULT_MAX_ITERATIONS = 6
 BREAK_AFTER_ITERATIONS = 1000  # stop the loop if this number of iterations is reached
 
 DEFAULT_HULL_MAX_ITERATIONS = 20
-DEFAULT_HULL_MIN_LEN = 0.037
+DEFAULT_HULL_ACCURACY = 0.031415  # Acceptable accuracy for fractal roughly filling interval [-1, 1] in each direction
 DEFAULT_INITIAL_HULL = np.array(((1, 1), (-1, 0.5), (0.5, -1)))

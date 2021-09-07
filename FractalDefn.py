@@ -1,11 +1,13 @@
 import random
 from FractalPlotter import FractalPlotter
 from FractalPiece import FractalPiece
-
+from fractalHullHelperFns import iterate_defn_hull
+from fractalConstants import DEFAULT_HULL_ACCURACY
 
 class FractalDefn:
-    def __init__(self, system=None):
+    def __init__(self, system, id):
         self.system = system  # Link back to the system
+        self.id = id  # The definition id number within the system
 
         # Fractal system contains default metric and iteration functions.
         # Override here at the definition level if needed.
@@ -14,7 +16,7 @@ class FractalDefn:
 
         self.plotter = FractalPlotter()  # used to control plotting of FractalPieces linked to this FractalDefn
         self.hull = None  # Convex Hull; set of coordinates describing shape of definition at vector (0, 0), matrix ((1, 0), (0, 1))
-        self._next_hull = None  # Temporary variable for calculating next iteration of convex hull
+        self.hull_accuracy = DEFAULT_HULL_ACCURACY  # hull coordinates will be combined if they are nearer than this (small) number
 
         # Children should be either a list of abstract Fractal Pieces, or a function returning a list of abstract Fractal Pieces
         # If a function, it should accept an optional FractalPiece as context for evaluation.
@@ -83,6 +85,13 @@ class FractalDefn:
     
     def plot(self, drawing, piece):
         self.plotter.plot(drawing, piece)
+        
+    def initialise_hull(self, hull_accuracy, initial_hull):
+        self.hull_accuracy = hull_accuracy
+        self.hull = initial_hull.copy()
+    
+    def iterate_hull(self, iteration):
+        iterate_defn_hull(system=self.system, defn=self, iteration=iteration)
 
     def __repr__(self):
         result = "FD: ["
