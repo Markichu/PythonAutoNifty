@@ -5,12 +5,9 @@ from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, grid_generator, wobble_square
-from fractalHelperFns import plot_dot, plot_path, plot_hull, sort_by_tsfm
+from fractalHelperFns import plot_dot, plot_path, plot_hull_outline, sort_by_tsfm
 from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
 from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand, gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
-
-
-
 
 def fractalRunner(drawing):
 
@@ -126,7 +123,7 @@ def fractalRunner(drawing):
     # fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
 
     # Plotting method 2: take the corner points from a convex hull calculation
-    fp.plotting_fn = plot_hull(width=1.5, expand_factor=1)  # Must call fs.calculate_hulls() after definitions complete
+    fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=1)  # Must call fs.calculate_hulls() after definitions complete
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -233,29 +230,29 @@ def fractalRunner(drawing):
     
     # --------------------
 
+    # TODO: Convex Hulls only currently works for 2D. Can it work for 3D too?
     # Calculate Convex Hulls after fractal definitions completed
-    # Need to do this if plot_hull method used
-    # Can comment out this section otherwise
-    fs.calculate_hulls()
+    # Need to do this if plot_hull_outline method used, can comment out this section otherwise
+    fs.calculate_hulls(hull_accuracy=0.1, max_iterations=10)
 
     # --------------------
 
     # # Examine the fractal system setup
-    # print("")
-    # print("Fractal System:")
-    # print(fs)
-    # print("")
+    # fs.log("")
+    # fs.log("Fractal System:")
+    # fs.log(fs)
+    # fs.log("")
 
     # Calculate the iterations
     initial_piece = FractalPiece(system=fs, id=init_defn_id, vect=init_vect, mx=init_mx)
     fs.initial_pieces = [initial_piece]
     fs.do_iterations()
-    print(f"After iteration, there are {fs.final_size()} pieces")
-    print("")
+    fs.log(f"After iteration, there are {fs.final_size()} pieces")
+    fs.log("")
 
     # Plot iterations to drawing
     fs.plot(drawing)
-    print("Fractal System plotted successfully")
-    print("")
+    fs.log("Fractal System plotted successfully")
+    fs.log("")
 
     return drawing

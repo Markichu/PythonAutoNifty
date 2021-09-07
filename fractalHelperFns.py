@@ -139,7 +139,7 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
     return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
-def plot_hull(width=1, expand_factor=1, wobble_fn=None):
+def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
