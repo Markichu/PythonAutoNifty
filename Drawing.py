@@ -106,6 +106,36 @@ class Drawing:
         # add line to object
         self.object["lines"].append(line)
 
+    def add_square(self, center_position, width, colour, precision=1):
+        # init corners to outer positions
+        corners = [Pos(0, 0),
+                   Pos(0, width),
+                   Pos(width, width),
+                   Pos(width, 0)]
+        for i, corner in enumerate(corners):
+            corners[i] = center_position - Pos(width / 2, width / 2) + corner
+
+        # calculate brush radius to fit to width
+        brush_radius = (width / (precision + 1)) / 2
+
+        # calculate inner corners from outer and brush
+        offsets = [Pos(brush_radius, brush_radius),
+                   Pos(brush_radius, -brush_radius),
+                   Pos(-brush_radius, -brush_radius),
+                   Pos(-brush_radius, brush_radius)]
+        for i, corner in enumerate(corners):
+            corners[i] = corner + offsets[i]
+
+        # do outer line
+        result_corners = corners + [corners[0]]
+
+        # do filling Lines
+        line_step = (width - brush_radius * 2) / precision
+        for i in range(1, precision):
+            result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, brush_radius))
+            result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -brush_radius))
+        self.add_strict_line(result_corners, colour, brush_radius)
+
     def write(self, pos, lines, font_size, line_spacing=1.15, colour=BLACK):
         line_pos = pos.copy()
         y_offset = Pos(0, font_size * line_spacing)
