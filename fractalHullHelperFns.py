@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.spatial import ConvexHull
 
+from numpyHelperFns import mx_rotd
+
 # To make a convex hull in 2D:
 # 1. Start with any 2D shape (e.g. a triangle around the origin) for a hull for each definition
 # 2. At each calculation iteration, for each definition, take union of previous hulls under fractal maps
@@ -44,5 +46,31 @@ def iterate_defn_hull(system, defn, iteration):
     # Now can do lookup on original points (next_points) rather than the approximate and scaled points (scaled_integer_points)
     defn.hull = next_points[vertices]
     # TODO: fix error if hull accuracy is too big then we don't get enough points to make a convex hull, and the method from scipy breaks
-    system.log(f"Hull iteration {iteration} of definition {defn.id} has length {len(defn.hull)}")
+    # system.log(f"Hull iteration {iteration} of definition {defn.id} has length {len(defn.hull)}")
+
+degrees_30 = mx_rotd(angle=30, scale=1)
+degrees_60 = mx_rotd(angle=60, scale=1)
+
+def calculate_hull_diameter(system, defn):
+    # Calculates minimum diameter over a total of 6 directions: 0, 30, 60, 90, 120, 150 degrees
+    hull = defn.hull
+    def get_square_min_diam(the_hull):
+        x_min, y_min = 10 ** 10, 10 ** 10
+        x_max, y_max = -10 ** 10, -10 ** 10
+        for point in the_hull:
+            x_min = min(x_min, point[0])
+            x_max = max(x_max, point[1])
+            y_min = min(y_min, point[0])
+            y_max = max(y_max, point[1])
+        square_diam = min(abs(x_max-x_min), abs(y_max-y_min))
+        return square_diam
+    def get_min_diam_30_degrees(the_hull):
+        d0 = get_square_min_diam(the_hull)
+        d30 = get_square_min_diam(the_hull @ degrees_30)
+        d60 = get_square_min_diam(the_hull @ degrees_60)
+        return min(d0, d30, d60)
+    diam = get_min_diam_30_degrees(hull)
+    defn.relative_diameter = diam
+    system.log(f"- hull {defn.id} has {len(hull)} points, {diam:.2f} min diameter")
+
 
