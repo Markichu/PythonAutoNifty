@@ -44,22 +44,31 @@ class FractalSystem:
     
     def calculate_hulls(self, max_iterations=DEFAULT_HULL_MAX_ITERATIONS, hull_accuracy=None, initial_hull=DEFAULT_INITIAL_HULL):
         # 1. Initialise hulls on all definitions
+        self.log("")
         self.log("Initialising convex hull calculations")
         for defn in self.defns:
             defn.initialise_hull(hull_accuracy=hull_accuracy, initial_hull=initial_hull)
         # 2. Iteratively calculate all hulls in parallel (necessary since they interact)
+        self.log("")
         self.log("Calculating convex hulls")
         for i in range(max_iterations):
             for defn in self.defns:
                 defn.iterate_hull(iteration=i)
+            self.log(f"- hulls iteration {i+1}")
+        self.log("")
+        self.log("Calculating definition minimum diameters")
+        for defn in self.defns:
+            defn.calculate_diameter()
 
     def do_iterations(self):
+        self.log("")
+        self.log(f"Calculating fractal iterations")
         self.iterated_pieces = self.initial_pieces
         iteration_finished = False
         counter = 0
         while not iteration_finished:
             counter += 1
-            self.log(f"Calculating iteration {counter} on {len(self.iterated_pieces)} piece{'' if len(self.iterated_pieces) == 1 else 's'}")
+            self.log(f"- iteration {counter} on {len(self.iterated_pieces)} piece{'' if len(self.iterated_pieces) == 1 else 's'}")
             iteration_finished = self.iterate_once()
             if BREAK_AFTER_ITERATIONS <= counter:
                 self.log(f"Forced break after {counter} iterations")

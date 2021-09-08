@@ -44,5 +44,8 @@ def iterate_defn_hull(system, defn, iteration):
     # Now can do lookup on original points (next_points) rather than the approximate and scaled points (scaled_integer_points)
     defn.hull = next_points[vertices]
     # TODO: fix error if hull accuracy is too big then we don't get enough points to make a convex hull, and the method from scipy breaks
-    system.log(f"Hull iteration {iteration} of definition {defn.id} has length {len(defn.hull)}")
+    # system.log(f"Hull iteration {iteration} of definition {defn.id} has length {len(defn.hull)}")
+
+def calculate_hull_diameter(system, defn):
+    system.log(f"- definition {defn.id} hull has {len(defn.hull)} points")
 

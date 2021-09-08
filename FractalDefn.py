@@ -1,7 +1,7 @@
 import random
 from FractalPlotter import FractalPlotter
 from FractalPiece import FractalPiece
-from fractalHullHelperFns import iterate_defn_hull
+from fractalHullHelperFns import iterate_defn_hull, calculate_hull_diameter
 from fractalConstants import DEFAULT_HULL_ACCURACY
 
 class FractalDefn:
@@ -92,6 +92,11 @@ class FractalDefn:
     
     def iterate_hull(self, iteration):
         iterate_defn_hull(system=self.system, defn=self, iteration=iteration)
+    
+    def calculate_diameter(self):
+        # TODO: Setting self.relative_diameter is only accurate in all cases for translations, rotations, reflections
+        # If transformation is stretch or shear, this ought to be recalculated at the piece level!
+        calculate_hull_diameter(system=self.system, defn=self)
 
     def __repr__(self):
         result = "FD: ["
