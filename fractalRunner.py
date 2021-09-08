@@ -56,7 +56,7 @@ def fractalRunner(drawing):
 
     # In order to recreate a given fractal precisely, any randomness it contains must be generated from a fixed random seed.
     # Enable/disable this section to turn seeding on or off.
-    random_seed = "My fractal 001"  # Try incrementing this number! Controls the fractal via which randomness it uses.
+    random_seed = "My fractal 002"  # Try incrementing this number! Controls the fractal via which randomness it uses.
     random.seed(random_seed)  # Comment this out if you don't want to control the seeding
     
     # --------------------
@@ -223,6 +223,7 @@ def fractalRunner(drawing):
     fd = fs.lookup_defn(id)
     sc = 0.5 ** 0.5
     fd.children = gen_children_variable_dragon(fs, id)
+    fd.iteration_fn = get_iteration_fn_standard(min_diameter=5, max_iterations=20)
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress([BLUE, RED, ORANGE])
     fp.plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
