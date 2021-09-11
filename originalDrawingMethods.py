@@ -282,3 +282,12 @@ def text_drawing_example(drawing):
                                   "here!"], font_size=25, line_spacing=1.35, colour=(64, 64, 200, 1))
 
     return drawing
+
+def alpha_example(drawing):
+    for i in range(random.randint(0,100)):
+        drawing.add_point(Pos(random.randint(0,DRAWING_SIZE), random.randint(0,DRAWING_SIZE)), (random.randint(0,255),random.randint(0,255),random.randint(0,255),random.random()), random.randint(1,500))
+        line_points = []
+        for j in range(random.randint(2,20)):
+            line_points.append(Pos(random.randint(0, DRAWING_SIZE), random.randint(0, DRAWING_SIZE)))
+        drawing.add_line(line_points, (random.randint(0,255),random.randint(0,255),random.randint(0,255),random.random()), random.randint(1,10))
+    return drawing
