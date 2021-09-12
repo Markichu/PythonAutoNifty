@@ -1,7 +1,7 @@
 from Drawing import Drawing
 
 from fractalRunner import fractalRunner
-from originalDrawingMethods import point_image, rotating_square, tiled_diagonals,\
+from drawingMethods import point_image, rotating_square, tiled_diagonals,\
   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
   shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example
 
