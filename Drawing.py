@@ -253,7 +253,7 @@ class Drawing:
                 line["points"][point_index] = point_pos.point()
         return self
 
-    def render(self, pygame_scale=None, headless=False, filename="output.png"):
+    def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
@@ -283,6 +283,7 @@ class Drawing:
 
         pygame.display.set_caption("Drawing Render")
         screen.fill(WHITE[:3])
+        pygame.display.update()  # Show the background, (so the screen isn't black on drawings that are slow to process)
 
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
@@ -308,7 +309,19 @@ class Drawing:
 
                 pygame.draw.lines(screen, color, False, points, int(brush_radius * 2))
 
-        # update screen to render drawing
+            if simulate:  # Update the drawing line by line to see the drawing process
+                pygame.display.update()
+                if speed and speed != 0:
+                    time.sleep(speed / 100)
+
+            # Ensure that no events, such as pygame being closed are ignored.
+            ev = pygame.event.get()
+            for event in ev:
+                if event.type == pygame.QUIT:
+                    # Exits before the image is finished, does not take screenshot.
+                    return
+
+        # update screen to render the final result of the drawing
         pygame.display.update()
         print(f"\nSaving {filename}")
         pygame.image.save(screen, filename)

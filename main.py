@@ -37,7 +37,9 @@ def main():
     # #   increase pygame_scale for higher RES output images,\
     # #   enable headless if image will be larger than the screen,\
     # #   filename specifies the name and format of the image
-    drawing.render(pygame_scale=None,headless=False,filename="screenshot.png")
+    # #   simulate specifies whether to show the drawing process
+    # #   speed specifies the speed a simulated drawing should be drawn, 3 is roughly equal to the speed that nifty uses
+    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png", simulate=True, speed=0)
 
 if __name__ == '__main__':
     main()
