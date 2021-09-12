@@ -1,9 +1,6 @@
-import numpy as np
-from scipy.spatial import ConvexHull
-
 from FractalDefn import FractalDefn
-from fractalConstants import DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS
-from fractalConstants import DEFAULT_INITIAL_HULL, DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_HULL_MIN_LEN, BREAK_AFTER_ITERATIONS
+from fractalConstants import DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS, BREAK_AFTER_ITERATIONS
+from fractalConstants import DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_INITIAL_HULL
 from fractalHelperFns import DEFAULT_METRIC_FN, DEFAULT_ITERATION_FN
 
 # There should only be 1 fractal system created,
@@ -19,6 +16,7 @@ class FractalSystem:
         self.initial_pieces = []  # Set this one to a list of Fractal Pieces
         self.iterated_pieces = []  # Do not set this one, call fs.do_iterations() to generate it automatically
         self.piece_sorter = None
+        self.verbose = True  # Set to false to suppress printing output to console
 
     def lookup_defn(self, id):
         if isinstance(id, int) and id >= 0 and id < len(self.defns):
@@ -36,87 +34,46 @@ class FractalSystem:
     def make_defns(self, n):
         if isinstance(n, int) and n > 0 and n <= self.max_defns:
             self.defns = []
-            for i in range(n):
-                self.add_defn(FractalDefn(system=self))
+            for id in range(n):
+                self.add_defn(FractalDefn(system=self, id=id))
         return self
 
-    # To make a convex hull
-    # 1. Start with any 2D shape (e.g. a triangle around the origin) for a hull for each definition
-    # 2. At each calculation iteration, for each definition, take union of previous hulls under fractal maps
-    # 3. Use a convex hull algorithm to remove all interior points
-    # 4. Replace previous hull points with new hull points, and iterate several times
-
-    # Note (*) - currently "vect" is actually not a column vector, but is a row coordinate
-    # which mean that premultiplying by matrix -> postmultiplying by matrix transpose
-    # (all the matrix arithmetic is backwards!)
-    # This probably ought to be fixed later on...
-
-    # Also note that for random fractals the hull will not converge so nicely
-    # This could be alleviated by using multiple (random) copies of the hull points at each stage
-
-    # Since the min_len introduces rounding into the coords, it would be possible to stop early
-    # if the previous and next rounded coords were identical
-
-    # Probably ought to limit the hull size to 20 or less points (in 2D) or a specified number of point (in 3D)
-    # and have a good algorithm to expand the hull slightly to find suitable fewer points
-
-    def calculate_hulls(self, max_iterations=DEFAULT_HULL_MAX_ITERATIONS, min_len=DEFAULT_HULL_MIN_LEN, initial_hull=DEFAULT_INITIAL_HULL):
-        # Initialise all defns
+    def log(self, text):
+        if self.verbose:
+            print(text)
+    
+    def calculate_hulls(self, max_iterations=DEFAULT_HULL_MAX_ITERATIONS, hull_accuracy=None, initial_hull=DEFAULT_INITIAL_HULL):
+        # 1. Initialise hulls on all definitions
+        self.log("")
+        self.log("Initialising convex hull calculations")
         for defn in self.defns:
-            # Initialise convex hull to at least 3 points around the origin, must use a 2D shape for ConvexHull algorithm 1st iteration
-            defn.hull = initial_hull
-            defn._next_hull = None
-        # Iteratively work out the convex hull
+            defn.initialise_hull(hull_accuracy=hull_accuracy, initial_hull=initial_hull)
+        # 2. Iteratively calculate all hulls in parallel (necessary since they interact)
+        self.log("")
+        self.log("Calculating convex hulls")
         for i in range(max_iterations):
-            # Calculate next hulls
-            for j in range(len(self.defns)):
-                defn = self.defns[j]
-                children = defn.get_children()
-                if len(children) < 1:
-                    continue
-                next_points = None
-                for child in children:
-                    id = child.get_id()
-                    vect = child.get_vect()
-                    mx = child.get_mx()
-                    prev_hull = self.defns[id].hull
-                    next_points_partial = prev_hull @ np.transpose(mx) + vect  # Backwards arithmetic here (*)
-                    if next_points is None:
-                        next_points = next_points_partial
-                    else:
-                        next_points = np.concatenate((next_points, next_points_partial))
-                scaled_integer_points = np.rint(next_points * (1/min_len))
-                hull = ConvexHull(scaled_integer_points)  # object
-                vertices = hull.vertices  # array of point indices
-                defn._next_hull = next_points[vertices] # next_points and scaled_integer_points have same order
-            # Store next hulls
             for defn in self.defns:
-                if defn._next_hull is not None:
-                    defn.hull = defn._next_hull
-                    defn._next_hull = None
-        print("")
-        print(f"Results of Convex Hull calculations:")
-        for j in range(len(self.defns)):
-            defn = self.defns[j]
-            children = defn.get_children()
-            if len(children) < 1:
-                continue
-            print(f"Definition {j} has length {len(defn.hull)}")
-        print("")
-        return self
+                defn.iterate_hull(iteration=i)
+            self.log(f"- hulls iteration {i+1}")
+        self.log("")
+        self.log("Calculating definition minimum diameters")
+        for defn in self.defns:
+            defn.calculate_diameter()
 
     def do_iterations(self):
+        self.log("")
+        self.log(f"Calculating fractal iterations")
         self.iterated_pieces = self.initial_pieces
         iteration_finished = False
         counter = 0
         while not iteration_finished:
             counter += 1
-            print(f"Calculating iteration {counter} on {len(self.iterated_pieces)} piece{'' if len(self.iterated_pieces) == 1 else 's'}")
+            self.log(f"- iteration {counter} on {len(self.iterated_pieces)} piece{'' if len(self.iterated_pieces) == 1 else 's'}")
             iteration_finished = self.iterate_once()
             if BREAK_AFTER_ITERATIONS <= counter:
-                print(f"Forced break after {counter} iterations")
+                self.log(f"Forced break after {counter} iterations")
                 break
-        print("")
+        self.log("")
 
     def iterate_once(self):
         iteration_finished = True  # Set to false if at least one piece was successfully iterated
@@ -135,7 +92,7 @@ class FractalSystem:
                 if was_iterated:
                     iteration_finished = False  # keep going until no piece iterates any further
         if exceeded_max_pieces:
-            print("Warning - max pieces exceeded")
+            self.log("Warning - max pieces exceeded")
         self.iterated_pieces = collect_next_iteration
         return iteration_finished
 

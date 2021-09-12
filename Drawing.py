@@ -307,7 +307,9 @@ class Drawing:
                 pygame_scale = (smallest_dimension-TITLE_BAR_HEIGHT-(BORDER_WIDTH*2)) / DRAWING_SIZE
 
         # Initialise the window with dimensions
-        screen = pygame.display.set_mode((round(DRAWING_SIZE * pygame_scale), round(DRAWING_SIZE * pygame_scale)))
+        pygame_x = round(DRAWING_SIZE * pygame_scale)
+        pygame_y = round(DRAWING_SIZE * pygame_scale)
+        screen = pygame.display.set_mode((pygame_x, pygame_y))
 
         pygame.display.set_caption("Drawing Render")
         screen.fill(WHITE[:3])
@@ -315,14 +317,18 @@ class Drawing:
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
             color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
+            color[3] *= 255 # Pygame expects an alpha between 0 and 255, not 0 and 1.
+
+            shape_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
 
             points = []
             for point in line["points"]:
                 this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
                 points.append(this_point)
-                pygame.draw.circle(screen, color, this_point, int(brush_radius))
+                pygame.draw.circle(shape_surface, color, this_point, int(brush_radius))
 
-            pygame.draw.lines(screen, color, False, points, int(brush_radius*2))
+            pygame.draw.lines(shape_surface, color, False, points, int(brush_radius*2))
+            screen.blit(shape_surface, (0, 0))
 
         # update screen to render drawing
         pygame.display.update()
@@ -386,8 +392,10 @@ class Drawing:
 
                             var scale_height = saved_height / imported_height;
                             var scale_width = saved_width / imported_width;
+                            var scale_brush_radius = Math.max(scale_height, scale_width)
 
                             json_object['lines'].forEach(function(part, i) {
+                              this[i]['brushRadius'] = this[i]['brushRadius']*scale_brush_radius;
                               this[i]['points'].forEach(function(part, j) {
                                 this[j]['x'] = this[j]['x']*scale_width;
                                 this[j]['y'] = this[j]['y']*scale_height;

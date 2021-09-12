@@ -5,7 +5,7 @@ from Pos import Pos
 from constants import DRAWING_SIZE, BLACK, BLUE
 from fractalConstants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS
 from helperFns import interpolate_colour
-from numpyHelperFns import metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord, vect
+from numpyHelperFns import vect, vect_len, metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord
 
 
 # -------------------------------------
@@ -139,18 +139,57 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
     return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
-def plot_hull(width=1, expand_factor=1, wobble_fn=None):
+def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
-        piece_vect = piece.get_vect()
-        piece_mx = piece.get_mx()
-        pos_list = []
         hull = piece.get_defn().hull
         if hull is not None:
+            piece_vect = piece.get_vect()
+            piece_mx = piece.get_mx()
+            pos_list = []
             for i in range(0, len(hull)):
                 wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
                 draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
                 pos_list.append(get_canvas_pos_from_vect(draw_vect))
             pos_list.append(pos_list[0])  # Close the hull outline
+            drawing.add_line(pos_list, colour, width)
+    return plot_fn
+
+# Fill a fractal piece using a spiralling path from the centre to the convex hull
+def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None):
+    def plot_fn(drawing, piece, colour=BLACK):
+        hull = piece.get_defn().hull
+        if hull is not None:
+            n = len(hull)  # hull length
+            piece_vect = piece.get_vect()
+            piece_mx = piece.get_mx()
+            piece_hull_list = []  # hull points
+            plot_vect_list = []  # inspiralling points to plot
+            pos_list = []  # convert to Pos format
+            avg_vect = piece_vect * 0  # Going to spiral in towards this point
+            for i in range(n):
+                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
+                piece_hull_list.append(draw_vect)
+                avg_vect += draw_vect
+            avg_vect /= n  # turn sum to (mean) average
+            max_distance_from_avg = 0
+            for i in range(n):
+                max_distance_from_avg = max(max_distance_from_avg, vect_len(piece_hull_list[i] - avg_vect))
+            # Calculate m, number of spirals in to the centre
+            # width is brush radius, so x2
+            # Add 2 to ensure overlapping, round to integer number of spirals
+            m = round(2 + max_distance_from_avg / (2 * width))
+            # Construct list of vectors to plot
+            mid_boundary_point = (piece_hull_list[-2] + piece_hull_list[-1] ) * 0.5
+            plot_vect_list = [mid_boundary_point, piece_hull_list[-1]] + piece_hull_list  # standard array concatenation
+            for i in range(m):
+                for j in range(n):
+                    plot_vect_list.append(( (m - (i+1)) * piece_hull_list[j] + (i + 1) * avg_vect) * (1 / m))
+            plot_vect_list.append(avg_vect)
+            # Get canvas points in Pos format, also reverse order so it spirals out from the centre
+            l = len(plot_vect_list)
+            for j in range(l):
+                pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l-j-1]))
             drawing.add_line(pos_list, colour, width)
     return plot_fn
 

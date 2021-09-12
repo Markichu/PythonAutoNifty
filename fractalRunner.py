@@ -5,12 +5,9 @@ from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, grid_generator, wobble_square
-from fractalHelperFns import plot_dot, plot_path, plot_hull, sort_by_tsfm
+from fractalHelperFns import plot_dot, plot_path, plot_hull_outline, plot_hull_filled, sort_by_tsfm
 from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
 from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand, gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
-
-
-
 
 def fractalRunner(drawing):
 
@@ -59,7 +56,7 @@ def fractalRunner(drawing):
 
     # In order to recreate a given fractal precisely, any randomness it contains must be generated from a fixed random seed.
     # Enable/disable this section to turn seeding on or off.
-    random_seed = "My fractal 001"  # Try incrementing this number! Controls the fractal via which randomness it uses.
+    random_seed = "My fractal 002"  # Try incrementing this number! Controls the fractal via which randomness it uses.
     random.seed(random_seed)  # Comment this out if you don't want to control the seeding
     
     # --------------------
@@ -112,21 +109,23 @@ def fractalRunner(drawing):
     fd.create_child(id, grid(0, 0), mx_id() * sc)  # Same scale matrix result, three ways of writing
     fd.create_child(id, grid(0, 1), mx_scale(sc))
     fd.create_child(id, grid(1, 0), mx_sq(num=1, scale=sc))
-    
+
     # Showing here a manual assignment of relative diameter to fractal definition.
     # This is redundant since 2 is the default value, but larger or smaller values will affect drawing and iteration.
     # Min diameter 2 means in some orientation the defn fits between planes 2 units apart, for a piece with identity transformation (vect(0, 0), mx_id())
     fd.relative_diameter = 2
+    fd.iteration_fn = get_iteration_fn_standard(min_diameter=10, max_iterations=5)
     
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
 
-    # # # Plotting method 1: set the corner points manually, plot a path
+    # # Plot method 1: set the corner points manually, plot a path
     # fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
-
-    # Plotting method 2: take the corner points from a convex hull calculation
-    fp.plotting_fn = plot_hull(width=1.5, expand_factor=1)  # Must call fs.calculate_hulls() after definitions complete
+    # # Plot method 2: outline using convex hull, must call fs.calculate_hulls after definitions complete
+    # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=1.00)
+    # Plot method 3: fill using convex hull, must call fs.calculate_hulls
+    fp.plotting_fn = plot_hull_filled(width=1, expand_factor=1.25)
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -140,15 +139,16 @@ def fractalRunner(drawing):
     fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc**1.7))
     fp = fd.plotter
     fp.colouring_fn = colour_by_log2_size(0, 4, colours=[GREEN, BLUE])
-    fp.plotting_fn = plot_path(
-        closed=True,
-        width=2,
-        expand_factor=1.1,
-        wobble_fn=wobble_square(pixels=3),
-        vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)]
-    )
+    # fp.plotting_fn = plot_path(
+    #     closed=True,
+    #     width=2,
+    #     expand_factor=1.1,
+    #     wobble_fn=wobble_square(pixels=3),
+    #     vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)]
+    # )
+    fp.plotting_fn = plot_hull_filled()
 
-    # Definition #5 - demo of random hexagon dot fractal
+    # Definition #5 - demo of random hexagon fractal
     id_exit = 1
     id_iterate = 5
     fd = fs.lookup_defn(id_iterate)
@@ -166,7 +166,9 @@ def fractalRunner(drawing):
     fd.create_child(id_fn, vect(0, 0) * sc, mx_fn)
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
-    fp.plotting_fn = plot_dot(expand_factor=0.65)  # make dots distinct
+    # fp.plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
+    # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=0.5)  # alternative plotting method
+    fp.plotting_fn = plot_hull_filled(expand_factor=0.5)
 
     # Definition #6 - demo of random vector shift
     id = 6
@@ -226,6 +228,7 @@ def fractalRunner(drawing):
     fd = fs.lookup_defn(id)
     sc = 0.5 ** 0.5
     fd.children = gen_children_variable_dragon(fs, id)
+    fd.iteration_fn = get_iteration_fn_standard(min_diameter=5, max_iterations=20)
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress([BLUE, RED, ORANGE])
     fp.plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
@@ -233,29 +236,29 @@ def fractalRunner(drawing):
     
     # --------------------
 
+    # TODO: Convex Hulls only currently works for 2D. Can it work for 3D too?
     # Calculate Convex Hulls after fractal definitions completed
-    # Need to do this if plot_hull method used
-    # Can comment out this section otherwise
-    fs.calculate_hulls()
+    # Need to do this if plot_hull_outline method used, can comment out this section otherwise
+    fs.calculate_hulls(hull_accuracy=0.1, max_iterations=10)
 
     # --------------------
 
     # # Examine the fractal system setup
-    # print("")
-    # print("Fractal System:")
-    # print(fs)
-    # print("")
+    # fs.log("")
+    # fs.log("Fractal System:")
+    # fs.log(fs)
+    # fs.log("")
 
     # Calculate the iterations
     initial_piece = FractalPiece(system=fs, id=init_defn_id, vect=init_vect, mx=init_mx)
     fs.initial_pieces = [initial_piece]
     fs.do_iterations()
-    print(f"After iteration, there are {fs.final_size()} pieces")
-    print("")
+    fs.log(f"After iteration, there are {fs.final_size()} pieces")
+    fs.log("")
 
     # Plot iterations to drawing
     fs.plot(drawing)
-    print("Fractal System plotted successfully")
-    print("")
+    fs.log("Fractal System plotted successfully")
+    fs.log("")
 
     return drawing
