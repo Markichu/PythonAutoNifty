@@ -231,7 +231,8 @@ def shrinking_circle_ring(drawing, n=20, m=36):
 
     return drawing
 
-
+# Note - this is Markichu's original fractal drawing method for square fractals.
+# Subsequently, davidryan59 implemented more generalised fractal drawing methods, see fractalRunner, FractalSystem etc.
 def square_fractal(drawing, master_key, iterations=5):
     # add gradient background
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
