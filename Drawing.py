@@ -346,6 +346,13 @@ class Drawing:
         # Set up the json string of the new data
         json_object = "var json_object = JSON.parse(\"" + json.dumps(self.object).replace("\"", "\\\"").replace(" ", "") + "\");"
 
+        save_canvas = """var button = document.getElementsByTagName("button");
+                         for (var i = 0; i < button.length; i++) {
+                           if (button[i].innerHTML.includes("SAVE *")) {
+                             button[i].click();
+                           }
+                         };"""
+
         # Get the current saved data from the localStorage
         local_storage_data = """var raw_storage = window.localStorage.getItem("drawing");"""
 
@@ -353,21 +360,6 @@ class Drawing:
         update_data = """if (raw_storage == "" || raw_storage == "undefined") {
                             var json_string = JSON.stringify(json_object)
                          } else {
-                            var button = document.getElementsByTagName("button");
-                            var button_pressed = false;
-                            for (var i = 0; i < button.length; i++) {
-                              if (button[i].innerHTML.includes("SAVE *")) {
-                                button[i].click();
-                                button_pressed = true;
-                              }
-                            }
-                            if (button_pressed) { // If the save button is pressed, wait until new save data is received
-                                new_storage = raw_storage;
-                                while (raw_storage == new_storage) {
-                                    new_storage = window.localStorage.getItem("drawing");
-                                }
-                                raw_storage = new_storage;
-                            }
                             var decompressed_data = LZString.decompress(JSON.parse(raw_storage));
                             decompressed_data = JSON.parse(decompressed_data);
                             var saved_height = decompressed_data['height'];
@@ -397,4 +389,4 @@ class Drawing:
         # Refresh the Create Ink page to show the new Canvas Ink Layer
         refresh_page = "location.reload();"
 
-        return lz_string + json_object + local_storage_data + update_data + local_storage + refresh_page
+        return lz_string + json_object + save_canvas + local_storage_data + update_data + local_storage + refresh_page
