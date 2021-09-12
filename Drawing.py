@@ -353,6 +353,21 @@ class Drawing:
         update_data = """if (raw_storage == "" || raw_storage == "undefined") {
                             var json_string = JSON.stringify(json_object)
                          } else {
+                            var button = document.getElementsByTagName("button");
+                            var button_pressed = false;
+                            for (var i = 0; i < button.length; i++) {
+                              if (button[i].innerHTML.includes("SAVE *")) {
+                                button[i].click();
+                                button_pressed = true;
+                              }
+                            }
+                            if (button_pressed) { // If the save button is pressed, wait until new save data is received
+                                new_storage = raw_storage;
+                                while (raw_storage == new_storage) {
+                                    new_storage = window.localStorage.getItem("drawing");
+                                }
+                                raw_storage = new_storage;
+                            }
                             var decompressed_data = LZString.decompress(JSON.parse(raw_storage));
                             decompressed_data = JSON.parse(decompressed_data);
                             var saved_height = decompressed_data['height'];
