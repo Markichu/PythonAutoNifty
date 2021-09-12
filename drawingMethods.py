@@ -34,7 +34,7 @@ def point_image(drawing, image_name, do_a_shuffle=False):
 
     return drawing
 
-def square_image(drawing, image_name, precision, do_a_shuffle=False):
+def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False):
     # load image from file
     image = Image.open(image_name)
 
@@ -47,7 +47,6 @@ def square_image(drawing, image_name, precision, do_a_shuffle=False):
 
     square_width = DRAWING_SIZE / max(width,height)
 
-
     print(width, height)
     print(x_offset, y_offset)
     print(square_width, min(width,height))
@@ -55,12 +54,14 @@ def square_image(drawing, image_name, precision, do_a_shuffle=False):
     for x in range(width):
         for y in range(height):
             colour = list(image.getpixel((x, y)))
+            px = (x + 0.5 + x_offset) * square_width
+            py = (y + 0.5 + y_offset) * square_width
             if len(colour) == 4:
                 if colour[3] > 0.25:
-                    drawing.add_rounded_square(Pos((x + 0.5 + x_offset) * square_width, (y + 0.5 + y_offset) * square_width), square_width, colour, precision)
+                    drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
             else:
                 colour.append(1)
-                drawing.add_rounded_square(Pos((x + 0.5 + x_offset) * square_width, (y + 0.5 + y_offset) * square_width), square_width, colour, precision)
+                drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
 
     if do_a_shuffle:
         drawing.shuffle_lines()
@@ -69,10 +70,10 @@ def square_image(drawing, image_name, precision, do_a_shuffle=False):
 
 def square_example(drawing):
     # Four black squares nearly filling the canvas, with different rounding on each corner
-    drawing.add_rounded_square(Pos(250, 250), 400, BLACK, 1)
-    drawing.add_rounded_square(Pos(750, 250), 400, BLACK, 5)
-    drawing.add_rounded_square(Pos(250, 750), 400, BLACK, 20)
-    drawing.add_rounded_square(Pos(750, 750), 400, BLACK, 100)
+    drawing.add_rounded_square(centre_pos=Pos(250, 250), width=400, colour=BLACK, brush_radius=0.1)
+    drawing.add_rounded_square(centre_pos=Pos(750, 250), width=400, colour=BLACK, brush_radius=2)
+    drawing.add_rounded_square(centre_pos=Pos(250, 750), width=400, colour=BLACK, brush_radius=40)
+    drawing.add_rounded_square(centre_pos=Pos(750, 750), width=400, colour=BLACK, brush_radius=1000)
     return drawing
 
 def rotating_square(drawing):

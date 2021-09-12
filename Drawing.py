@@ -5,7 +5,7 @@ import os
 import time
 
 from Pos import Pos
-from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
+from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
 
 
 class Drawing:
@@ -106,35 +106,39 @@ class Drawing:
         # add line to object
         self.object["lines"].append(line)
 
-    def add_rounded_square(self, center_position, width, colour, precision=1):
+    def add_rounded_square(self, centre_pos, width, colour, brush_radius=DEFAULT_BRUSH_RADIUS):
         # init corners to outer positions
         corners = [Pos(0, 0),
                    Pos(0, width),
                    Pos(width, width),
                    Pos(width, 0)]
         for i, corner in enumerate(corners):
-            corners[i] = center_position - Pos(width / 2, width / 2) + corner
+            corners[i] = centre_pos - Pos(width / 2, width / 2) + corner
 
-        # calculate brush radius to fit to width
-        brush_radius = (width / (precision + 1)) / 2
+        # Checked (internal) brush radius should be larger than minimum in defaults,
+        # and then smaller than half of the square width
+        br2 = min(width / 2, max(MIN_BRUSH_RADIUS, brush_radius))
+
+        # calculate line_count, this must be a whole number.
+        line_count = round(width / (2 * br2))
 
         # calculate inner corners from outer and brush
-        offsets = [Pos(brush_radius, brush_radius),
-                   Pos(brush_radius, -brush_radius),
-                   Pos(-brush_radius, -brush_radius),
-                   Pos(-brush_radius, brush_radius)]
+        offsets = [Pos(br2, br2),
+                   Pos(br2, -br2),
+                   Pos(-br2, -br2),
+                   Pos(-br2, br2)]
         for i, corner in enumerate(corners):
             corners[i] = corner + offsets[i]
 
         # do outer line
         result_corners = corners + [corners[0]]
 
-        # do filling Lines
-        line_step = (width - brush_radius * 2) / precision
-        for i in range(1, precision):
-            result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, brush_radius))
-            result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -brush_radius))
-        self.add_strict_line(result_corners, colour, brush_radius)
+        # do filling lines. line_step is approximately 2 * br2
+        line_step = (width - br2 * 2) / line_count
+        for i in range(1, line_count):
+            result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, br2))
+            result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -br2))
+        self.add_strict_line(result_corners, colour, br2)
 
     def write(self, pos, lines, font_size, line_spacing=1.15, colour=BLACK):
         line_pos = pos.copy()
