@@ -16,8 +16,8 @@ def point_image(drawing, image_name, do_a_shuffle=False):
     # init width and height
     width, height = image.size
 
-    x_diff = 1000 / width
-    y_diff = 1000 / height
+    x_diff = DRAWING_SIZE / width
+    y_diff = DRAWING_SIZE / height
 
     for x in range(width):
         for y in range(height):
@@ -34,6 +34,47 @@ def point_image(drawing, image_name, do_a_shuffle=False):
 
     return drawing
 
+def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False):
+    # load image from file
+    image = Image.open(image_name)
+
+    # init width and height
+    width, height = image.size
+
+    # Centre the image if it isn't a square
+    x_offset = abs(max(width,height)-width)/2
+    y_offset = abs(max(width,height)-height)/2
+
+    square_width = DRAWING_SIZE / max(width,height)
+
+    print(width, height)
+    print(x_offset, y_offset)
+    print(square_width, min(width,height))
+
+    for x in range(width):
+        for y in range(height):
+            colour = list(image.getpixel((x, y)))
+            px = (x + 0.5 + x_offset) * square_width
+            py = (y + 0.5 + y_offset) * square_width
+            if len(colour) == 4:
+                if colour[3] > 0.25:
+                    drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
+            else:
+                colour.append(1)
+                drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
+
+    if do_a_shuffle:
+        drawing.shuffle_lines()
+
+    return drawing
+
+def square_example(drawing):
+    # Four black squares nearly filling the canvas, with different rounding on each corner
+    drawing.add_rounded_square(centre_pos=Pos(250, 250), width=400, colour=BLACK, brush_radius=0.1)
+    drawing.add_rounded_square(centre_pos=Pos(750, 250), width=400, colour=BLACK, brush_radius=2)
+    drawing.add_rounded_square(centre_pos=Pos(250, 750), width=400, colour=BLACK, brush_radius=40)
+    drawing.add_rounded_square(centre_pos=Pos(750, 750), width=400, colour=BLACK, brush_radius=1000)
+    return drawing
 
 def rotating_square(drawing):
     drawing.add_background((255, 255, 255, 1))
@@ -127,9 +168,9 @@ def squared_circle(drawing, n=8):
 
         # get pos for corners
         pos1 = Pos.from_rotational(np.radians(degrees), DRAWING_SIZE).rotate(np.radians(45))
-        pos2 = Pos(pos1.x, 1000 - pos1.y).rotate(np.radians(45))
-        pos3 = Pos(1000 - pos1.x, 1000 - pos1.y).rotate(np.radians(45))
-        pos4 = Pos(1000 - pos1.x, pos1.y).rotate(np.radians(45))
+        pos2 = Pos(pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
+        pos3 = Pos(DRAWING_SIZE - pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
+        pos4 = Pos(DRAWING_SIZE - pos1.x, pos1.y).rotate(np.radians(45))
 
         # do color
         color = hsva_to_rgba(current_h, 0.8, 0.85)
@@ -149,9 +190,9 @@ def curved_lines(drawing, n=20):
     for i in range(n + 1):
         offset = i * step
         # do bottom left line
-        drawing.add_straight_line(Pos(offset, 1000), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(offset, DRAWING_SIZE), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
         # do top right
-        drawing.add_straight_line(Pos(1000, offset), Pos(offset, 0), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(DRAWING_SIZE, offset), Pos(offset, 0), BLACK, DRAWING_SIZE / (25 * n))
 
     # do diagonal lines
     for i in range(n - 1):
@@ -159,10 +200,10 @@ def curved_lines(drawing, n=20):
         # do top left line
         drawing.add_straight_line(Pos(offset, 0), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
         # do bottom right
-        drawing.add_straight_line(Pos(1000, 1000 - offset), Pos(1000 - offset, 1000), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(DRAWING_SIZE, DRAWING_SIZE - offset), Pos(DRAWING_SIZE - offset, DRAWING_SIZE), BLACK, DRAWING_SIZE / (25 * n))
 
     # do middle diagonal
-    drawing.add_straight_line(Pos(1000, 0), Pos(0, 1000), BLACK, DRAWING_SIZE / (25 * n))
+    drawing.add_straight_line(Pos(DRAWING_SIZE, 0), Pos(0, DRAWING_SIZE), BLACK, DRAWING_SIZE / (25 * n))
 
     return drawing
 
@@ -191,7 +232,8 @@ def shrinking_circle_ring(drawing, n=20, m=36):
 
     return drawing
 
-
+# Note - this is Markichu's original fractal drawing method for square fractals.
+# Subsequently, davidryan59 implemented more generalised fractal drawing methods, see fractalRunner, FractalSystem etc.
 def square_fractal(drawing, master_key, iterations=5):
     # add gradient background
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)

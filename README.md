@@ -37,5 +37,5 @@ deactivate
 
 ## Credits
 - Original code by `Markichu`
-- Contributions from `niftymaestro` and `EL-S`
+- Contributions from `davidryan59` (aka `niftymaestro`) and `EL-S`
 - Thanks to the developers behind Nifty Ink website
