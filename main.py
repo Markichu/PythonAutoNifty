@@ -3,7 +3,7 @@ from Drawing import Drawing
 from fractalRunner import fractalRunner
 from originalDrawingMethods import point_image, rotating_square, tiled_diagonals,\
   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
-  shrinking_circle_ring, square_fractal, text_drawing_example, alpha_example
+  shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example
 
 def main():
 
@@ -15,6 +15,7 @@ def main():
     # drawing = text_drawing_example(Drawing())  # Example of how to draw text on the canvas
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
+    # drawing = square_example(Drawing())
     # drawing = alpha_example(Drawing())
 
     # ---------------

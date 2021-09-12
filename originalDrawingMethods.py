@@ -67,6 +67,14 @@ def square_image(drawing, image_name, precision, do_a_shuffle=False):
 
     return drawing
 
+def square_example(drawing):
+    # Four black squares nearly filling the canvas, with different rounding on each corner
+    drawing.add_rounded_square(Pos(250, 250), 400, BLACK, 1)
+    drawing.add_rounded_square(Pos(750, 250), 400, BLACK, 5)
+    drawing.add_rounded_square(Pos(250, 750), 400, BLACK, 20)
+    drawing.add_rounded_square(Pos(750, 750), 400, BLACK, 100)
+    return drawing
+
 def rotating_square(drawing):
     drawing.add_background((255, 255, 255, 1))
     p1 = Pos(200, 200)
