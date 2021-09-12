@@ -346,6 +346,7 @@ class Drawing:
         # Set up the json string of the new data
         json_object = "var json_object = JSON.parse(\"" + json.dumps(self.object).replace("\"", "\\\"").replace(" ", "") + "\");"
 
+        # Save the canvas if there are any unsaved changes
         save_canvas = """var button = document.getElementsByTagName("button");
                          for (var i = 0; i < button.length; i++) {
                            if (button[i].innerHTML.includes("SAVE *")) {
