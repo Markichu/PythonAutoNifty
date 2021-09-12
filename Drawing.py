@@ -289,16 +289,24 @@ class Drawing:
             color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
             color[3] *= 255 # Pygame expects an alpha between 0 and 255, not 0 and 1.
 
-            shape_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
-
             points = []
-            for point in line["points"]:
-                this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
-                points.append(this_point)
-                pygame.draw.circle(shape_surface, color, this_point, int(brush_radius))
+            if color[3] != 255:  # If the brushColour is transparent, draw with transparency
+                shape_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
 
-            pygame.draw.lines(shape_surface, color, False, points, int(brush_radius*2))
-            screen.blit(shape_surface, (0, 0))
+                for point in line["points"]:
+                    this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
+                    points.append(this_point)
+                    pygame.draw.circle(shape_surface, color, this_point, int(brush_radius))
+
+                pygame.draw.lines(shape_surface, color, False, points, int(brush_radius * 2))
+                screen.blit(shape_surface, (0, 0))
+            else:  # Draw without transparency (faster)
+                for point in line["points"]:
+                    this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
+                    points.append(this_point)
+                    pygame.draw.circle(screen, color, this_point, int(brush_radius))
+
+                pygame.draw.lines(screen, color, False, points, int(brush_radius * 2))
 
         # update screen to render drawing
         pygame.display.update()
