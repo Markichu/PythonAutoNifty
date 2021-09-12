@@ -57,10 +57,10 @@ def square_image(drawing, image_name, precision, do_a_shuffle=False):
             colour = list(image.getpixel((x, y)))
             if len(colour) == 4:
                 if colour[3] > 0.25:
-                    drawing.add_square(Pos((x + 0.5 + x_offset) * square_width, (y + 0.5 + y_offset) * square_width), square_width, colour, precision)
+                    drawing.add_rounded_square(Pos((x + 0.5 + x_offset) * square_width, (y + 0.5 + y_offset) * square_width), square_width, colour, precision)
             else:
                 colour.append(1)
-                drawing.add_square(Pos((x + 0.5 + x_offset) * square_width, (y + 0.5 + y_offset) * square_width), square_width, colour, precision)
+                drawing.add_rounded_square(Pos((x + 0.5 + x_offset) * square_width, (y + 0.5 + y_offset) * square_width), square_width, colour, precision)
 
     if do_a_shuffle:
         drawing.shuffle_lines()

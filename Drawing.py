@@ -106,7 +106,7 @@ class Drawing:
         # add line to object
         self.object["lines"].append(line)
 
-    def add_square(self, center_position, width, colour, precision=1):
+    def add_rounded_square(self, center_position, width, colour, precision=1):
         # init corners to outer positions
         corners = [Pos(0, 0),
                    Pos(0, width),
