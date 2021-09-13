@@ -1,15 +1,17 @@
 from Drawing import Drawing
-
-from fractalRunner import fractalRunner
 from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals,\
   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
   shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example
 
+from fractalRunner import fractalRunner
+
 def main():
 
     # ---------------
-    # # Pick a drawing to run here
-    # # (Uncomment out a single line to run that function)
+    # # Pick a method to use here that draws something nice on the canvas
+    # # Uncomment out a single line to run that function
+    # # Most of the methods and examples are in file drawingMethods.py
+    # # For the general fractal examples, set it up in fractalRunner.py
 
     # drawing = point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
     # drawing = square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners

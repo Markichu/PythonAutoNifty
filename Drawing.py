@@ -7,6 +7,10 @@ import time
 from Pos import Pos
 from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
 
+# The Drawing class contains all the code required to produce an output.txt file.
+# Copy and paste contents of output.txt code (Javascript) into the web browser on the Create mode of Nifty Ink,
+# and it will draw whatever you have coded onto the Nifty Ink canvas.
+# Options exist to either overwrite existing canvas, or add a layer on top.
 
 class Drawing:
     def __init__(self):
@@ -14,22 +18,19 @@ class Drawing:
                        "width": DRAWING_SIZE,
                        "height": DRAWING_SIZE}
 
+    # Create a round dot / point at the desired location
     def add_point(self, pos, colour, brush_radius):
-        # create a point at the desired point location
         point = pos.point()
-
-        # create line with two points
         line = {"points": [point, point],
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
-
-        # add line to object
         self.object["lines"].append(line)
 
+    # Use a large dot to colour the whole canvas
     def add_background(self, colour):
-        # create a point at the desired point location
-        self.add_point(Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2), colour, DRAWING_SIZE * pow(2, 0.5) / 2)
+        self.add_point(Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2), colour, DRAWING_SIZE * 0.71)  # 0.71 is approx square root of 0.5
 
+    # Add a gradient between two points
     def add_gradient(self, pos1, pos2, colour1, colour2, divisions=30):
         r_step = (colour2[0] - colour1[0]) / divisions
         g_step = (colour2[1] - colour1[1]) / divisions
@@ -47,34 +48,29 @@ class Drawing:
             line_pos2 = Pos(pos2.x, pos1.y + (size_step * i))
             self.add_straight_line(line_pos1, line_pos2, colour, brush_radius)
 
+    # Add a straight line between two positions on the canvas
     def add_straight_line(self, pos1, pos2, colour, brush_radius):
-        # create points for line
         point1 = pos1.point()
         point2 = pos2.point()
-
-        # create line with two points
         line = {"points": [point1, point2],
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
-
-        # add line to object
         self.object["lines"].append(line)
-
+    
+    # Add a curved line between a list of points (Pos) on the canvas
+    # Note - this line is curved on Nifty Ink
     def add_line(self, pos_list, colour, brush_radius, enclosed_path=False):
-        # convert pos list to points list
         points_list = []
         for pos in pos_list:
             points_list.append(pos.point())
         if enclosed_path:
             points_list.append(pos_list[0].point())
-        # create line with two points
         line = {"points": points_list,
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
-
-        # add line to object
         self.object["lines"].append(line)
 
+    # Add a series of straight line segments between a list of points (Pos) on the canvas
     def add_strict_line(self, pos_list, colour, brush_radius, enclosed_path=False):
         # create points for square
         points_list = [pos_list[0].point()]
@@ -85,27 +81,21 @@ class Drawing:
         if enclosed_path:
             points_list.append(pos_list[-1].point())
             points_list.append(pos_list[0].point())
-
-        # create line with all the points
         line = {"points": points_list,
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
-
-        # add line to object
         self.object["lines"].append(line)
 
+    # Add a pause to the canvas, using a point off the canvas
     def add_pause(self, length):
-        # create points for square
         point = {"x": -10, "y": -10}
-
-        # create line with all the points
         line = {"points": [point for _ in range(length)],
                 "brushColor": "rgba({},{},{},{})".format(*(0, 0, 0, 0)),
                 "brushRadius": 0}
-
-        # add line to object
         self.object["lines"].append(line)
-
+    
+    # Add a square to the canvas
+    # The degree of roundedness of the corners is determined by the brush radius
     def add_rounded_square(self, centre_pos, width, colour, brush_radius=DEFAULT_BRUSH_RADIUS):
         # init corners to outer positions
         corners = [Pos(0, 0),
@@ -140,6 +130,7 @@ class Drawing:
             result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -br2))
         self.add_strict_line(result_corners, colour, br2)
 
+    # Write text onto the canvas using a custom font specified below
     def write(self, pos, lines, font_size, line_spacing=1.15, colour=BLACK):
         line_pos = pos.copy()
         y_offset = Pos(0, font_size * line_spacing)
@@ -271,6 +262,12 @@ class Drawing:
             line_pos = line_pos + y_offset
             pos = line_pos.copy()
 
+    # Randomly reorder the lines
+    # Nifty Ink will animate in an interesting random order
+    def shuffle_lines(self):
+        random.shuffle(self.object["lines"])
+    
+    # Shrink or expand all the stored lines using multiplication
     def __mul__(self, shrink_size):
         # origin for shrinking
         origin = Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2)
@@ -286,7 +283,8 @@ class Drawing:
                 point_pos += origin
                 line["points"][point_index] = point_pos.point()
         return self
-
+    
+    # Render the lines to preview in Pygame
     def render(self, pygame_scale=None, headless=False, filename="output.png"):
         # Set a fake video driver to hide output
         if headless:
@@ -349,13 +347,12 @@ class Drawing:
                     running = False
                     break
             time.sleep(0.2)  # Sleep for a short time. Prevents continual use of CPU.
-
+    
+    # Nifty import method 1 - deprecated
     def to_nifty_import(self):
         return "drawingCanvas.current.loadSaveData(\"" + json.dumps(self.object).replace('"', '\\"') + "\", false)"
 
-    def shuffle_lines(self):
-        random.shuffle(self.object["lines"])
-
+    # Nifty import method 2 - overwrite canvas
     def to_nifty_fast_import(self):
         # Use a minified LZString
         # https://raw.githubusercontent.com/pieroxy/lz-string/master/libs/lz-string.min.js
@@ -372,6 +369,7 @@ class Drawing:
 
         return lz_string + json_string + local_storage + refresh_page
 
+    # Nifty import method 3 - add layer on top of canvas
     def to_nifty_add_layer_import(self):
         # Use a minified LZString
         # https://raw.githubusercontent.com/pieroxy/lz-string/master/libs/lz-string.min.js
