@@ -380,6 +380,14 @@ class Drawing:
         # Set up the json string of the new data
         json_object = "var json_object = JSON.parse(\"" + json.dumps(self.object).replace("\"", "\\\"").replace(" ", "") + "\");"
 
+        # Save the canvas if there are any unsaved changes
+        save_canvas = """var button = document.getElementsByTagName("button");
+                         for (var i = 0; i < button.length; i++) {
+                           if (button[i].innerHTML.includes("SAVE *")) {
+                             button[i].click();
+                           }
+                         };"""
+
         # Get the current saved data from the localStorage
         local_storage_data = """var raw_storage = window.localStorage.getItem("drawing");"""
 
@@ -416,4 +424,4 @@ class Drawing:
         # Refresh the Create Ink page to show the new Canvas Ink Layer
         refresh_page = "location.reload();"
 
-        return lz_string + json_object + local_storage_data + update_data + local_storage + refresh_page
+        return lz_string + json_object + save_canvas + local_storage_data + update_data + local_storage + refresh_page
