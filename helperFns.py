@@ -3,9 +3,11 @@ import math
 from Pos import Pos
 from constants import DRAWING_SIZE
 
+# General helper functions for drawing in Nifty Ink, not related to Numpy or fractals
 
+# Rotate Pos instance (coord) around either the centre of the image, or a specified origin
 def rotate(coord, rotation, origin=None):
-    # get default center
+    # get default centre
     if origin is None:
         origin = Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2)
 

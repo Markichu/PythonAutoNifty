@@ -22,7 +22,7 @@ class Pos:
         return Pos(self.x, self.y)
 
     def rotate(self, rotation, origin=None):
-        # get default center
+        # get default centre
         if origin is None:
             origin = Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2)
 

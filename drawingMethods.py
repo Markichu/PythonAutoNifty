@@ -117,7 +117,7 @@ def tiled_diagonals(drawing, n=50):
 
 def fibonacci_dots(drawing, n=1000):
     for i in range(n):
-        # calc radians of rotation and raduis from center
+        # calc radians of rotation and radius from centre
         radians = i * (2 - (2 / GOLDEN_RATIO)) * math.pi
         radius = math.sqrt(i + 1) * DRAWING_SIZE / math.sqrt(n)
 
@@ -138,7 +138,7 @@ def fibonacci_image(drawing, image_filename, n=3000):
     width, height = image.size
 
     for i in range(n):
-        # calc radians of rotation and radius from center
+        # calc radians of rotation and radius from centre
         radians = i * (2 - (2 / GOLDEN_RATIO)) * math.pi
         radius = math.sqrt(i + 1) * DRAWING_SIZE / math.sqrt(n)
 
@@ -172,12 +172,12 @@ def squared_circle(drawing, n=8):
         pos3 = Pos(DRAWING_SIZE - pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
         pos4 = Pos(DRAWING_SIZE - pos1.x, pos1.y).rotate(np.radians(45))
 
-        # do color
-        color = hsva_to_rgba(current_h, 0.8, 0.85)
+        # do colour
+        colour = hsva_to_rgba(current_h, 0.8, 0.85)
         current_h -= 0.7 / n
 
         # add square
-        drawing.add_strict_line([pos1, pos2, pos3, pos4], color, DRAWING_SIZE / (25 * n))
+        drawing.add_strict_line([pos1, pos2, pos3, pos4], colour, DRAWING_SIZE / (25 * n))
 
     return drawing
 
@@ -218,14 +218,14 @@ def shrinking_circle_ring(drawing, n=20, m=36):
         big_radius = (m * big_radius) / (m + 2 * math.pi)
         small_radius = (math.pi * big_radius) / m
 
-        # do color
-        color = hsva_to_rgba(current_h, 0.8, 0.9)
+        # do colour
+        colour = hsva_to_rgba(current_h, 0.8, 0.9)
         current_h -= 1 / n
 
         # draw circles around radius
         for i in range(m):
             pos = Pos.from_rotational(radians_step * i, big_radius)
-            drawing.add_point(pos, color, small_radius)
+            drawing.add_point(pos, colour, small_radius)
             drawing.add_point(pos, WHITE, small_radius / 3)
 
     drawing *= 2

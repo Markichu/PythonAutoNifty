@@ -320,8 +320,8 @@ class Drawing:
 
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
-            color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
-            color[3] *= 255 # Pygame expects an alpha between 0 and 255, not 0 and 1.
+            colour = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
+            colour[3] *= 255 # Pygame expects an alpha between 0 and 255, not 0 and 1.
 
             shape_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
 
@@ -329,9 +329,9 @@ class Drawing:
             for point in line["points"]:
                 this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
                 points.append(this_point)
-                pygame.draw.circle(shape_surface, color, this_point, int(brush_radius))
+                pygame.draw.circle(shape_surface, colour, this_point, int(brush_radius))
 
-            pygame.draw.lines(shape_surface, color, False, points, int(brush_radius*2))
+            pygame.draw.lines(shape_surface, colour, False, points, int(brush_radius*2))
             screen.blit(shape_surface, (0, 0))
 
         # update screen to render drawing
