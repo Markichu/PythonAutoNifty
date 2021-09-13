@@ -2,6 +2,9 @@ import math
 
 from constants import DRAWING_SIZE
 
+# This class Pos wraps an x and y coordinate.
+# This class could potentially be refactored (and replaced) by numpy vectors,
+# however there would be a lot of updates to make.
 
 class Pos:
     def __init__(self, x, y):
@@ -22,7 +25,7 @@ class Pos:
         return Pos(self.x, self.y)
 
     def rotate(self, rotation, origin=None):
-        # get default center
+        # get default centre
         if origin is None:
             origin = Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2)
 
