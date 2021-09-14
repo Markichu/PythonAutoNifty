@@ -253,7 +253,8 @@ class Drawing:
                 line["points"][point_index] = point_pos.point()
         return self
 
-    def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None):
+    def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None,
+               allow_transparency=True, fake_transparency=False):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
@@ -285,29 +286,33 @@ class Drawing:
         screen.fill(WHITE[:3])
         pygame.display.update()  # Show the background, (so the screen isn't black on drawings that are slow to process)
 
+        def alpha_blend(a, bg, fg):
+            return ((1 - a) * fg[0] + a * bg[0],
+                    (1 - a) * fg[1] + a * bg[1],
+                    (1 - a) * fg[2] + a * bg[2],
+                    255)
+
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
             color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
             color[3] *= 255 # Pygame expects an alpha between 0 and 255, not 0 and 1.
 
             points = []
-            if color[3] != 255:  # If the brushColour is transparent, draw with transparency
-                shape_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
+            if color[3] != 255 and allow_transparency:  # If the brushColour is transparent, draw with transparency
+                target_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
+            else:  # If the brushColour is opaque, draw with no transparency
+                if fake_transparency:
+                    color = alpha_blend(color[3] / 255, color[:-1], [255, 255, 255])
+                target_surface = screen
 
-                for point in line["points"]:
-                    this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
-                    points.append(this_point)
-                    pygame.draw.circle(shape_surface, color, this_point, int(brush_radius))
+            for index, point in enumerate(line["points"]):
+                this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
+                points.append(this_point)
+                pygame.draw.circle(target_surface, color, this_point, int(brush_radius))
+            pygame.draw.lines(target_surface, color, False, points, int(brush_radius * 2))
 
-                pygame.draw.lines(shape_surface, color, False, points, int(brush_radius * 2))
-                screen.blit(shape_surface, (0, 0))
-            else:  # Draw without transparency (faster)
-                for point in line["points"]:
-                    this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
-                    points.append(this_point)
-                    pygame.draw.circle(screen, color, this_point, int(brush_radius))
-
-                pygame.draw.lines(screen, color, False, points, int(brush_radius * 2))
+            if color[3] != 255 and allow_transparency:  # Required for transparency
+                screen.blit(target_surface, (0, 0))
 
             if simulate:  # Update the drawing line by line to see the drawing process
                 pygame.display.update()
