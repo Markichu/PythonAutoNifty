@@ -2,6 +2,7 @@ import math
 
 from Pos import Pos
 from constants import DRAWING_SIZE
+from math import comb
 
 
 def rotate(coord, rotation, origin=None):
@@ -38,6 +39,13 @@ def hsva_to_rgba(h, s, v, a=1.0):
         r, g, b = v, t, p
 
     return [r * 255, g * 255, b * 255, a]
+
+def get_bezier_curve(control_points, step_size=10, t=True):
+    m, q, bezier_points, s = list(zip(*control_points)), len(control_points), [], (step_size - 1 if t else step_size) / 1.
+    for i in range(step_size):
+        b = [comb(q - 1, v) * (i / s) ** v * (1 - (i / s)) ** (q - 1 - v) for v in range(q)]
+        bezier_points += [(tuple(sum(j * k for j, k in zip(d, b)) for d in m))]
+    return bezier_points
 
 def get_bounded_int(lowest_integer, highest_integer, num):
     return max(lowest_integer, min(highest_integer, round(num)))

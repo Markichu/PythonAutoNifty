@@ -7,6 +7,7 @@ import numpy as np
 
 from Pos import Pos
 from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
+from helperFns import get_bezier_curve
 
 
 class Drawing:
@@ -255,13 +256,16 @@ class Drawing:
         return self
 
     def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None,
-               allow_transparency=True, fake_transparency=False, proper_line_thickness=True):
+               allow_transparency=True, fake_transparency=False, proper_line_thickness=True, draw_as_bezier=True, step_size=40):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
             # No screen to get the dimensions, just render at normal size
             if pygame_scale is None:
                 pygame_scale = 1
+
+        if step_size < 2:
+            step_size = 2
 
         pygame.init()
 
@@ -299,6 +303,7 @@ class Drawing:
                 pygame.draw.circle(surface, colour, end_point, width / 2)
             if start_point == end_point:
                 return
+            np.seterr(divide='ignore', invalid='ignore')
             vec_start_point = np.array(start_point)
             vec_end_point = np.array(end_point)
             move_point = vec_end_point - vec_start_point
@@ -319,6 +324,29 @@ class Drawing:
                     draw_line(surface, colour, last_point, pt, width, end_caps=end_caps)
                 last_point = pt
 
+        def get_midpoint(p1, p2):
+            x = p1[0] + (p2[0] - p1[0]) / 2
+            y = p1[1] + (p2[1] - p1[1]) / 2
+            return [x, y]
+
+        def draw_quadratic_bezier_curve_line(surface, colour, pts, width, end_caps=False, step_size=40):
+
+            last_midpoint = pts[0]
+
+            for i in range(len(pts)):
+                p1 = pts[i]
+                try:
+                    p2 = pts[i + 1]
+
+                    midpoint = get_midpoint(p1, p2)
+                    # TODO: Write some code to create an appropriate step_size, likely based on the bezier curve length
+                    bezier_curve_points = get_bezier_curve((last_midpoint, p1, midpoint), step_size=step_size, t=True)
+                    draw_lines(surface, colour, bezier_curve_points, width, end_caps=end_caps)
+
+                    last_midpoint = midpoint
+                except IndexError:  # Draw the last point as a straight line to finish
+                    draw_line(surface, colour, midpoint, p2, width, end_caps=end_caps)
+
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
             color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
@@ -338,7 +366,10 @@ class Drawing:
                 if not proper_line_thickness:
                     pygame.draw.circle(target_surface, color, this_point, int(brush_radius))
             if proper_line_thickness:
-                draw_lines(target_surface, color, points, brush_radius * 2, end_caps=True)
+                if draw_as_bezier:
+                    draw_quadratic_bezier_curve_line(target_surface, color, points, brush_radius * 2, end_caps=True, step_size=step_size)
+                else:
+                    draw_lines(target_surface, color, points, brush_radius * 2, end_caps=True)
             else:
                 pygame.draw.lines(target_surface, color, False, points, int(brush_radius * 2))
 
