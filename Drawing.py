@@ -3,6 +3,7 @@ import random
 import pygame
 import os
 import time
+import numpy as np
 
 from Pos import Pos
 from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
@@ -254,7 +255,7 @@ class Drawing:
         return self
 
     def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None,
-               allow_transparency=True, fake_transparency=False):
+               allow_transparency=True, fake_transparency=False, proper_line_thickness=True):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
@@ -292,6 +293,32 @@ class Drawing:
                     (1 - a) * fg[2] + a * bg[2],
                     255)
 
+        def draw_line(surface, colour, start_point, end_point, width, end_caps=False):
+            if end_caps:
+                pygame.draw.circle(surface, colour, start_point, width / 2)
+                pygame.draw.circle(surface, colour, end_point, width / 2)
+            if start_point == end_point:
+                return
+            vec_start_point = np.array(start_point)
+            vec_end_point = np.array(end_point)
+            move_point = vec_end_point - vec_start_point
+            norm_move = move_point / np.linalg.norm(move_point)
+
+            rotated_vec = np.array((-norm_move[1], norm_move[0])) * width / 2
+            start_point_1 = vec_start_point + rotated_vec
+            start_point_2 = vec_start_point - rotated_vec
+            end_point_1 = vec_end_point + rotated_vec
+            end_point_2 = vec_end_point - rotated_vec
+
+            pygame.draw.polygon(surface, colour, [start_point_1, start_point_2, end_point_2, end_point_1], width=0)
+
+        def draw_lines(surface, colour, pts, width, end_caps=False):
+            last_point = None
+            for pt in pts:
+                if last_point:
+                    draw_line(surface, colour, last_point, pt, width, end_caps=end_caps)
+                last_point = pt
+
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
             color = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
@@ -308,8 +335,12 @@ class Drawing:
             for index, point in enumerate(line["points"]):
                 this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
                 points.append(this_point)
-                pygame.draw.circle(target_surface, color, this_point, int(brush_radius))
-            pygame.draw.lines(target_surface, color, False, points, int(brush_radius * 2))
+                if not proper_line_thickness:
+                    pygame.draw.circle(target_surface, color, this_point, int(brush_radius))
+            if proper_line_thickness:
+                draw_lines(target_surface, color, points, brush_radius * 2, end_caps=True)
+            else:
+                pygame.draw.lines(target_surface, color, False, points, int(brush_radius * 2))
 
             if color[3] != 255 and allow_transparency:  # Required for transparency
                 screen.blit(target_surface, (0, 0))
