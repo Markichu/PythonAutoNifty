@@ -256,7 +256,7 @@ class Drawing:
         return self
 
     def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None,
-               allow_transparency=True, fake_transparency=False, proper_line_thickness=True, draw_as_bezier=True, step_size=40):
+               allow_transparency=False, fake_transparency=False, proper_line_thickness=False, draw_as_bezier=False, step_size=10):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
@@ -340,7 +340,7 @@ class Drawing:
 
                     midpoint = get_midpoint(p1, p2)
                     # TODO: Write some code to create an appropriate step_size, likely based on the bezier curve length
-                    bezier_curve_points = get_bezier_curve((last_midpoint, p1, midpoint), step_size=step_size, t=True)
+                    bezier_curve_points = get_bezier_curve((last_midpoint, p1, midpoint), step_size=step_size, end_point=True)
                     draw_lines(surface, colour, bezier_curve_points, width, end_caps=end_caps)
 
                     last_midpoint = midpoint
@@ -354,7 +354,9 @@ class Drawing:
 
             points = []
             if color[3] != 255 and allow_transparency:  # If the brushColour is transparent, draw with transparency
-                target_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
+                target_surface = pygame.Surface((pygame_x, pygame_y))
+                target_surface.set_colorkey(BLACK)
+                target_surface.set_alpha(color[3])
             else:  # If the brushColour is opaque, draw with no transparency
                 if fake_transparency:
                     color = alpha_blend(color[3] / 255, color[:-1], [255, 255, 255])

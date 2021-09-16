@@ -1,4 +1,6 @@
 import math
+import os
+import random
 
 from Pos import Pos
 from constants import DRAWING_SIZE
@@ -40,8 +42,11 @@ def hsva_to_rgba(h, s, v, a=1.0):
 
     return [r * 255, g * 255, b * 255, a]
 
-def get_bezier_curve(control_points, step_size=10, t=True):
-    m, q, bezier_points, s = list(zip(*control_points)), len(control_points), [], (step_size - 1 if t else step_size) / 1.
+
+# Obtained from https://orthallelous.wordpress.com/2020/06/21/pure-python-bezier-curve/
+def get_bezier_curve(control_points, step_size=10, end_point=True):
+    m, q, bezier_points, s = list(zip(*control_points)), len(control_points), [], (
+        step_size - 1 if end_point else step_size) / 1.
     for i in range(step_size):
         b = [comb(q - 1, v) * (i / s) ** v * (1 - (i / s)) ** (q - 1 - v) for v in range(q)]
         bezier_points += [(tuple(sum(j * k for j, k in zip(d, b)) for d in m))]
