@@ -19,12 +19,18 @@ def get_canvas_pos_from_vect(vect):
 # Get an interpolated colour using:
 # - a list of colours,
 # - a progress factor between 0 and 1 representing how far we are through the list
-def get_colour(colours, progress, alpha=1):
+# - an alpha factor saying how much to fade the opacity, between 0 and 1
+# - whether to snap to the nearest colour in the list, or interpolate (default)
+def get_colour(colours, progress, alpha=1, snap=False):
     max_prog = len(colours) - 1
     prog2 = max(0, min(max_prog, progress * max_prog))
     prog_rem = prog2 - math.floor(prog2)
     colour_start = colours[math.floor(prog2)]
     colour_end = colours[math.ceil(prog2)]
+    if snap:
+        # Override start and end colours to snap to nearest colour
+        colour_start = colours[round(prog2)]
+        colour_end = colours[round(prog2)]
     colour_this = interpolate_colour(colour_start, colour_end, prog_rem, alpha)
     return colour_this
 
@@ -198,28 +204,36 @@ DEFAULT_PLOTTING_FN = plot_dot()
 # -------------------------------------
 # Colouring functions
 
-# Colour by progress, which is a property on each fractal piece
-def colour_by_progress(colours):
+# Simple colouring function, with 1 fixed colour throughout
+# Option exists to vary the alpha, so still going via get_colour instead of
+# just returning the fixed colour
+def colour_fixed(colour, alpha=1):
     def colour_fn(piece):
-        return get_colour(colours, piece.get_progress_value())
+        return get_colour([colour], progress=0, alpha=alpha)
+    return colour_fn
+
+# Colour by progress, which is a property on each fractal piece
+def colour_by_progress(colours, alpha=1, snap=False):
+    def colour_fn(piece):
+        return get_colour(colours, piece.get_progress_value(), alpha, snap)
     return colour_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm(vect, matrix) should output a number
-def colour_by_tsfm(min_val, max_val, colours, tsfm):
+def colour_by_tsfm(min_val, max_val, colours, tsfm, alpha=1, snap=False):
     def colour_fn(piece):
         if not callable(tsfm):
             return BLACK
         this_val = tsfm(piece.get_vect(), piece.get_mx())
         tsfm_progress = (this_val - min_val) / (max_val - min_val)
-        return get_colour(colours, tsfm_progress)
+        return get_colour(colours, tsfm_progress, alpha, snap)
     return colour_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # metric(matrix) should output a number
-def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val):
+def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val, alpha=1, snap=False):
     fn = lambda vect, mx: math.log(metric(mx), 2)
-    return colour_by_tsfm(min_val, max_val, colours, fn)
+    return colour_by_tsfm(min_val, max_val, colours, fn, alpha, snap)
 
 DEFAULT_COLOURING_FN = colour_by_progress([BLACK, BLUE])
 
