@@ -4,10 +4,12 @@ from FractalPiece import FractalPiece
 from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
-from fractalHelperFns import colour_by_progress, colour_by_tsfm, colour_by_log2_size, grid_generator, wobble_square
-from fractalHelperFns import plot_dot, plot_path, plot_hull_outline, plot_hull_filled, sort_by_tsfm
+from fractalHelperFns import colour_fixed, colour_by_progress, colour_by_tsfm, colour_by_log2_size
+from fractalHelperFns import plot_dot, plot_path, plot_hull_outline, plot_hull_filled
+from fractalHelperFns import sort_by_tsfm, grid_generator, wobble_square
 from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
-from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand, gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
+from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand
+from fractalGeneratorFns import gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
 
 def fractalRunner(drawing):
 
@@ -231,6 +233,7 @@ def fractalRunner(drawing):
     fd.iteration_fn = get_iteration_fn_standard(min_diameter=5, max_iterations=20)
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress([BLUE, RED, ORANGE])
+    # fp.colouring_fn = colour_fixed(CYAN, alpha=0.75) # Alternative fixed colouring method
     fp.plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
     # fp.plotting_fn = plot_path(width=1, closed=True, vector_list=[vect(-1, 0), vect(0, -1), vect(1, 0), vect(0, 1)])  # Alternative plot method
     

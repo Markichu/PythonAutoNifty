@@ -204,6 +204,14 @@ DEFAULT_PLOTTING_FN = plot_dot()
 # -------------------------------------
 # Colouring functions
 
+# Simple colouring function, with 1 fixed colour throughout
+# Option exists to vary the alpha, so still going via get_colour instead of
+# just returning the fixed colour
+def colour_fixed(colour, alpha=1):
+    def colour_fn(piece):
+        return get_colour([colour], progress=0, alpha=alpha)
+    return colour_fn
+
 # Colour by progress, which is a property on each fractal piece
 def colour_by_progress(colours, alpha=1, snap=False):
     def colour_fn(piece):
