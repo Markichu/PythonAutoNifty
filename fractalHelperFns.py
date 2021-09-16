@@ -125,7 +125,7 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
             mx = piece.get_mx()
             piece_vect = piece_vect + mx @ offset_vect
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
-        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()  # TODO: determine if we need extra factor of 0.5 for diameter -> radius?
+        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()
         drawing.add_point(pos, colour, dot_radius)
     return plot_fn
 
