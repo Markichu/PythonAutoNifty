@@ -19,12 +19,18 @@ def get_canvas_pos_from_vect(vect):
 # Get an interpolated colour using:
 # - a list of colours,
 # - a progress factor between 0 and 1 representing how far we are through the list
-def get_colour(colours, progress, alpha=1):
+# - an alpha factor saying how much to fade the opacity, between 0 and 1
+# - whether to snap to the nearest colour in the list, or interpolate (default)
+def get_colour(colours, progress, alpha=1, snap=False):
     max_prog = len(colours) - 1
     prog2 = max(0, min(max_prog, progress * max_prog))
     prog_rem = prog2 - math.floor(prog2)
     colour_start = colours[math.floor(prog2)]
     colour_end = colours[math.ceil(prog2)]
+    if snap:
+        # Override start and end colours to snap to nearest colour
+        colour_start = colours[round(prog2)]
+        colour_end = colours[round(prog2)]
     colour_this = interpolate_colour(colour_start, colour_end, prog_rem, alpha)
     return colour_this
 
@@ -119,12 +125,12 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
             mx = piece.get_mx()
             piece_vect = piece_vect + mx @ offset_vect
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
-        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()  # TODO: determine if we need extra factor of 0.5 for diameter -> radius?
+        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()
         drawing.add_point(pos, colour, dot_radius)
     return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
-def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None):
+def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
@@ -135,11 +141,14 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
             pos_list.append(get_canvas_pos_from_vect(draw_vect))
         if closed:
             pos_list.append(pos_list[0])
-        drawing.add_line(pos_list, colour, width)
+        if curved:
+            drawing.add_line(pos_list, colour, width)
+        else:
+            drawing.add_strict_line(pos_list, colour, width)
     return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
-def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None):
+def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
@@ -151,11 +160,14 @@ def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None):
                 draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
                 pos_list.append(get_canvas_pos_from_vect(draw_vect))
             pos_list.append(pos_list[0])  # Close the hull outline
-            drawing.add_line(pos_list, colour, width)
+            if curved:
+                drawing.add_line(pos_list, colour, width)
+            else:
+                drawing.add_strict_line(pos_list, colour, width)
     return plot_fn
 
 # Fill a fractal piece using a spiralling path from the centre to the convex hull
-def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None):
+def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
@@ -190,7 +202,10 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None):
             l = len(plot_vect_list)
             for j in range(l):
                 pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l-j-1]))
-            drawing.add_line(pos_list, colour, width)
+            if curved:
+                drawing.add_line(pos_list, colour, width)
+            else:
+                drawing.add_strict_line(pos_list, colour, width)
     return plot_fn
 
 DEFAULT_PLOTTING_FN = plot_dot()
@@ -198,28 +213,36 @@ DEFAULT_PLOTTING_FN = plot_dot()
 # -------------------------------------
 # Colouring functions
 
-# Colour by progress, which is a property on each fractal piece
-def colour_by_progress(colours):
+# Simple colouring function, with 1 fixed colour throughout
+# Option exists to vary the alpha, so still going via get_colour instead of
+# just returning the fixed colour
+def colour_fixed(colour, alpha=1):
     def colour_fn(piece):
-        return get_colour(colours, piece.get_progress_value())
+        return get_colour([colour], progress=0, alpha=alpha)
+    return colour_fn
+
+# Colour by progress, which is a property on each fractal piece
+def colour_by_progress(colours, alpha=1, snap=False):
+    def colour_fn(piece):
+        return get_colour(colours, piece.get_progress_value(), alpha, snap)
     return colour_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm(vect, matrix) should output a number
-def colour_by_tsfm(min_val, max_val, colours, tsfm):
+def colour_by_tsfm(min_val, max_val, colours, tsfm, alpha=1, snap=False):
     def colour_fn(piece):
         if not callable(tsfm):
             return BLACK
         this_val = tsfm(piece.get_vect(), piece.get_mx())
         tsfm_progress = (this_val - min_val) / (max_val - min_val)
-        return get_colour(colours, tsfm_progress)
+        return get_colour(colours, tsfm_progress, alpha, snap)
     return colour_fn
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # metric(matrix) should output a number
-def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val):
+def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val, alpha=1, snap=False):
     fn = lambda vect, mx: math.log(metric(mx), 2)
-    return colour_by_tsfm(min_val, max_val, colours, fn)
+    return colour_by_tsfm(min_val, max_val, colours, fn, alpha, snap)
 
 DEFAULT_COLOURING_FN = colour_by_progress([BLACK, BLUE])
 

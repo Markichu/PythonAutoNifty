@@ -4,6 +4,8 @@ import math
 # general
 DRAWING_SIZE = 1000
 GOLDEN_RATIO = (1 + math.sqrt(5)) / 2
+MIN_BRUSH_RADIUS = 1
+DEFAULT_BRUSH_RADIUS = 8
 
 # colours
 BLACK = (0, 0, 0, 1)

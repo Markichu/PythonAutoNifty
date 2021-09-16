@@ -1,22 +1,26 @@
 import random
 
 from Drawing import Drawing
+from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals,\
+  fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
+  shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example
 
 from fractalRunner import fractalRunner
-from originalDrawingMethods import point_image, rotating_square, tiled_diagonals,\
-  fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
-  shrinking_circle_ring, square_fractal, text_drawing_example, alpha_example
 
 def main():
 
     # ---------------
-    # # Pick a drawing to run here
-    # # (Uncomment out a single line to run that function)
+    # # Pick a method to use here that draws something nice on the canvas
+    # # Uncomment out a single line to run that function
+    # # Most of the methods and examples are in file drawingMethods.py
+    # # For the general fractal examples, set it up in fractalRunner.py
 
-    # drawing = point_image(Drawing(), "your_image.jpg", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
+    # drawing = point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
+    # drawing = square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners
     # drawing = text_drawing_example(Drawing())  # Example of how to draw text on the canvas
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
+    # drawing = square_example(Drawing())
     # drawing = alpha_example(Drawing())
 
     # ---------------

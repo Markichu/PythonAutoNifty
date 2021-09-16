@@ -9,6 +9,8 @@ from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
 from helperFns import rotate, hsva_to_rgba
 
 
+# Draw an image from file using dots as pixels
+# Many image formats are supported, including .jpg and .png
 def point_image(drawing, image_name, do_a_shuffle=False):
     # load image from file
     image = Image.open(image_name)
@@ -19,21 +21,68 @@ def point_image(drawing, image_name, do_a_shuffle=False):
     # init width and height
     width, height = image.size
 
-    x_diff = 1000 / width
-    y_diff = 1000 / height
+    x_diff = DRAWING_SIZE / width
+    y_diff = DRAWING_SIZE / height
 
     for x in range(width):
         for y in range(height):
             colour = list(rgba_image.getpixel((x, y)))
             colour[3] /= 255
-            drawing.add_point(Pos((x + 0.5) * x_diff, (y + 0.5) * y_diff), colour, x_diff * pow(2, 0.5) / 2)
+
+            px = (x + 0.5) * x_diff
+            py = (y + 0.5) * y_diff
+            pr = x_diff * pow(2, 0.5) / 2
+            drawing.add_point(pos=Pos(px, py), colour=colour, brush_radius=pr)
 
     if do_a_shuffle:
         drawing.shuffle_lines()
 
     return drawing
 
+# Draw an image from file using square pixels
+def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False):
+    # load image from file
+    image = Image.open(image_name)
 
+    # init width and height
+    width, height = image.size
+
+    # Centre the image if it isn't a square
+    x_offset = abs(max(width,height)-width)/2
+    y_offset = abs(max(width,height)-height)/2
+
+    square_width = DRAWING_SIZE / max(width,height)
+
+    print(width, height)
+    print(x_offset, y_offset)
+    print(square_width, min(width,height))
+
+    for x in range(width):
+        for y in range(height):
+            colour = list(image.getpixel((x, y)))
+            px = (x + 0.5 + x_offset) * square_width
+            py = (y + 0.5 + y_offset) * square_width
+            if len(colour) == 4:
+                if colour[3] > 0.25:
+                    drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
+            else:
+                colour.append(1)
+                drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
+
+    if do_a_shuffle:
+        drawing.shuffle_lines()
+
+    return drawing
+
+# Draw four black squares nearly filling the canvas, with different rounding on each corner
+def square_example(drawing):
+    drawing.add_rounded_square(centre_pos=Pos(250, 250), width=400, colour=BLACK, brush_radius=0.1)
+    drawing.add_rounded_square(centre_pos=Pos(750, 250), width=400, colour=BLACK, brush_radius=2)
+    drawing.add_rounded_square(centre_pos=Pos(250, 750), width=400, colour=BLACK, brush_radius=40)
+    drawing.add_rounded_square(centre_pos=Pos(750, 750), width=400, colour=BLACK, brush_radius=1000)
+    return drawing
+
+# Draw a square that appears to rotate on the Nifty Ink canvas
 def rotating_square(drawing):
     drawing.add_background((255, 255, 255, 1))
     p1 = Pos(200, 200)
@@ -49,10 +98,9 @@ def rotating_square(drawing):
         p3 = rotate(p3, 0.1)
         p4 = rotate(p4, 0.1)
     drawing.add_strict_line([p1, p2, p3, p4], (0, 0, 0, 1), 10)
-
     return drawing
 
-
+# Draw a pattern involving a lot of diagonal lines
 def tiled_diagonals(drawing, n=50):
     cell_size = DRAWING_SIZE / n
     for x in range(n):
@@ -63,19 +111,15 @@ def tiled_diagonals(drawing, n=50):
             else:
                 pos1 = Pos((x + 1) * cell_size, y * cell_size)
                 pos2 = Pos(x * cell_size, (y + 1) * cell_size)
-
             colour = hsva_to_rgba(random.random(), 0.5, 1)
-
             drawing.add_straight_line(pos1, pos2, colour, DRAWING_SIZE / n / 10)
-
     drawing.shuffle_lines()
-
     return drawing
 
-
+# Draw a pattern of spiralling dots
 def fibonacci_dots(drawing, n=1000):
     for i in range(n):
-        # calc radians of rotation and raduis from center
+        # calc radians of rotation and radius from centre
         radians = i * (2 - (2 / GOLDEN_RATIO)) * math.pi
         radius = math.sqrt(i + 1) * DRAWING_SIZE / math.sqrt(n)
 
@@ -87,7 +131,7 @@ def fibonacci_dots(drawing, n=1000):
 
     return drawing
 
-
+# Draw an image using spiralling dots
 def fibonacci_image(drawing, image_filename, n=3000):
     # load image from file
     image = Image.open(image_filename)
@@ -96,7 +140,7 @@ def fibonacci_image(drawing, image_filename, n=3000):
     width, height = image.size
 
     for i in range(n):
-        # calc radians of rotation and radius from center
+        # calc radians of rotation and radius from centre
         radians = i * (2 - (2 / GOLDEN_RATIO)) * math.pi
         radius = math.sqrt(i + 1) * DRAWING_SIZE / math.sqrt(n)
 
@@ -114,7 +158,7 @@ def fibonacci_image(drawing, image_filename, n=3000):
 
     return drawing
 
-
+# Squared Circle example
 def squared_circle(drawing, n=8):
     # init step and drawing
     step = 90 / n
@@ -126,20 +170,20 @@ def squared_circle(drawing, n=8):
 
         # get pos for corners
         pos1 = Pos.from_rotational(np.radians(degrees), DRAWING_SIZE).rotate(np.radians(45))
-        pos2 = Pos(pos1.x, 1000 - pos1.y).rotate(np.radians(45))
-        pos3 = Pos(1000 - pos1.x, 1000 - pos1.y).rotate(np.radians(45))
-        pos4 = Pos(1000 - pos1.x, pos1.y).rotate(np.radians(45))
+        pos2 = Pos(pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
+        pos3 = Pos(DRAWING_SIZE - pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
+        pos4 = Pos(DRAWING_SIZE - pos1.x, pos1.y).rotate(np.radians(45))
 
-        # do color
-        color = hsva_to_rgba(current_h, 0.8, 0.85)
+        # do colour
+        colour = hsva_to_rgba(current_h, 0.8, 0.85)
         current_h -= 0.7 / n
 
         # add square
-        drawing.add_strict_line([pos1, pos2, pos3, pos4], color, DRAWING_SIZE / (25 * n))
+        drawing.add_strict_line([pos1, pos2, pos3, pos4], colour, DRAWING_SIZE / (25 * n))
 
     return drawing
 
-
+# Draw straight lines that combine to create impression of curved lines
 def curved_lines(drawing, n=20):
     # init drawing
     step = DRAWING_SIZE / n
@@ -148,9 +192,9 @@ def curved_lines(drawing, n=20):
     for i in range(n + 1):
         offset = i * step
         # do bottom left line
-        drawing.add_straight_line(Pos(offset, 1000), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(offset, DRAWING_SIZE), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
         # do top right
-        drawing.add_straight_line(Pos(1000, offset), Pos(offset, 0), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(DRAWING_SIZE, offset), Pos(offset, 0), BLACK, DRAWING_SIZE / (25 * n))
 
     # do diagonal lines
     for i in range(n - 1):
@@ -158,14 +202,14 @@ def curved_lines(drawing, n=20):
         # do top left line
         drawing.add_straight_line(Pos(offset, 0), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
         # do bottom right
-        drawing.add_straight_line(Pos(1000, 1000 - offset), Pos(1000 - offset, 1000), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(DRAWING_SIZE, DRAWING_SIZE - offset), Pos(DRAWING_SIZE - offset, DRAWING_SIZE), BLACK, DRAWING_SIZE / (25 * n))
 
     # do middle diagonal
-    drawing.add_straight_line(Pos(1000, 0), Pos(0, 1000), BLACK, DRAWING_SIZE / (25 * n))
+    drawing.add_straight_line(Pos(DRAWING_SIZE, 0), Pos(0, DRAWING_SIZE), BLACK, DRAWING_SIZE / (25 * n))
 
     return drawing
 
-
+# Draw concentric rings of circles getting smaller
 def shrinking_circle_ring(drawing, n=20, m=36):
     radians_step = 2 * math.pi / m
     current_h = 0
@@ -176,21 +220,23 @@ def shrinking_circle_ring(drawing, n=20, m=36):
         big_radius = (m * big_radius) / (m + 2 * math.pi)
         small_radius = (math.pi * big_radius) / m
 
-        # do color
-        color = hsva_to_rgba(current_h, 0.8, 0.9)
+        # do colour
+        colour = hsva_to_rgba(current_h, 0.8, 0.9)
         current_h -= 1 / n
 
         # draw circles around radius
         for i in range(m):
             pos = Pos.from_rotational(radians_step * i, big_radius)
-            drawing.add_point(pos, color, small_radius)
+            drawing.add_point(pos, colour, small_radius)
             drawing.add_point(pos, WHITE, small_radius / 3)
 
     drawing *= 2
 
     return drawing
 
-
+# Draw a square fractal which splits a square into 4 more squares (2x2), and iterates on 3 out of 4 smaller squares.
+# Note - this is Markichu's original fractal drawing method for square fractals, derived from davidryan59/niftymaestro drawings on Nifty Ink
+# Subsequently, davidryan59 implemented more generalised fractal drawing methods, see fractalRunner, FractalSystem etc.
 def square_fractal(drawing, master_key, iterations=5):
     # add gradient background
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
