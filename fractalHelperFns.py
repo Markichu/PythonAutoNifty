@@ -130,7 +130,7 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
-def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None):
+def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
@@ -141,11 +141,14 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
             pos_list.append(get_canvas_pos_from_vect(draw_vect))
         if closed:
             pos_list.append(pos_list[0])
-        drawing.add_line(pos_list, colour, width)
+        if curved:
+            drawing.add_line(pos_list, colour, width)
+        else:
+            drawing.add_strict_line(pos_list, colour, width)
     return plot_fn
 
 # Plot a path (series of line segments) for each fractal piece
-def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None):
+def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
@@ -157,11 +160,14 @@ def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None):
                 draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
                 pos_list.append(get_canvas_pos_from_vect(draw_vect))
             pos_list.append(pos_list[0])  # Close the hull outline
-            drawing.add_line(pos_list, colour, width)
+            if curved:
+                drawing.add_line(pos_list, colour, width)
+            else:
+                drawing.add_strict_line(pos_list, colour, width)
     return plot_fn
 
 # Fill a fractal piece using a spiralling path from the centre to the convex hull
-def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None):
+def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
@@ -196,7 +202,10 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None):
             l = len(plot_vect_list)
             for j in range(l):
                 pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l-j-1]))
-            drawing.add_line(pos_list, colour, width)
+            if curved:
+                drawing.add_line(pos_list, colour, width)
+            else:
+                drawing.add_strict_line(pos_list, colour, width)
     return plot_fn
 
 DEFAULT_PLOTTING_FN = plot_dot()

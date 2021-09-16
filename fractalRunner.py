@@ -127,7 +127,7 @@ def fractalRunner(drawing):
     # # Plot method 2: outline using convex hull, must call fs.calculate_hulls after definitions complete
     # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=1.00)
     # Plot method 3: fill using convex hull, must call fs.calculate_hulls
-    fp.plotting_fn = plot_hull_filled(width=1, expand_factor=1.25)
+    fp.plotting_fn = plot_hull_filled(width=1, expand_factor=1.00)
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -141,14 +141,15 @@ def fractalRunner(drawing):
     fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc**1.7))
     fp = fd.plotter
     fp.colouring_fn = colour_by_log2_size(0, 4, colours=[GREEN, BLUE])
-    # fp.plotting_fn = plot_path(
-    #     closed=True,
-    #     width=2,
-    #     expand_factor=1.1,
-    #     wobble_fn=wobble_square(pixels=3),
-    #     vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)]
-    # )
-    fp.plotting_fn = plot_hull_filled()
+    fp.plotting_fn = plot_path(
+        closed=True,
+        width=2,
+        expand_factor=1.1,
+        wobble_fn=wobble_square(pixels=3),
+        vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)],
+        curved=True
+    )
+    # fp.plotting_fn = plot_hull_filled()  # Alternative plot method, using defaults
 
     # Definition #5 - demo of random hexagon fractal
     id_exit = 1
