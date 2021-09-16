@@ -230,7 +230,7 @@ def fractalRunner(drawing):
     fd = fs.lookup_defn(id)
     sc = 0.5 ** 0.5
     fd.children = gen_children_variable_dragon(fs, id)
-    fd.iteration_fn = get_iteration_fn_standard(min_diameter=5, max_iterations=20)
+    fd.iteration_fn = get_iteration_fn_standard(min_diameter=20, max_iterations=20)
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress([BLUE, RED, ORANGE])
     # fp.colouring_fn = colour_fixed(CYAN, alpha=0.75) # Alternative fixed colouring method
