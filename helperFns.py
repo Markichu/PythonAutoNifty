@@ -1,4 +1,6 @@
 import math
+import os
+import random
 
 from Pos import Pos
 from constants import DRAWING_SIZE
@@ -69,4 +71,16 @@ def interpolate_colour(start_col, end_col, amount, alpha_factor=1):
     g = get_bounded_int(0, 255, start_col[1] * (1 - amount) + end_col[1] * amount)
     b = get_bounded_int(0, 255, start_col[2] * (1 - amount) + end_col[2] * amount)
     a = max(0, min(1, alpha_factor * (start_col[3] * (1 - amount) + end_col[3] * amount)))
-    return (r, g, b, a)
+    return r, g, b, a
+
+
+def random_seed():
+    seed = int.from_bytes(os.urandom(8), byteorder="big")
+    random.seed(seed)
+    print("Random seed:", seed)
+    return seed
+
+
+def set_random_seed(seed):
+    random.seed(seed)
+    print("Random changed to:", seed)

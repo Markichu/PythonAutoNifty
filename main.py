@@ -1,5 +1,5 @@
 from Drawing import Drawing
-from Pos import Pos
+from helperFns import random_seed, set_random_seed
 from constants import DRAWING_SIZE, BLACK
 from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals, \
     fibonacci_dots, fibonacci_image, squared_circle, curved_lines, \
@@ -9,6 +9,13 @@ from fractalRunner import fractalRunner
 
 
 def main():
+    # # Optional - Make a new random seed, set it and print it. Used in drawings with randomness
+    # # This technically changes the random seed, but should not matter unless you put code above this.
+    seed = random_seed()
+
+    # # Optional - Change the random seed. Use this to reproduce the same random drawing.
+    # set_random_seed(seed)
+
     # ---------------
     # # Pick a method to use here that draws something nice on the canvas
     # # Uncomment out a single line to run that function
