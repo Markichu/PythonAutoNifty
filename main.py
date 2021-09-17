@@ -1,7 +1,12 @@
+import math
+import random
+
 from Drawing import Drawing
+from Pos import Pos
+from constants import DRAWING_SIZE, BLACK
 from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals, \
     fibonacci_dots, fibonacci_image, squared_circle, curved_lines, \
-    shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example
+    shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example, star_example
 
 from fractalRunner import fractalRunner
 
@@ -18,8 +23,9 @@ def main():
     # drawing = text_drawing_example(Drawing())  # Example of how to draw text on the canvas
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
-    # drawing = square_example(Drawing())
-    # drawing = alpha_example(Drawing())
+    # drawing = square_example(Drawing())  # Draws some basic squares with different brush sizes
+    # drawing = alpha_example(Drawing())  # Shows an example of using alpha values, make sure pygame has alpha enabled too!
+    # drawing = star_example(Drawing())  # Draws a spiralling pattern inside a black circle
 
     # ---------------
 
