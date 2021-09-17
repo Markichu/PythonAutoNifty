@@ -133,6 +133,15 @@ def square_example(drawing):
     return drawing
 
 
+# Draw four black rectangles nearly filling the canvas, with different rounding on each corner
+def rectangle_example(drawing):
+    drawing.add_rounded_rectangle(centre_pos=Pos(250, 250), width=400, height=200, colour=BLACK, brush_radius=0.1)
+    drawing.add_rounded_rectangle(centre_pos=Pos(750, 250), width=200, height=400, colour=BLACK, brush_radius=2)
+    drawing.add_rounded_rectangle(centre_pos=Pos(250, 750), width=400, height=200, colour=BLACK, brush_radius=40)
+    drawing.add_rounded_rectangle(centre_pos=Pos(750, 750), width=200, height=400, colour=BLACK, brush_radius=1000)
+    return drawing
+
+
 # Draw a square that appears to rotate on the Nifty Ink canvas
 def rotating_square(drawing):
     drawing.add_background((255, 255, 255, 1))
@@ -430,17 +439,17 @@ def star_example(drawing, lines=10, line_segments=100, draw_points=False, transp
 
     if draw_points:
         for pnt in all_points:
-            colour = [random.randint(0,255), random.randint(0,255), random.randint(0,255), 1]
+            colour = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 1]
             if transparency:
                 colour[-1] = random.random()
-            brush_radius = random.randint(10,20)
-            position = pnt+Pos(0.5,0.5)
+            brush_radius = random.randint(10, 20)
+            position = pnt + Pos(0.5, 0.5)
             drawing.add_point(position, colour, brush_radius)
         for pnt in all_points:
             colour = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 1]
             if transparency:
                 colour[-1] = random.random()
-            brush_radius = random.randint(3,9)
+            brush_radius = random.randint(3, 9)
             position = pnt + Pos(0.5, 0.5)
             drawing.add_point(position, colour, brush_radius)
     return drawing

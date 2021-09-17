@@ -1,4 +1,5 @@
 import json
+import math
 import random
 import pygame
 import os
@@ -6,7 +7,7 @@ import time
 import numpy as np
 
 from Pos import Pos
-from helperFns import get_bezier_curve
+from helperFns import get_bezier_curve, rotate
 from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
 
 
@@ -111,13 +112,23 @@ class Drawing:
     # Add a square to the canvas
     # The degree of roundedness of the corners is determined by the brush radius
     def add_rounded_square(self, centre_pos, width, colour, brush_radius=DEFAULT_BRUSH_RADIUS):
+        self.add_rounded_rectangle(centre_pos, width, width, colour, brush_radius=brush_radius)
+
+    # # Add a rectangle to the canvas
+    # # The degree of roundedness of the corners is determined by the brush radius
+    def add_rounded_rectangle(self, centre_pos, width, height, colour, brush_radius=DEFAULT_BRUSH_RADIUS):
+        rotate_rectangle = False
+        if width > height:
+            width, height = height, width
+            rotate_rectangle = True
+
         # init corners to outer positions
         corners = [Pos(0, 0),
-                   Pos(0, width),
-                   Pos(width, width),
+                   Pos(0, height),
+                   Pos(width, height),
                    Pos(width, 0)]
         for i, corner in enumerate(corners):
-            corners[i] = centre_pos - Pos(width / 2, width / 2) + corner
+            corners[i] = centre_pos - Pos(width / 2, height / 2) + corner
 
         # Checked (internal) brush radius should be larger than minimum in defaults,
         # and then smaller than half of the square width
@@ -142,6 +153,9 @@ class Drawing:
         for i in range(1, line_count):
             result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, br2))
             result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -br2))
+
+        if rotate_rectangle:
+            result_corners = [rotate(point, math.pi/2, centre_pos) for point in result_corners]
         self.add_line(result_corners, colour, br2)
 
     # Write text onto the canvas using a custom font specified below

@@ -3,7 +3,8 @@ from helperFns import random_seed, set_random_seed
 from constants import DRAWING_SIZE, BLACK
 from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals, \
     fibonacci_dots, fibonacci_image, squared_circle, curved_lines, \
-    shrinking_circle_ring, square_fractal, text_drawing_example, square_example, alpha_example, star_example
+    shrinking_circle_ring, square_fractal, text_drawing_example, square_example, rectangle_example, \
+    alpha_example, star_example
 
 from fractalRunner import fractalRunner
 
@@ -28,6 +29,7 @@ def main():
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
     # drawing = square_example(Drawing())  # Draws some basic squares with different brush sizes
+    # drawing = rectangle_example(Drawing())  # Draws some basic rectangles with different brush sizes
     # drawing = alpha_example(Drawing())  # Shows an example of using alpha values, make sure pygame has alpha enabled too!
     # drawing = star_example(Drawing())  # Draws a spiralling pattern inside a black circle
 
@@ -75,11 +77,11 @@ def main():
     # #   step_size determines the bezier curves effective resolution, higher is slower but often looks better
 
     # Render in a very accurate (but slower) way.
-    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
-    #                simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10)
+    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
+                   simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10)
 
     # Render the traditional way (faster).
-    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
+    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
 
 
 if __name__ == '__main__':
