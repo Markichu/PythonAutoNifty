@@ -271,6 +271,15 @@ class Drawing:
     def shuffle_lines(self):
         random.shuffle(self.object["lines"])
 
+    # Use this to make your drawings slightly less precise, but also reduce their size a lot
+    # This can be useful if browser local storage limits start affecting your large drawings
+    def round_floats(self):
+        for line in self.object['lines']:
+            line['brushRadius'] = round(line['brushRadius'])
+            for point in line['points']:
+                point['x'] = round(point['x'])
+                point['y'] = round(point['y'])
+
     # Shrink or expand all the stored lines using multiplication
     def __mul__(self, shrink_size):
         # origin for shrinking
