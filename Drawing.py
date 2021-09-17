@@ -428,7 +428,11 @@ class Drawing:
             points = []
             if colour[3] != 255 and allow_transparency:  # If the brushColour is transparent, draw with transparency
                 target_surface = pygame.Surface((pygame_x, pygame_y))
-                target_surface.set_colorkey(BLACK)
+                if colour[:-1] != [0,0,0]:
+                    target_surface.set_colorkey(BLACK)
+                else:  # Handle the black edge case
+                    target_surface.set_colorkey(WHITE)
+                    target_surface.fill((255,255,255,0))
                 target_surface.set_alpha(round(colour[3]))
             else:  # If the brushColour is opaque, draw with no transparency
                 if fake_transparency:
