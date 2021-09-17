@@ -11,7 +11,9 @@ from helperFns import rotate, hsva_to_rgba
 
 # Draw an image from file using dots as pixels
 # Many image formats are supported, including .jpg and .png
-def point_image(drawing, image_name, do_a_shuffle=False):
+def point_image(drawing, image_name, do_a_shuffle=False,
+                width=DRAWING_SIZE, height=DRAWING_SIZE,
+                position=Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2), keep_aspect_ratio=False, rotation=None):
     # load image from file
     image = Image.open(image_name)
 
@@ -19,20 +21,45 @@ def point_image(drawing, image_name, do_a_shuffle=False):
     rgba_image = image.convert('RGBA')
 
     # init width and height
-    width, height = image.size
+    pixel_width, pixel_height = image.size
 
-    x_diff = DRAWING_SIZE / width
-    y_diff = DRAWING_SIZE / height
+    if keep_aspect_ratio:  # keep the images original shape
+        x_diff = width / max(pixel_width, pixel_height)
+        y_diff = height / max(pixel_width, pixel_height)
+        max_diff = max(x_diff, y_diff)
 
-    for x in range(width):
-        for y in range(height):
+        # Centre the image if it isn't a square
+        x_offset = abs(max(pixel_width, pixel_height) - pixel_width) / 2
+        y_offset = abs(max(pixel_width, pixel_height) - pixel_height) / 2
+    else:  # stretch the image to be a square
+        x_diff = width / pixel_width
+        y_diff = height / pixel_height
+        max_diff = max(x_diff, y_diff)
+
+        x_offset = 0
+        y_offset = 0
+
+    for x in range(pixel_width):
+        for y in range(pixel_height):
             colour = list(rgba_image.getpixel((x, y)))
             colour[3] /= 255
 
-            px = (x + 0.5) * x_diff
-            py = (y + 0.5) * y_diff
-            pr = x_diff * pow(2, 0.5) / 2
-            drawing.add_point(pos=Pos(px, py), colour=colour, brush_radius=pr)
+            # Do the initial position calculation
+            px = (x + 0.5 + x_offset) * x_diff
+            py = (y + 0.5 + y_offset) * y_diff
+
+            # Adjust the position of the image
+            px += position.x - (width / 2)
+            py += position.y - (height / 2)
+
+            pos = Pos(px, py)
+
+            # Rotate the position
+            if rotation:
+                pos = rotate(pos, rotation, origin=position)
+
+            pr = max_diff * pow(2, 0.5) / 2
+            drawing.add_point(pos=pos, colour=colour, brush_radius=pr)
 
     if do_a_shuffle:
         drawing.shuffle_lines()
@@ -41,7 +68,9 @@ def point_image(drawing, image_name, do_a_shuffle=False):
 
 
 # Draw an image from file using square pixels
-def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False):
+def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False,
+                 width=DRAWING_SIZE, height=DRAWING_SIZE,
+                 position=Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2), keep_aspect_ratio=False, rotation=None):
     # load image from file
     image = Image.open(image_name)
 
@@ -49,22 +78,45 @@ def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False):
     rgba_image = image.convert('RGBA')
 
     # init width and height
-    width, height = image.size
+    pixel_width, pixel_height = image.size
 
-    # Centre the image if it isn't a square
-    x_offset = abs(max(width, height) - width) / 2
-    y_offset = abs(max(width, height) - height) / 2
+    if keep_aspect_ratio:  # keep the images original shape
+        square_pixel_width = width / max(pixel_width, pixel_height)
+        square_pixel_height = height / max(pixel_width, pixel_height)
+        max_square_dimension = max(square_pixel_width, square_pixel_height)
 
-    square_width = DRAWING_SIZE / max(width, height)
+        # Centre the image if it isn't a square
+        x_offset = abs(max(pixel_width, pixel_height) - pixel_width) / 2
+        y_offset = abs(max(pixel_width, pixel_height) - pixel_height) / 2
+    else:  # stretch the image to be a square
+        square_pixel_width = width / pixel_width
+        square_pixel_height = height / pixel_height
+        max_square_dimension = max(square_pixel_width, square_pixel_height)
 
-    for x in range(width):
-        for y in range(height):
+        x_offset = 0
+        y_offset = 0
+
+    for x in range(pixel_width):
+        for y in range(pixel_height):
             colour = list(rgba_image.getpixel((x, y)))
             colour[3] /= 255
 
-            px = (x + 0.5 + x_offset) * square_width
-            py = (y + 0.5 + y_offset) * square_width
-            drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
+            # Do the initial position calculation
+            px = (x + 0.5 + x_offset) * square_pixel_width
+            py = (y + 0.5 + y_offset) * square_pixel_height
+
+            # Adjust the position of the image
+            px += position.x - (width / 2)
+            py += position.y - (height / 2)
+
+            pos = Pos(px, py)
+
+            # Rotate the position
+            if rotation:
+                pos = rotate(pos, rotation, origin=position)
+
+            # TODO: Switch to add_rounded_rectangle() when it is added, so the width+height of each 'pixel' is correct
+            drawing.add_rounded_square(centre_pos=pos, width=max_square_dimension, colour=colour, brush_radius=brush_radius)
 
     if do_a_shuffle:
         drawing.shuffle_lines()
