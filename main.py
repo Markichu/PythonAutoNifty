@@ -39,6 +39,12 @@ def main():
     # # Optional - Reduce size of your drawing but at the cost of precision.
     # drawing.round_floats()
 
+    # # Optional - Save the raw drawing data to a file
+    # drawing.export_raw_data("drawing.ink", indent=4)
+
+    # # Optional - Load raw drawing data from a file, overwrites the drawing it is loaded into.
+    # drawing.import_raw_data("drawing.ink")
+
     # # Select an import method for the output data
     output_data = drawing.to_nifty_import()  # Replace previous canvas contents in Nifty.Ink
     # output_data = drawing.to_nifty_add_layer_import()  # Keep previous canvas contents, write a layer on top

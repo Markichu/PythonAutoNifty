@@ -280,6 +280,19 @@ class Drawing:
                 point['x'] = round(point['x'])
                 point['y'] = round(point['y'])
 
+    # Save raw drawing data to a file for later use.
+    def export_raw_data(self, file_name, indent=4):
+        with open(file_name, "w") as file:
+            file.write(json.dumps(self.object, indent=indent))
+        print(f"Exported raw data to {file_name}.")
+
+    # Load a raw data file and replace the contents of this drawing.
+    def import_raw_data(self, file_name):
+        with open(file_name, "r") as file:
+            drawing_data = json.loads(file.read())
+        self.object = drawing_data
+        print(f"Imported raw data from {file_name}.")
+
     # Shrink or expand all the stored lines using multiplication
     def __mul__(self, shrink_size):
         # origin for shrinking
