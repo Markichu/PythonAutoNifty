@@ -34,7 +34,7 @@ def main():
     # # Write the drawing to output file
     # # that can be pasted into the console
     # # in the Developer pane on Nifty Ink website
-    print(f"Lines: {len(drawing.object['lines'])}, Size: {len(output_data)}")
+    print(f"Lines: {len(drawing.object['lines'])}, Size: {(len(output_data)/1024.0**2):.2f}MB")
     with open("output.txt", "w") as file:
         file.write(output_data)
 
