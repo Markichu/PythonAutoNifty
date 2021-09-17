@@ -49,6 +49,7 @@ def hsva_to_rgba(h, s, v, a=1.0):
 
 
 # Obtained from https://orthallelous.wordpress.com/2020/06/21/pure-python-bezier-curve/
+# TODO: Change this over to using Pos instead of (x, y). Might be quite difficult
 def get_bezier_curve(control_points, step_size=10, end_point=True):
     m, q, bezier_points, s = list(zip(*control_points)), len(control_points), [], (
         step_size - 1 if end_point else step_size) / 1.

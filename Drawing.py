@@ -90,6 +90,16 @@ class Drawing:
                 "brushRadius": brush_radius}
         self.object["lines"].append(line)
 
+    # Add a bezier curve that is quadratic if you give 3 points, cubic if you give 4 points and so on.
+    def add_general_bezier_curve(self, control_points, colour, brush_radius, step_size=40, enclosed_path=False):
+        if step_size < 2:
+            step_size = 2
+        tuple_control_points = [(point.x, point.y) for point in control_points]
+        points = get_bezier_curve(tuple_control_points, step_size, end_point=True)
+        pos_points = [Pos(point[0], point[1]) for point in points]
+        print(pos_points)
+        self.add_line(pos_points, colour, brush_radius, enclosed_path=enclosed_path)
+
     # Add a pause to the canvas, using a point off the canvas
     def add_pause(self, length):
         point = {"x": -10, "y": -10}
