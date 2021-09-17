@@ -90,14 +90,14 @@ def rotating_square(drawing):
     p3 = Pos(800, 800)
     p4 = Pos(800, 200)
     for _ in range(500):
-        drawing.add_strict_line([p1, p2, p3, p4], (0, 0, 0, 1), 10)
+        drawing.add_line([p1, p2, p3, p4], (0, 0, 0, 1), 10)
         drawing.add_pause(10)
         drawing.add_background((255, 255, 255, 1))
         p1 = rotate(p1, 0.1)
         p2 = rotate(p2, 0.1)
         p3 = rotate(p3, 0.1)
         p4 = rotate(p4, 0.1)
-    drawing.add_strict_line([p1, p2, p3, p4], (0, 0, 0, 1), 10)
+    drawing.add_line([p1, p2, p3, p4], (0, 0, 0, 1), 10)
     return drawing
 
 # Draw a pattern involving a lot of diagonal lines
@@ -179,7 +179,7 @@ def squared_circle(drawing, n=8):
         current_h -= 0.7 / n
 
         # add square
-        drawing.add_strict_line([pos1, pos2, pos3, pos4], colour, DRAWING_SIZE / (25 * n))
+        drawing.add_line([pos1, pos2, pos3, pos4], colour, DRAWING_SIZE / (25 * n))
 
     return drawing
 
@@ -334,5 +334,5 @@ def alpha_example(drawing):
         line_points = []
         for j in range(random.randint(2,20)):
             line_points.append(Pos(random.randint(0, DRAWING_SIZE), random.randint(0, DRAWING_SIZE)))
-        drawing.add_line(line_points, (random.randint(0,255),random.randint(0,255),random.randint(0,255),random.random()), random.randint(1,10))
+        drawing.add_quadratic_bezier_curve(line_points, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), random.random()), random.randint(1, 10))
     return drawing

@@ -61,7 +61,7 @@ class Drawing:
     
     # Add a curved line between a list of points (Pos) on the canvas
     # Note - this line is curved on Nifty Ink
-    def add_line(self, pos_list, colour, brush_radius, enclosed_path=False):
+    def add_quadratic_bezier_curve(self, pos_list, colour, brush_radius, enclosed_path=False):
         points_list = []
         for pos in pos_list:
             points_list.append(pos.point())
@@ -73,7 +73,7 @@ class Drawing:
         self.object["lines"].append(line)
 
     # Add a series of straight line segments between a list of points (Pos) on the canvas
-    def add_strict_line(self, pos_list, colour, brush_radius, enclosed_path=False):
+    def add_line(self, pos_list, colour, brush_radius, enclosed_path=False):
         # create points for square
         points_list = [pos_list[0].point()]
         for pos in pos_list[1:-1]:
@@ -130,7 +130,7 @@ class Drawing:
         for i in range(1, line_count):
             result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, br2))
             result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -br2))
-        self.add_strict_line(result_corners, colour, br2)
+        self.add_line(result_corners, colour, br2)
 
     # Write text onto the canvas using a custom font specified below
     def write(self, pos, lines, font_size, line_spacing=1.15, colour=BLACK):
@@ -253,7 +253,7 @@ class Drawing:
 
             # draw character
             for line in this_char:
-                self.add_line(line, colour, font_size / 30)
+                self.add_quadratic_bezier_curve(line, colour, font_size / 30)
 
             return pos + x_offset
 
