@@ -29,8 +29,9 @@ def main():
     # drawing *= 0.95
 
     # # Select an import method for the output data
-    output_data = drawing.to_nifty_fast_import()  # Replace previous canvas contents in Nifty.Ink
+    output_data = drawing.to_nifty_import()  # Replace previous canvas contents in Nifty.Ink
     # output_data = drawing.to_nifty_add_layer_import()  # Keep previous canvas contents, write a layer on top
+    # output_data = drawing.to_nifty_show_import() # Show the import
 
     # # Write the drawing to output file
     # # that can be pasted into the console
