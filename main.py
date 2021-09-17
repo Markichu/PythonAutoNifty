@@ -1,6 +1,3 @@
-import math
-import random
-
 from Drawing import Drawing
 from Pos import Pos
 from constants import DRAWING_SIZE, BLACK
