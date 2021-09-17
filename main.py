@@ -1,3 +1,5 @@
+import random
+
 from Drawing import Drawing
 from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals,\
   fibonacci_dots, fibonacci_image, squared_circle, curved_lines,\
@@ -41,7 +43,19 @@ def main():
     # #   increase pygame_scale for higher RES output images,\
     # #   enable headless if image will be larger than the screen,\
     # #   filename specifies the name and format of the image
-    drawing.render(pygame_scale=None,headless=False,filename="screenshot.png")
+    # #   simulate specifies whether to show the drawing process
+    # #   speed specifies the speed a simulated drawing should be drawn, 3 is roughly equal to the speed that nifty uses
+    # #   allow_transparency can be used to enable or disable transparency in the render, it is faster disabled
+    # #   fake_transparency is used as an illusion of transparency but only works well with 1 effective layer, very fast
+    # #   draw_as_bezier is used to show lines drawn in the exact same method as nifty.ink, slower
+    # #   step_size determines the bezier curves effective resolution, higher is slower but often looks better
+
+    # Render in a very accurate (but slower) way.
+    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
+    #                simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10)
+
+    # Render the traditional way (faster).
+    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
 
 if __name__ == '__main__':
     main()

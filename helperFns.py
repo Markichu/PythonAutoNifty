@@ -1,7 +1,10 @@
 import math
+import os
+import random
 
 from Pos import Pos
 from constants import DRAWING_SIZE
+from math import comb
 
 # General helper functions for drawing in Nifty Ink, not related to Numpy or fractals
 
@@ -41,6 +44,17 @@ def hsva_to_rgba(h, s, v, a=1.0):
         r, g, b = v, t, p
 
     return [r * 255, g * 255, b * 255, a]
+
+
+# Obtained from https://orthallelous.wordpress.com/2020/06/21/pure-python-bezier-curve/
+def get_bezier_curve(control_points, step_size=10, end_point=True):
+    m, q, bezier_points, s = list(zip(*control_points)), len(control_points), [], (
+        step_size - 1 if end_point else step_size) / 1.
+    for i in range(step_size):
+        b = [comb(q - 1, v) * (i / s) ** v * (1 - (i / s)) ** (q - 1 - v) for v in range(q)]
+        bezier_points += [(tuple(sum(j * k for j, k in zip(d, b)) for d in m))]
+    return bezier_points
+
 
 # Range-check any number into an integer within specified upper and lower bounds
 def get_bounded_int(lowest_integer, highest_integer, num):

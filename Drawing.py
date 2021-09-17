@@ -3,8 +3,10 @@ import random
 import pygame
 import os
 import time
+import numpy as np
 
 from Pos import Pos
+from helperFns import get_bezier_curve
 from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
 
 # The Drawing class contains all the code required to produce an output.txt file.
@@ -283,15 +285,19 @@ class Drawing:
                 point_pos += origin
                 line["points"][point_index] = point_pos.point()
         return self
-    
+
     # Render the lines to preview in Pygame
-    def render(self, pygame_scale=None, headless=False, filename="output.png"):
+    def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None,
+               allow_transparency=False, fake_transparency=False, proper_line_thickness=False, draw_as_bezier=False, step_size=10):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
             # No screen to get the dimensions, just render at normal size
             if pygame_scale is None:
                 pygame_scale = 1
+
+        if step_size < 2:
+            step_size = 2
 
         pygame.init()
 
@@ -315,24 +321,108 @@ class Drawing:
 
         pygame.display.set_caption("Drawing Render")
         screen.fill(WHITE[:3])
+        pygame.display.update()  # Show the background, (so the screen isn't black on drawings that are slow to process)
+
+        def alpha_blend(a, bg, fg):
+            return ((1 - a) * fg[0] + a * bg[0],
+                    (1 - a) * fg[1] + a * bg[1],
+                    (1 - a) * fg[2] + a * bg[2],
+                    255)
+
+        def draw_line(surface, colour, start_point, end_point, width, end_caps=False):
+            if end_caps:
+                pygame.draw.circle(surface, colour, start_point, width / 2)
+                pygame.draw.circle(surface, colour, end_point, width / 2)
+            if start_point == end_point:
+                return
+            np.seterr(divide='ignore', invalid='ignore')
+            vec_start_point = np.array(start_point)
+            vec_end_point = np.array(end_point)
+            move_point = vec_end_point - vec_start_point
+            norm_move = move_point / np.linalg.norm(move_point)
+
+            rotated_vec = np.array((-norm_move[1], norm_move[0])) * width / 2
+            start_point_1 = vec_start_point + rotated_vec
+            start_point_2 = vec_start_point - rotated_vec
+            end_point_1 = vec_end_point + rotated_vec
+            end_point_2 = vec_end_point - rotated_vec
+
+            pygame.draw.polygon(surface, colour, [start_point_1, start_point_2, end_point_2, end_point_1], width=0)
+
+        def draw_lines(surface, colour, pts, width, end_caps=False):
+            last_point = None
+            for pt in pts:
+                if last_point:
+                    draw_line(surface, colour, last_point, pt, width, end_caps=end_caps)
+                last_point = pt
+
+        def get_midpoint(p1, p2):
+            x = p1[0] + (p2[0] - p1[0]) / 2
+            y = p1[1] + (p2[1] - p1[1]) / 2
+            return [x, y]
+
+        def draw_quadratic_bezier_curve_line(surface, colour, pts, width, end_caps=False, step_size=40):
+
+            last_midpoint = pts[0]
+
+            for i in range(len(pts)):
+                p1 = pts[i]
+                try:
+                    p2 = pts[i + 1]
+
+                    midpoint = get_midpoint(p1, p2)
+                    # TODO: Write some code to create an appropriate step_size, likely based on the bezier curve length
+                    bezier_curve_points = get_bezier_curve((last_midpoint, p1, midpoint), step_size=step_size, end_point=True)
+                    draw_lines(surface, colour, bezier_curve_points, width, end_caps=end_caps)
+
+                    last_midpoint = midpoint
+                except IndexError:  # Draw the last point as a straight line to finish
+                    draw_line(surface, colour, midpoint, p2, width, end_caps=end_caps)
 
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
             colour = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
             colour[3] *= 255 # Pygame expects an alpha between 0 and 255, not 0 and 1.
 
-            shape_surface = pygame.Surface((pygame_x, pygame_y), pygame.SRCALPHA)
-
             points = []
-            for point in line["points"]:
+            if colour[3] != 255 and allow_transparency:  # If the brushColour is transparent, draw with transparency
+                target_surface = pygame.Surface((pygame_x, pygame_y))
+                target_surface.set_colorkey(BLACK)
+                target_surface.set_alpha(colour[3])
+            else:  # If the brushColour is opaque, draw with no transparency
+                if fake_transparency:
+                    colour = alpha_blend(colour[3] / 255, colour[:-1], [255, 255, 255])
+                target_surface = screen
+
+            for index, point in enumerate(line["points"]):
                 this_point = (point["x"] * pygame_scale, point["y"] * pygame_scale)
                 points.append(this_point)
-                pygame.draw.circle(shape_surface, colour, this_point, int(brush_radius))
+                if not proper_line_thickness:
+                    pygame.draw.circle(target_surface, colour, this_point, int(brush_radius))
+            if proper_line_thickness:
+                if draw_as_bezier:
+                    draw_quadratic_bezier_curve_line(target_surface, colour, points, brush_radius * 2, end_caps=True, step_size=step_size)
+                else:
+                    draw_lines(target_surface, colour, points, brush_radius * 2, end_caps=True)
+            else:
+                pygame.draw.lines(target_surface, colour, False, points, int(brush_radius * 2))
 
-            pygame.draw.lines(shape_surface, colour, False, points, int(brush_radius*2))
-            screen.blit(shape_surface, (0, 0))
+            if colour[3] != 255 and allow_transparency:  # Required for transparency
+                screen.blit(target_surface, (0, 0))
 
-        # update screen to render drawing
+            if simulate:  # Update the drawing line by line to see the drawing process
+                pygame.display.update()
+                if speed and speed != 0:
+                    time.sleep(speed / 100)
+
+            # Ensure that no events, such as pygame being closed are ignored.
+            ev = pygame.event.get()
+            for event in ev:
+                if event.type == pygame.QUIT:
+                    # Exits before the image is finished, does not take screenshot.
+                    return
+
+        # update screen to render the final result of the drawing
         pygame.display.update()
         print(f"\nSaving {filename}")
         pygame.image.save(screen, filename)
