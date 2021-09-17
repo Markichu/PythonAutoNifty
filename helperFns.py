@@ -1,10 +1,9 @@
 import math
-import os
-import random
 
 from Pos import Pos
 from constants import DRAWING_SIZE
 from math import comb
+
 
 # General helper functions for drawing in Nifty Ink, not related to Numpy or fractals
 
@@ -18,6 +17,7 @@ def rotate(coord, rotation, origin=None):
     x = coord.x * math.cos(rotation) - coord.y * math.sin(rotation)
     y = coord.x * math.sin(rotation) + coord.y * math.cos(rotation)
     return Pos(x, y) + origin
+
 
 # Turn colour model Hue-Saturation-Value-Alpha into Red-Green-Blue-Alpha
 # Currently RBA is in range 0..255 and A is in range 0..1
@@ -59,6 +59,7 @@ def get_bezier_curve(control_points, step_size=10, end_point=True):
 # Range-check any number into an integer within specified upper and lower bounds
 def get_bounded_int(lowest_integer, highest_integer, num):
     return max(lowest_integer, min(highest_integer, round(num)))
+
 
 # Interpolate between two RGBA values, with optional fading (alpha_factor < 1)
 # (R, G, B, A) arrays should be supplied for start and end colours

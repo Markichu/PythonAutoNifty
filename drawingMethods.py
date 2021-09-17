@@ -39,40 +39,38 @@ def point_image(drawing, image_name, do_a_shuffle=False):
 
     return drawing
 
+
 # Draw an image from file using square pixels
 def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False):
     # load image from file
     image = Image.open(image_name)
 
+    # convert the image to RGBA values
+    rgba_image = image.convert('RGBA')
+
     # init width and height
     width, height = image.size
 
     # Centre the image if it isn't a square
-    x_offset = abs(max(width,height)-width)/2
-    y_offset = abs(max(width,height)-height)/2
+    x_offset = abs(max(width, height) - width) / 2
+    y_offset = abs(max(width, height) - height) / 2
 
-    square_width = DRAWING_SIZE / max(width,height)
-
-    print(width, height)
-    print(x_offset, y_offset)
-    print(square_width, min(width,height))
+    square_width = DRAWING_SIZE / max(width, height)
 
     for x in range(width):
         for y in range(height):
-            colour = list(image.getpixel((x, y)))
+            colour = list(rgba_image.getpixel((x, y)))
+            colour[3] /= 255
+
             px = (x + 0.5 + x_offset) * square_width
             py = (y + 0.5 + y_offset) * square_width
-            if len(colour) == 4:
-                if colour[3] > 0.25:
-                    drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
-            else:
-                colour.append(1)
-                drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
+            drawing.add_rounded_square(centre_pos=Pos(px, py), width=square_width, colour=colour, brush_radius=brush_radius)
 
     if do_a_shuffle:
         drawing.shuffle_lines()
 
     return drawing
+
 
 # Draw four black squares nearly filling the canvas, with different rounding on each corner
 def square_example(drawing):
@@ -81,6 +79,7 @@ def square_example(drawing):
     drawing.add_rounded_square(centre_pos=Pos(250, 750), width=400, colour=BLACK, brush_radius=40)
     drawing.add_rounded_square(centre_pos=Pos(750, 750), width=400, colour=BLACK, brush_radius=1000)
     return drawing
+
 
 # Draw a square that appears to rotate on the Nifty Ink canvas
 def rotating_square(drawing):
@@ -100,6 +99,7 @@ def rotating_square(drawing):
     drawing.add_line([p1, p2, p3, p4], (0, 0, 0, 1), 10)
     return drawing
 
+
 # Draw a pattern involving a lot of diagonal lines
 def tiled_diagonals(drawing, n=50):
     cell_size = DRAWING_SIZE / n
@@ -116,6 +116,7 @@ def tiled_diagonals(drawing, n=50):
     drawing.shuffle_lines()
     return drawing
 
+
 # Draw a pattern of spiralling dots
 def fibonacci_dots(drawing, n=1000):
     for i in range(n):
@@ -130,6 +131,7 @@ def fibonacci_dots(drawing, n=1000):
         drawing.add_point(pos, BLACK, 5)
 
     return drawing
+
 
 # Draw an image using spiralling dots
 def fibonacci_image(drawing, image_filename, n=3000):
@@ -158,6 +160,7 @@ def fibonacci_image(drawing, image_filename, n=3000):
 
     return drawing
 
+
 # Squared Circle example
 def squared_circle(drawing, n=8):
     # init step and drawing
@@ -182,6 +185,7 @@ def squared_circle(drawing, n=8):
         drawing.add_line([pos1, pos2, pos3, pos4], colour, DRAWING_SIZE / (25 * n))
 
     return drawing
+
 
 # Draw straight lines that combine to create impression of curved lines
 def curved_lines(drawing, n=20):
@@ -209,6 +213,7 @@ def curved_lines(drawing, n=20):
 
     return drawing
 
+
 # Draw concentric rings of circles getting smaller
 def shrinking_circle_ring(drawing, n=20, m=36):
     radians_step = 2 * math.pi / m
@@ -234,40 +239,42 @@ def shrinking_circle_ring(drawing, n=20, m=36):
 
     return drawing
 
+
 # Draw a square fractal which splits a square into 4 more squares (2x2), and iterates on 3 out of 4 smaller squares.
-# Note - this is Markichu's original fractal drawing method for square fractals, derived from davidryan59/niftymaestro drawings on Nifty Ink
+# Note - this is Markichu's original fractal drawing method for square fractals
+# It was derived from davidryan59/niftymaestro drawings on Nifty Ink
 # Subsequently, davidryan59 implemented more generalised fractal drawing methods, see fractalRunner, FractalSystem etc.
 def square_fractal(drawing, master_key, iterations=5):
     # add gradient background
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
-    drawing *= 1/0.95
+    drawing *= 1 / 0.95
 
     # Add text
     drawing.write(Pos(600, 125), ["Square", "Fractal", f'#{"".join([str(key) for key in master_key[:3]])}', f"n={iterations}"], 50)
 
     def rotate_left(ext_key):
         rotate_left_dict = {0: 0,
-                       1: 2,
-                       2: 3,
-                       3: 4,
-                       4: 1,
-                       5: 6,
-                       6: 7,
-                       7: 8,
-                       8: 5}
+                            1: 2,
+                            2: 3,
+                            3: 4,
+                            4: 1,
+                            5: 6,
+                            6: 7,
+                            7: 8,
+                            8: 5}
         modified_key = [rotate_left_dict[i] for i in ext_key]
         return [modified_key[1], modified_key[3], modified_key[0], modified_key[2]]
 
     def mirror(ext_key):
         mirror_dict = {0: 0,
-                  1: 7,
-                  2: 6,
-                  3: 5,
-                  4: 8,
-                  5: 3,
-                  6: 2,
-                  7: 1,
-                  8: 4}
+                       1: 7,
+                       2: 6,
+                       3: 5,
+                       4: 8,
+                       5: 3,
+                       6: 2,
+                       7: 1,
+                       8: 4}
         modified_key = [mirror_dict[i] for i in ext_key]
         return [modified_key[2], modified_key[3], modified_key[0], modified_key[1]]
 
@@ -314,25 +321,32 @@ def square_fractal(drawing, master_key, iterations=5):
 
     return square_fractal_recursive(drawing, master_key, [Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE)], iterations)
 
+
 def text_drawing_example(drawing):
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
-    drawing.add_gradient(Pos(150, 150), Pos(DRAWING_SIZE-150, DRAWING_SIZE-150), hsva_to_rgba(0, 0, 1), hsva_to_rgba(0, 0, 1), 200)
+    drawing.add_gradient(Pos(150, 150), Pos(DRAWING_SIZE - 150, DRAWING_SIZE - 150), hsva_to_rgba(0, 0, 1), hsva_to_rgba(0, 0, 1), 200)
 
     # Examples of writing:
     # title text
     drawing.write(pos=Pos(160, 170), lines=["Add a title", "here!"], font_size=50)
     # body text
     drawing.write(pos=Pos(160, 300), lines=["Add some interesting",
-                                  "content and words",
-                                  "here!"], font_size=25, line_spacing=1.35, colour=(64, 64, 200, 1))
+                                            "content and words",
+                                            "here!"], font_size=25, line_spacing=1.35, colour=(64, 64, 200, 1))
 
     return drawing
 
+
 def alpha_example(drawing):
-    for i in range(random.randint(0,100)):
-        drawing.add_point(Pos(random.randint(0,DRAWING_SIZE), random.randint(0,DRAWING_SIZE)), (random.randint(0,255),random.randint(0,255),random.randint(0,255),random.random()), random.randint(1,500))
+    for i in range(random.randint(0, 100)):
+        colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), random.random())
+        position = Pos(random.randint(0, DRAWING_SIZE), random.randint(0, DRAWING_SIZE))
+        brush_radius = random.randint(1, 500)
+        drawing.add_point(position, colour, brush_radius)
         line_points = []
-        for j in range(random.randint(2,20)):
+        for j in range(random.randint(2, 20)):
             line_points.append(Pos(random.randint(0, DRAWING_SIZE), random.randint(0, DRAWING_SIZE)))
-        drawing.add_quadratic_bezier_curve(line_points, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), random.random()), random.randint(1, 10))
+        colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), random.random())
+        brush_radius = random.randint(1, 10)
+        drawing.add_quadratic_bezier_curve(line_points, colour, brush_radius)
     return drawing

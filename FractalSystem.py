@@ -3,6 +3,7 @@ from fractalConstants import DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS, BREAK_AFTER_
 from fractalConstants import DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_INITIAL_HULL
 from fractalHelperFns import DEFAULT_METRIC_FN, DEFAULT_ITERATION_FN
 
+
 # There should only be 1 fractal system created,
 # link all fractal definitions and pieces back to this system
 
@@ -30,7 +31,7 @@ class FractalSystem:
         self.defns.append(fractal_defn)
         fractal_defn.system = self  # Force definition to link back to this system
         return self
-        
+
     def make_defns(self, n):
         if isinstance(n, int) and n > 0 and n <= self.max_defns:
             self.defns = []
@@ -41,7 +42,7 @@ class FractalSystem:
     def log(self, text):
         if self.verbose:
             print(text)
-    
+
     def calculate_hulls(self, max_iterations=DEFAULT_HULL_MAX_ITERATIONS, hull_accuracy=None, initial_hull=DEFAULT_INITIAL_HULL):
         # 1. Initialise hulls on all definitions
         self.log("")
@@ -54,7 +55,7 @@ class FractalSystem:
         for i in range(max_iterations):
             for defn in self.defns:
                 defn.iterate_hull(iteration=i)
-            self.log(f"- hulls iteration {i+1}")
+            self.log(f"- hulls iteration {i + 1}")
         self.log("")
         self.log("Calculating definition minimum diameters")
         for defn in self.defns:
@@ -87,7 +88,7 @@ class FractalSystem:
                 collect_next_iteration.append(piece_to_iterate)
                 exceeded_max_pieces = True
                 iteration_finished = True
-            else: 
+            else:
                 was_iterated = piece_to_iterate.iterate(collect_next_iteration)  # returns Boolean, appends to collect_next_iteration
                 if was_iterated:
                     iteration_finished = False  # keep going until no piece iterates any further
