@@ -91,7 +91,6 @@ def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False,
     else:  # stretch the image to be a square
         square_pixel_width = width / pixel_width
         square_pixel_height = height / pixel_height
-        max_square_dimension = max(square_pixel_width, square_pixel_height)
 
         x_offset = 0
         y_offset = 0
@@ -115,8 +114,7 @@ def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False,
             if rotation:
                 pos = rotate(pos, rotation, origin=position)
 
-            # TODO: Switch to add_rounded_rectangle() when it is added, so the width+height of each 'pixel' is correct
-            drawing.add_rounded_square(centre_pos=pos, width=max_square_dimension, colour=colour, brush_radius=brush_radius)
+            drawing.add_rounded_rectangle(centre_pos=pos, width=square_pixel_width, height=square_pixel_height, colour=colour, brush_radius=brush_radius)
 
     if do_a_shuffle:
         drawing.shuffle_lines()

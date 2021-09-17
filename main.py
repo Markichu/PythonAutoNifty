@@ -77,11 +77,11 @@ def main():
     # #   step_size determines the bezier curves effective resolution, higher is slower but often looks better
 
     # Render in a very accurate (but slower) way.
-    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
-                   simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10)
+    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
+    #                simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10)
 
     # Render the traditional way (faster).
-    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
+    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
 
 
 if __name__ == '__main__':
