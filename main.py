@@ -45,10 +45,16 @@ def main():
     # # Optional - Load raw drawing data from a file, overwrites the drawing it is loaded into.
     # drawing.import_raw_data("drawing.ink")
 
+    # # Optional - Add a layer from another drawing, adds to the top of the drawing.
+    # drawing.add_layer(drawing2)
+
+    # # Optional - Load a layer from a file, adds to the top of the drawing.
+    # drawing.add_layer_from_file("drawing.ink")
+
     # # Select an import method for the output data
     output_data = drawing.to_nifty_import()  # Replace previous canvas contents in Nifty.Ink
     # output_data = drawing.to_nifty_add_layer_import()  # Keep previous canvas contents, write a layer on top
-    # output_data = drawing.to_nifty_show_import() # Show the import
+    # output_data = drawing.to_nifty_show_import() # Show the import and replace previous canvas contents in Nifty.Ink
 
     # # Write the drawing to output file
     # # that can be pasted into the console

@@ -293,6 +293,20 @@ class Drawing:
         self.object = drawing_data
         print(f"Imported raw data from {file_name}.")
 
+    # Adds a specified drawing as a new layer on top of this drawing
+    # TODO: Handle canvas size scaling (which we currently don't change anyway)
+    def add_layer(self, drawing):
+        self.object['lines'].extend(drawing.object['lines'])
+
+    # Adds a new layer to the drawing, loaded from a specified file.
+    def add_layer_from_file(self, file_name):
+        with open(file_name, "r") as file:
+            drawing_data = json.loads(file.read())
+        drawing = Drawing()
+        drawing.object = drawing_data
+        self.add_layer(drawing)
+        print(f"Added {file_name} as a new layer.")
+
     # Shrink or expand all the stored lines using multiplication
     def __mul__(self, shrink_size):
         # origin for shrinking
