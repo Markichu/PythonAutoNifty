@@ -1,5 +1,6 @@
 from fractalHelperFns import DEFAULT_ITERATION_FN
 
+
 # Consider splitting FractalPiece class into concrete and abstract subclasses
 #
 # Abstract fractal pieces are the ones inside a fractal definition, and can have values or functions for id, vect, matrix
@@ -39,7 +40,7 @@ class FractalPiece:
         self.id = id  # Should be a non-negative integer 0, 1, 2... representing definition position in fractal system
         self.vect = vect  # Numpy vector (or is it coordinate?)
         self.mx = mx  # Numpy matrix
-    
+
     def get_progress_value(self):
         return 0.5 * (self.progress[0] + self.progress[1])
 
@@ -51,7 +52,7 @@ class FractalPiece:
         prog_step = (prog_end - prog_start) / n
         result = [None] * n
         for i in range(n):
-            result[i] = [prog_start + i * prog_step, prog_start + (i+1) * prog_step]
+            result[i] = [prog_start + i * prog_step, prog_start + (i + 1) * prog_step]
         return result
 
     def get_defn(self):
@@ -77,10 +78,10 @@ class FractalPiece:
 
     def get_mx(self, context_piece=None):
         return self._get_instance_var(self.mx, context_piece)
-        
+
     def get_minimum_diameter(self):
         return self.get_defn().get_piece_minimum_diameter(self)
-    
+
     def plot(self, drawing):
         self.get_defn().plot(drawing, self)
 
@@ -125,7 +126,6 @@ class FractalPiece:
                         next_piece = FractalPiece(system=self.system, id=next_id, vect=next_vect, mx=next_mx, iteration=self.iteration + 1, progress=next_progress)
                         collect_next_iteration.append(next_piece)
         return was_iterated
-
 
     def __repr__(self):
         id = "function" if callable(self.id) else self.id

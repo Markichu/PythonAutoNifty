@@ -4,6 +4,7 @@ from FractalPiece import FractalPiece
 from fractalHullHelperFns import iterate_defn_hull, calculate_hull_diameter
 from fractalConstants import DEFAULT_HULL_ACCURACY
 
+
 class FractalDefn:
     def __init__(self, system, id):
         self.system = system  # Link back to the system
@@ -33,7 +34,7 @@ class FractalDefn:
 
     def get_metric_fn(self):
         return self.system.metric_fn if self.metric_fn is None else self.metric_fn
-    
+
     def should_piece_iterate(self, piece):
         iteration_fn = self.system.iteration_fn if self.iteration_fn is None else self.iteration_fn
         return iteration_fn(piece)
@@ -82,17 +83,17 @@ class FractalDefn:
             else:
                 self.children.pop(position)
         return self
-    
+
     def plot(self, drawing, piece):
         self.plotter.plot(drawing, piece)
-        
+
     def initialise_hull(self, hull_accuracy, initial_hull):
         self.hull_accuracy = hull_accuracy
         self.hull = initial_hull.copy()
-    
+
     def iterate_hull(self, iteration):
         iterate_defn_hull(system=self.system, defn=self, iteration=iteration)
-    
+
     def calculate_diameter(self):
         # TODO: Setting self.relative_diameter is only accurate in all cases for translations, rotations, reflections
         # If transformation is stretch or shear, this ought to be recalculated at the piece level!

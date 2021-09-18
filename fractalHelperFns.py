@@ -16,6 +16,7 @@ from numpyHelperFns import vect, vect_len, metric_matrix_min_eig_val, metric_mat
 def get_canvas_pos_from_vect(vect):
     return Pos(vect[0], DRAWING_SIZE - vect[1])
 
+
 # Get an interpolated colour using:
 # - a list of colours,
 # - a progress factor between 0 and 1 representing how far we are through the list
@@ -42,14 +43,18 @@ def get_colour(colours, progress, alpha=1, snap=False):
 def get_iteration_fn_standard(min_diameter, max_iterations):
     def iteration_fn(piece):
         return min_diameter < piece.get_minimum_diameter() and piece.iteration < max_iterations
+
     return iteration_fn
+
 
 # Turn iteration off
 # Use as an override on a definition that should stop iterating
 def get_iteration_fn_stop():
     def iteration_fn(piece):
         return False
+
     return iteration_fn
+
 
 DEFAULT_ITERATION_FN = get_iteration_fn_standard(DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS)
 
@@ -65,19 +70,25 @@ DEFAULT_ITERATION_FN = get_iteration_fn_standard(DEFAULT_MIN_DIAMETER, DEFAULT_M
 def get_metric_fn_piece_min_eig():
     def metric_fn(piece):
         return metric_matrix_min_eig_val(piece.get_mx())
+
     return metric_fn
+
 
 # Use the RMS of the matrix entries
 def get_metric_fn_piece_rms():
     def metric_fn(piece):
         return metric_matrix_rms(piece.get_mx())
+
     return metric_fn
+
 
 # Use the length of x-coord (1, 0) under mx transformation, e.g. for line fractals
 def get_metric_fn_piece_x_coord():
     def metric_fn(piece):
         return metric_matrix_x_coord(piece.get_mx())
+
     return metric_fn
+
 
 DEFAULT_METRIC_FN = get_metric_fn_piece_min_eig()
 
@@ -89,10 +100,13 @@ DEFAULT_METRIC_FN = get_metric_fn_piece_min_eig()
 def wobble_square(pixels=2, dim=2):
     def get_rand_unif():
         return random.uniform(-0.5 * pixels, 0.5 * pixels)
+
     def wobble_fn():
         x, y, z = get_rand_unif(), get_rand_unif(), get_rand_unif()
         return vect(x, y, z) if dim == 3 else vect(x, y)
+
     return wobble_fn
+
 
 # TODO: 2D circle uniform, 3D sphere uniform, 2D concentrated at centre, etc
 
@@ -109,6 +123,7 @@ def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
         x_this = x_min + x_progress * (x_max - x_min)
         y_this = y_min + y_progress * (y_max - y_min)
         return vect(x_this, y_this)
+
     return grid
 
 
@@ -127,7 +142,9 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
         pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
         dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()
         drawing.add_point(pos, colour, dot_radius)
+
     return plot_fn
+
 
 # Plot a path (series of line segments) for each fractal piece
 def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
@@ -142,10 +159,12 @@ def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=Non
         if closed:
             pos_list.append(pos_list[0])
         if curved:
-            drawing.add_line(pos_list, colour, width)
+            drawing.add_quadratic_bezier_curve(pos_list, colour, width)
         else:
-            drawing.add_strict_line(pos_list, colour, width)
+            drawing.add_line(pos_list, colour, width)
+
     return plot_fn
+
 
 # Plot a path (series of line segments) for each fractal piece
 def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
@@ -161,10 +180,12 @@ def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
                 pos_list.append(get_canvas_pos_from_vect(draw_vect))
             pos_list.append(pos_list[0])  # Close the hull outline
             if curved:
-                drawing.add_line(pos_list, colour, width)
+                drawing.add_quadratic_bezier_curve(pos_list, colour, width)
             else:
-                drawing.add_strict_line(pos_list, colour, width)
+                drawing.add_line(pos_list, colour, width)
+
     return plot_fn
+
 
 # Fill a fractal piece using a spiralling path from the centre to the convex hull
 def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
@@ -192,23 +213,26 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
             # Add 2 to ensure overlapping, round to integer number of spirals
             m = round(2 + max_distance_from_avg / (2 * width))
             # Construct list of vectors to plot
-            mid_boundary_point = (piece_hull_list[-2] + piece_hull_list[-1] ) * 0.5
+            mid_boundary_point = (piece_hull_list[-2] + piece_hull_list[-1]) * 0.5
             plot_vect_list = [mid_boundary_point, piece_hull_list[-1]] + piece_hull_list  # standard array concatenation
             for i in range(m):
                 for j in range(n):
-                    plot_vect_list.append(( (m - (i+1)) * piece_hull_list[j] + (i + 1) * avg_vect) * (1 / m))
+                    plot_vect_list.append(((m - (i + 1)) * piece_hull_list[j] + (i + 1) * avg_vect) * (1 / m))
             plot_vect_list.append(avg_vect)
             # Get canvas points in Pos format, also reverse order so it spirals out from the centre
             l = len(plot_vect_list)
             for j in range(l):
-                pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l-j-1]))
+                pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l - j - 1]))
             if curved:
-                drawing.add_line(pos_list, colour, width)
+                drawing.add_quadratic_bezier_curve(pos_list, colour, width)
             else:
-                drawing.add_strict_line(pos_list, colour, width)
+                drawing.add_line(pos_list, colour, width)
+
     return plot_fn
 
+
 DEFAULT_PLOTTING_FN = plot_dot()
+
 
 # -------------------------------------
 # Colouring functions
@@ -219,13 +243,17 @@ DEFAULT_PLOTTING_FN = plot_dot()
 def colour_fixed(colour, alpha=1):
     def colour_fn(piece):
         return get_colour([colour], progress=0, alpha=alpha)
+
     return colour_fn
+
 
 # Colour by progress, which is a property on each fractal piece
 def colour_by_progress(colours, alpha=1, snap=False):
     def colour_fn(piece):
         return get_colour(colours, piece.get_progress_value(), alpha, snap)
+
     return colour_fn
+
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # tsfm(vect, matrix) should output a number
@@ -236,13 +264,16 @@ def colour_by_tsfm(min_val, max_val, colours, tsfm, alpha=1, snap=False):
         this_val = tsfm(piece.get_vect(), piece.get_mx())
         tsfm_progress = (this_val - min_val) / (max_val - min_val)
         return get_colour(colours, tsfm_progress, alpha, snap)
+
     return colour_fn
+
 
 # Colour by a function of the piece's affine transformation (vector, matrix)
 # metric(matrix) should output a number
 def colour_by_log2_size(min_val, max_val, colours, metric=metric_matrix_min_eig_val, alpha=1, snap=False):
     fn = lambda vect, mx: math.log(metric(mx), 2)
     return colour_by_tsfm(min_val, max_val, colours, fn, alpha, snap)
+
 
 DEFAULT_COLOURING_FN = colour_by_progress([BLACK, BLUE])
 
@@ -256,8 +287,10 @@ DEFAULT_COLOURING_FN = colour_by_progress([BLACK, BLUE])
 def sort_randomly():
     def sort_fn(piece):
         return random.random()
+
     return sort_fn
-    
+
+
 # Sort by function of the piece's affine transformation (vector, matrix)
 # Random factor is optional
 def sort_by_tsfm(tsfm, rand=False):
@@ -266,13 +299,15 @@ def sort_by_tsfm(tsfm, rand=False):
         if rand:
             random_factor = random.random()
         return main_factor + random_factor
+
     return sort_fn
-    
+
+
 # Sort by z-coordinate (reversed), e.g. for 3D fractals
 def sort_by_z():
     return sort_by_tsfm(lambda vect, mx: -vect[2])
-    
+
+
 # Sort by size
 def sort_by_size():
     return sort_by_tsfm(lambda vect, mx: -metric_matrix_min_eig_val(mx))
-    

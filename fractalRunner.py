@@ -11,8 +11,8 @@ from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
 from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand
 from fractalGeneratorFns import gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
 
-def fractalRunner(drawing):
 
+def fractalRunner(drawing):
     # Use this file to set up a FractalSystem
     # which contains a list of FractalDefn (linked fractals)
     # which each contain a list of FractalPiece (controlling next iteration)
@@ -29,13 +29,13 @@ def fractalRunner(drawing):
     init_scale = DRAWING_SIZE / 2
     margin_factor = 0.98  # if less than 1, leaves a small gap around the outside of canvas
     init_vect = vect(
-        x = 1,
-        y = 1,
-        scale = init_scale
+        x=1,
+        y=1,
+        scale=init_scale
     )
     init_mx = mx_scale(
-        dim = 2,
-        scale = init_scale * margin_factor
+        dim=2,
+        scale=init_scale * margin_factor
     )
     # This is setup for 2-dimensional fractal
 
@@ -52,7 +52,7 @@ def fractalRunner(drawing):
     sort_len = 100
     sort_pow = 4
     sort_vect = init_vect
-    fs.piece_sorter = sort_by_tsfm(tsfm=lambda vect, mx: vect_len(vect=vect-sort_vect, power=sort_pow)/sort_len, rand=True)  # Draw by distance from sort_vect, with sort_len pixel random boundary
+    fs.piece_sorter = sort_by_tsfm(tsfm=lambda vect, mx: vect_len(vect=vect - sort_vect, power=sort_pow) / sort_len, rand=True)  # Draw by distance from sort_vect, with sort_len pixel random boundary
     # fs.piece_sorter = sort_by_z()  # Draw from furthest back to furthest forward (3D only)
     # fs.piece_sorter = sort_by_size()  # Draw from largest at back, to smallest at front
 
@@ -60,7 +60,7 @@ def fractalRunner(drawing):
     # Enable/disable this section to turn seeding on or off.
     random_seed = "My fractal 002"  # Try incrementing this number! Controls the fractal via which randomness it uses.
     random.seed(random_seed)  # Comment this out if you don't want to control the seeding
-    
+
     # --------------------
 
     # Definition #0 - empty fractal
@@ -102,7 +102,7 @@ def fractalRunner(drawing):
     id = 3
     fd = fs.lookup_defn(id)
     n = 2
-    sc = 1/n
+    sc = 1 / n
     grid = grid_generator(x_steps=n, y_steps=n)  # Defaults from -1 to +1 in both x and y directions
     # Grid generator generates coordinates at square midpoints from -1 to 1, total steps 2
     # grid(0, 0) = (-0.5, -0.5)
@@ -117,7 +117,7 @@ def fractalRunner(drawing):
     # Min diameter 2 means in some orientation the defn fits between planes 2 units apart, for a piece with identity transformation (vect(0, 0), mx_id())
     fd.relative_diameter = 2
     fd.iteration_fn = get_iteration_fn_standard(min_diameter=10, max_iterations=5)
-    
+
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
@@ -133,12 +133,12 @@ def fractalRunner(drawing):
     id = 4
     fd = fs.lookup_defn(id)
     n = 2
-    sc = 1/n
+    sc = 1 / n
     grid = grid_generator(x_steps=n, y_steps=n)
     fd.create_child(id, grid(0, 0), mx_scale(sc))
     fd.create_child(id, grid(1, 0), mx_scale(sc))
-    fd.create_child(id, grid(0, 1), gen_mx_rand_sq(scale=sc**1.3))
-    fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc**1.7))
+    fd.create_child(id, grid(0, 1), gen_mx_rand_sq(scale=sc ** 1.3))
+    fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc ** 1.7))
     fp = fd.plotter
     fp.colouring_fn = colour_by_log2_size(0, 4, colours=[GREEN, BLUE])
     fp.plotting_fn = plot_path(
@@ -155,7 +155,7 @@ def fractalRunner(drawing):
     id_exit = 1
     id_iterate = 5
     fd = fs.lookup_defn(id_iterate)
-    sc = 1/3
+    sc = 1 / 3
     h = 3 ** 0.5
     id_list = [id_exit, id_iterate, id_iterate, id_iterate, id_iterate]
     id_fn = gen_id_rand(id_list)
@@ -205,7 +205,7 @@ def fractalRunner(drawing):
     fd.children = gen_children_fade_out(system=fs, id=idr, n=3, centre_vect=vect(750, 750), cutoff_diameter=50, d1=75, d2=225, p1=1, p2=0)
     fp = fd.plotter
     x, y = 650, 650
-    distance_from_pt = lambda vect, mx: ((vect[0]-x) ** 2 + (vect[1]-y) ** 2) ** 0.5
+    distance_from_pt = lambda vect, mx: ((vect[0] - x) ** 2 + (vect[1] - y) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(50, 350, tsfm=distance_from_pt, colours=[MAGENTA, YELLOW, CYAN])
     fp.plotting_fn = plot_path(closed=True, width=2, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
@@ -217,16 +217,18 @@ def fractalRunner(drawing):
                 progress = context_piece.get_progress_value()
             x = 0
             y = progress
-            x1 = 0.5*(-1+x)
-            x2 = 0.5*(1+x)
+            x1 = 0.5 * (-1 + x)
+            x2 = 0.5 * (1 + x)
             y1 = 0.5 * y
             y2 = 0.5 * y
-            piece1 = FractalPiece(system=system, id=id, vect=vect(x1, y1), mx=np.array(((x-x1, y1-y), (y-y1, x-x1))))
-            piece2 = FractalPiece(system=system, id=id, vect=vect(x2, y2), mx=np.array(((x-x2, y2-y), (y-y2, x-x2))))
+            piece1 = FractalPiece(system=system, id=id, vect=vect(x1, y1), mx=np.array(((x - x1, y1 - y), (y - y1, x - x1))))
+            piece2 = FractalPiece(system=system, id=id, vect=vect(x2, y2), mx=np.array(((x - x2, y2 - y), (y - y2, x - x2))))
             piece2.reverse_progress = True  # Needed to get linear colouring and iteration! Try removing it...
             children = [piece1, piece2]
             return children
+
         return calc_children
+
     id = 9
     fd = fs.lookup_defn(id)
     sc = 0.5 ** 0.5
@@ -237,7 +239,7 @@ def fractalRunner(drawing):
     # fp.colouring_fn = colour_fixed(CYAN, alpha=0.75) # Alternative fixed colouring method
     fp.plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
     # fp.plotting_fn = plot_path(width=1, closed=True, vector_list=[vect(-1, 0), vect(0, -1), vect(1, 0), vect(0, 1)])  # Alternative plot method
-    
+
     # --------------------
 
     # TODO: Convex Hulls only currently works for 2D. Can it work for 3D too?

@@ -6,6 +6,7 @@ from Pos import Pos
 from constants import DRAWING_SIZE
 from math import comb
 
+
 # General helper functions for drawing in Nifty Ink, not related to Numpy or fractals
 
 # Rotate Pos instance (coord) around either the centre of the image, or a specified origin
@@ -18,6 +19,7 @@ def rotate(coord, rotation, origin=None):
     x = coord.x * math.cos(rotation) - coord.y * math.sin(rotation)
     y = coord.x * math.sin(rotation) + coord.y * math.cos(rotation)
     return Pos(x, y) + origin
+
 
 # Turn colour model Hue-Saturation-Value-Alpha into Red-Green-Blue-Alpha
 # Currently RBA is in range 0..255 and A is in range 0..1
@@ -47,6 +49,7 @@ def hsva_to_rgba(h, s, v, a=1.0):
 
 
 # Obtained from https://orthallelous.wordpress.com/2020/06/21/pure-python-bezier-curve/
+# TODO: Change this over to using Pos instead of (x, y). Might be quite difficult
 def get_bezier_curve(control_points, step_size=10, end_point=True):
     m, q, bezier_points, s = list(zip(*control_points)), len(control_points), [], (
         step_size - 1 if end_point else step_size) / 1.
@@ -60,6 +63,7 @@ def get_bezier_curve(control_points, step_size=10, end_point=True):
 def get_bounded_int(lowest_integer, highest_integer, num):
     return max(lowest_integer, min(highest_integer, round(num)))
 
+
 # Interpolate between two RGBA values, with optional fading (alpha_factor < 1)
 # (R, G, B, A) arrays should be supplied for start and end colours
 # RGB in range 0..255, A in range 0..1
@@ -68,4 +72,16 @@ def interpolate_colour(start_col, end_col, amount, alpha_factor=1):
     g = get_bounded_int(0, 255, start_col[1] * (1 - amount) + end_col[1] * amount)
     b = get_bounded_int(0, 255, start_col[2] * (1 - amount) + end_col[2] * amount)
     a = max(0, min(1, alpha_factor * (start_col[3] * (1 - amount) + end_col[3] * amount)))
-    return (r, g, b, a)
+    return r, g, b, a
+
+
+def random_seed():
+    seed = int.from_bytes(os.urandom(8), byteorder="big")
+    random.seed(seed)
+    print("Random seed:", seed)
+    return seed
+
+
+def set_random_seed(seed):
+    random.seed(seed)
+    print("Random changed to:", seed)

@@ -8,41 +8,51 @@ import numpy as np
 def np_dim(np_obj):
     return np_obj.shape[0]
 
+
 # Easy syntax for generating 2D or 3D vectors
 def vect(x=0, y=0, z=None, scale=1):
     if z is None:
         return np.array((x, y)) * scale
     return np.array((x, y, z)) * scale
 
-# Find length of vector 
+
+# Find length of vector
 # Default power = 2 has 'unit circle' as an actual circle, e.g. Euclidean geometry / Pythagoras' theorem
 # Other powers give different shapes of unit circle,
 # e.g. power = 0.5 gives a 4 pointed star, 1 gives a diamond, 4 for squircle, 10 is nearly a square
 def vect_len(vect, power=2):
-    return np.sum(abs(np.float_power(abs(vect), power))) ** (1/power)
+    return np.sum(abs(np.float_power(abs(vect), power))) ** (1 / power)
+
 
 # Find a metric for matrix using length of transformation of x-coord (1, 0)
 # Currently 2D only
 def metric_matrix_x_coord(mx):
-    return (mx[0][0]**2 + mx[1][0]**2) ** 0.5
+    return (mx[0][0] ** 2 + mx[1][0] ** 2) ** 0.5
+
 
 # Find a metric for matrix using square root of sum of squares of matrix entries
 # Identity matrix in 2D or 3D has metric 1
 def metric_matrix_rms(mx):
-    return np.sum(mx * mx * (1/np_dim(mx)) ) ** 0.5
+    return np.sum(mx * mx * (1 / np_dim(mx))) ** 0.5
+
 
 # Construct metric for matrix using absolute values of the eigenvalues
 # Identity matrix in 2D or 3D has metric 1
 # Metric using minimum
 def metric_matrix_min_eig_val(mx):
     return min(abs(np.linalg.eig(mx)[0]))
+
+
 # Metric using maximum
 def metric_matrix_max_eig_val(mx):
     return max(abs(np.linalg.eig(mx)[0]))
+
+
 # Metric using ratio of max/min
 def metric_matrix_ratio_eig_val(mx):
     result = abs(np.linalg.eig(mx)[0])  # Save the intermediate calculation
-    return max(result)/min(result)
+    return max(result) / min(result)
+
 
 # Angle calculator for matrices in O(2) (symmetries of a 2D circle)
 # Find angle of vect(1, 0) under transformation by mx
@@ -51,18 +61,21 @@ def mx_angle(mx):
     x = mx[0][0]
     y = mx[0][1]
     deg_from_sign = 180 if x < 0 else 0
-    deg_from_angle = 90 if y==0 else np.degrees(np.arctan(x/y))
+    deg_from_angle = 90 if y == 0 else np.degrees(np.arctan(x / y))
     return deg_from_sign + deg_from_angle
+
 
 # Easy syntax for generating matrix identity
 # Defaults to 2D identity matrix
 def mx_id(dim=2):
     return np.identity(dim)
 
+
 # Scale matrix, which is mx_id * scale
 # Defaults to 2D identity matrix
 def mx_scale(scale=1, dim=2):
     return mx_id(dim) * scale
+
 
 # Diagonal matrix in 2D or 3D
 # Defaults to 2D identity matrix
@@ -81,11 +94,13 @@ def mx_rotd(angle=0, scale=1):
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((c, s), (-s, c))) * scale
 
+
 # 3D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
 def mx_rotd_XY(angle=0, scale=1):
     angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((c, s, 0), (-s, c, 0), (0, 0, 1))) * scale
+
 
 # 3D clockwise rotation matrix in XZ plane, angle in degrees, +1° rotates Z towards X
 def mx_rotd_XZ(angle=0, scale=1):
@@ -93,11 +108,13 @@ def mx_rotd_XZ(angle=0, scale=1):
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((c, 0, s), (0, 1, 0), (-s, 0, c))) * scale
 
+
 # 3D clockwise rotation matrix in YZ plane, angle in degrees, +1° rotates Z towards Y
 def mx_rotd_YZ(angle=0, scale=1):
     angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
     return np.array(((1, 0, 0), (0, c, s), (0, -s, c))) * scale
+
 
 # Utility method to do an XY rotation, then a XZ rotation, then an optional scale
 # Applying a matrix transformation is _pre_multiplication, so XZ goes first.
@@ -116,11 +133,13 @@ def mx_refl_X(dim=2, scale=1):
         return np.array(((-1, 0, 0), (0, 1, 0), (0, 0, 1))) * scale
     return np.array(((-1, 0), (0, 1))) * scale
 
+
 # Reflection matrix in y-axis
 def mx_refl_Y(dim=2, scale=1):
     if dim == 3:
         return np.array(((1, 0, 0), (0, -1, 0), (0, 0, 1))) * scale
     return np.array(((1, 0), (0, -1))) * scale
+
 
 # Reflection matrix in z-axis
 def mx_refl_Z(scale=1):
@@ -151,10 +170,11 @@ def mx_dh(sides=3, num=1, scale=1):
             f"Transformation number must be at most {sides * 2}")
     rotation_num = (num - 1) % sides  # 0, 1, 2, ..., sides - 1
     reflection_num = ((num - 1) - rotation_num) / sides  # 0, 1
-    rotation_mx = mx_rotd((-360/sides) * rotation_num)
-    refl_x_mx = np.array( (((-1) ** reflection_num, 0), (0, 1)) )
+    rotation_mx = mx_rotd((-360 / sides) * rotation_num)
+    refl_x_mx = np.array((((-1) ** reflection_num, 0), (0, 1)))
     result = rotation_mx @ refl_x_mx
     return result * scale
+
 
 # Square transformations 1 to 8
 # sq(1) for identity
