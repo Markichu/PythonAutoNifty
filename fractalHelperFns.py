@@ -154,39 +154,35 @@ def basic_plot_vect_list(drawing, vect_list, colour, width, curved):
         drawing.add_quadratic_bezier_curve(pos_list, colour, width)
     else:
         drawing.add_line(pos_list, colour, width)
-    
 
-# Plot a path (series of line segments) for each fractal piece
+
+def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, width, curved, expand_factor):
+    piece_vect = piece.get_vect()
+    piece_mx = piece.get_mx()
+    draw_list = []
+    for i in range(0, len(vector_list)):
+        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+        draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
+        draw_list.append(draw_vect)
+    if closed:
+        draw_list.append(draw_list[0])
+    basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
+
+
+# Plot a path (series of line segments or bezier curves) for each fractal piece
 def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
-        piece_vect = piece.get_vect()
-        piece_mx = piece.get_mx()
-        draw_list = []
-        for i in range(0, len(vector_list)):
-            wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-            draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
-            draw_list.append(draw_vect)
-        if closed:
-            draw_list.append(draw_list[0])
-        basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
+        basic_plot_path(drawing=drawing, piece=piece, vector_list=vector_list, wobble_fn=wobble_fn, closed=closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor)
 
     return plot_fn
 
 
-# Plot a path (series of line segments) for each fractal piece
+# Plot the outline of the hull using line segments or bezier curves, for each fractal piece
 def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
-            piece_vect = piece.get_vect()
-            piece_mx = piece.get_mx()
-            draw_list = []
-            for i in range(0, len(hull)):
-                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
-                draw_list.append(draw_vect)
-            draw_list.append(draw_list[0])  # Close the hull outline
-            basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
+            basic_plot_path(drawing=drawing, piece=piece, vector_list=hull, wobble_fn=wobble_fn, closed=True, colour=colour, width=width, curved=curved, expand_factor=expand_factor)
 
     return plot_fn
 
