@@ -128,22 +128,31 @@ def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
 
 
 # -------------------------------------
-# Plotting functions
+# Internal helpers for plotting functions
 
-# Plot a dot (small circle) for each fractal piece
-# Optional parameter expand_factor is to fine-tune control of dot size
-def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
-    def plot_fn(drawing, piece, colour=BLACK):
-        piece_vect = piece.get_vect()
-        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-        if not offset_vect is None:
-            mx = piece.get_mx()
-            piece_vect = piece_vect + mx @ offset_vect
-        pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
-        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()
-        drawing.add_point(pos, colour, dot_radius)
-
-    return plot_fn
+# Helper function to calculate a 2D planar spiral filling path from an outline or convex hull
+def spiral_2D_path_fill(vect_list, width):
+    n = len(vect_list)  # hull length
+    avg_vect = vect_list[0] * 0  # Going to spiral in towards this point
+    for i in range(n):
+        avg_vect += vect_list[i]
+    avg_vect /= n  # turn sum to (mean) average
+    max_distance_from_avg = 0
+    for i in range(n):
+        max_distance_from_avg = max(max_distance_from_avg, vect_len(vect_list[i] - avg_vect))
+    # Calculate m, number of spirals in to the centre
+    # width is brush radius, so x2
+    # Add 2 to ensure overlapping, round to integer number of spirals
+    m = round(2 + max_distance_from_avg / (2 * width))
+    # Construct list of vectors to plot
+    mid_boundary_point = (vect_list[-2] + vect_list[-1]) * 0.5
+    spiral_list = [mid_boundary_point, vect_list[-1]] + vect_list  # standard array concatenation
+    for i in range(m):
+        for j in range(n):
+            spiral_list.append(((m - (i + 1)) * vect_list[j] + (i + 1) * avg_vect) * (1 / m))
+    spiral_list.append(avg_vect)
+    final_draw_list = spiral_list[::-1]  # Reverse order to spiral outwards
+    return final_draw_list
 
 
 def basic_plot_vect_list(drawing, vect_list, colour, width, curved):
@@ -167,6 +176,25 @@ def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, widt
     if closed:
         draw_list.append(draw_list[0])
     basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
+
+
+# -------------------------------------
+# Plotting functions
+
+# Plot a dot (small circle) for each fractal piece
+# Optional parameter expand_factor is to fine-tune control of dot size
+def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
+    def plot_fn(drawing, piece, colour=BLACK):
+        piece_vect = piece.get_vect()
+        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+        if not offset_vect is None:
+            mx = piece.get_mx()
+            piece_vect = piece_vect + mx @ offset_vect
+        pos = get_canvas_pos_from_vect(piece_vect + wobble_vect)
+        dot_radius = 0.5 * expand_factor * piece.get_minimum_diameter()
+        drawing.add_point(pos, colour, dot_radius)
+
+    return plot_fn
 
 
 # Plot a path (series of line segments or bezier curves) for each fractal piece
@@ -199,27 +227,7 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
                 wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
                 draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
                 draw_list.append(draw_vect)
-
-            avg_vect = piece_vect * 0  # Going to spiral in towards this point
-            for i in range(len(hull)):
-                avg_vect += draw_list[i]
-            n = len(hull)  # hull length
-            avg_vect /= n  # turn sum to (mean) average
-            max_distance_from_avg = 0
-            for i in range(n):
-                max_distance_from_avg = max(max_distance_from_avg, vect_len(draw_list[i] - avg_vect))
-            # Calculate m, number of spirals in to the centre
-            # width is brush radius, so x2
-            # Add 2 to ensure overlapping, round to integer number of spirals
-            m = round(2 + max_distance_from_avg / (2 * width))
-            # Construct list of vectors to plot
-            mid_boundary_point = (draw_list[-2] + draw_list[-1]) * 0.5
-            spiral_list = [mid_boundary_point, draw_list[-1]] + draw_list  # standard array concatenation
-            for i in range(m):
-                for j in range(n):
-                    spiral_list.append(((m - (i + 1)) * draw_list[j] + (i + 1) * avg_vect) * (1 / m))
-            spiral_list.append(avg_vect)
-            final_draw_list = spiral_list[::-1]  # Reverse order to spiral outwards
+            final_draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
             basic_plot_vect_list(drawing=drawing, vect_list=final_draw_list, colour=colour, width=width, curved=curved)
 
     return plot_fn
