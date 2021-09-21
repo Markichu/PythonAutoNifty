@@ -5,7 +5,7 @@ from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_fixed, colour_by_progress, colour_by_tsfm, colour_by_log2_size
-from fractalHelperFns import plot_dot, plot_path, plot_hull
+from fractalHelperFns import plot_dot, plot_path
 from fractalHelperFns import sort_by_tsfm, grid_generator, wobble_square
 from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
 from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand
@@ -113,8 +113,8 @@ def fractalRunner(drawing):
     # grid(1, 0) = (0.5, -0.5)
     # etc
     fd.create_child(id, grid(0, 0), mx_id() * sc)  # Same scale matrix result, three ways of writing
-    fd.create_child(id, grid(0, 1), mx_scale(sc))
-    fd.create_child(id, grid(1, 0), mx_sq(num=1, scale=sc))
+    fd.create_child(id, grid(0.05, 1), mx_scale(sc))
+    fd.create_child(id, grid(1, 0.05), mx_sq(num=1, scale=sc))
 
     # Showing here a manual assignment of relative diameter to fractal definition.
     # This is redundant since 2 is the default value, but larger or smaller values will affect drawing and iteration.
@@ -125,11 +125,8 @@ def fractalRunner(drawing):
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
-
-    # # Plot method 1: set the corner points manually, plot a path
-    # fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
-    # # Plot method 2: outline using convex hull, must call fs.calculate_hulls after definitions complete
-    fp.plotting_fn = plot_hull(width=1, expand_factor=1.00, fill=True)
+    # Plotting method: uses convex hull on definition by default, override by specifying vector_list = [vect(x, y)...]
+    fp.plotting_fn = plot_path(width=1, expand_factor=1.00, fill=True)
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -142,7 +139,7 @@ def fractalRunner(drawing):
     fd.create_child(id, grid(0, 1), gen_mx_rand_sq(scale=sc ** 1.3))
     fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc ** 1.7))
     fp = fd.plotter
-    fp.colouring_fn = colour_by_log2_size(0, 4, colours=[GREEN, BLUE])
+    fp.colouring_fn = colour_by_log2_size(2, 4, colours=[GREEN, BLUE])
     fp.plotting_fn = plot_path(
         closed=True,
         width=2,
@@ -151,7 +148,6 @@ def fractalRunner(drawing):
         vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)],
         curved=True
     )
-    # fp.plotting_fn = plot_hull_filled()  # Alternative plot method, using defaults
 
     # Definition #5 - demo of random hexagon fractal
     id_exit = 1
@@ -172,7 +168,7 @@ def fractalRunner(drawing):
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
     # fp.plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
-    fp.plotting_fn = plot_hull(expand_factor=0.5, fill=True)
+    fp.plotting_fn = plot_path(expand_factor=0.5, fill=True)
 
     # Definition #6 - demo of random vector shift
     id = 6
@@ -251,7 +247,8 @@ def fractalRunner(drawing):
 
     # TODO: Convex Hulls only currently works for 2D. Can it work for 3D too?
     # Calculate Convex Hulls after fractal definitions completed
-    # Need to do this if plot_hull method used, can comment out this section otherwise
+    # If this is not done, plot_path will not have hulls available for drawing,
+    # and will fall back to unit squares if a path (vector_list) is not supplied
     fs.calculate_hulls(hull_accuracy=0.1, max_iterations=10)
 
     # --------------------

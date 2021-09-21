@@ -173,7 +173,7 @@ def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, widt
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
         draw_list.append(draw_vect)
-    if fill:
+    if fill and len(draw_list) > 2:
         draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
         # if filling, shape is automatically closed
     elif closed:
@@ -203,20 +203,20 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     return plot_fn
 
 
-# Plot a specified outline for each fractal piece
-def plot_path(vector_list, fill=False, closed=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
+# Plot a path (optionally filled, or closed) for each fractal piece separately
+# 1. If vector_list is specified, use that for the path
+# 2. Else if convex hull is calculated, use that
+# 3. Otherwise fall back to a unit square, making sure it is closed
+def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
-        basic_plot_path(drawing=drawing, piece=piece, vector_list=vector_list, wobble_fn=wobble_fn, closed=closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
-
-    return plot_fn
-
-
-# Plot the convex hull from the definition, for each fractal piece
-def plot_hull(fill=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
-    def plot_fn(drawing, piece, colour=BLACK):
-        hull = piece.get_defn().hull
-        if hull is not None:
-            basic_plot_path(drawing=drawing, piece=piece, vector_list=hull, wobble_fn=wobble_fn, closed=True, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
+        use_closed = closed
+        vect_list = vector_list
+        if vect_list is None:
+            vect_list = piece.get_defn().hull
+        if vect_list is None:
+            vect_list = [vect(0, 1), vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 1)]
+            use_closed = True
+        basic_plot_path(drawing=drawing, piece=piece, vector_list=vect_list, wobble_fn=wobble_fn, closed=use_closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
 
     return plot_fn
 
