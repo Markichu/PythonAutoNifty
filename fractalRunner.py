@@ -5,7 +5,7 @@ from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_fixed, colour_by_progress, colour_by_tsfm, colour_by_log2_size
-from fractalHelperFns import plot_dot, plot_path, plot_hull_outline, plot_hull_filled
+from fractalHelperFns import plot_dot, plot_path, plot_hull
 from fractalHelperFns import sort_by_tsfm, grid_generator, wobble_square
 from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
 from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand
@@ -129,9 +129,7 @@ def fractalRunner(drawing):
     # # Plot method 1: set the corner points manually, plot a path
     # fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
     # # Plot method 2: outline using convex hull, must call fs.calculate_hulls after definitions complete
-    # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=1.00)
-    # Plot method 3: fill using convex hull, must call fs.calculate_hulls
-    fp.plotting_fn = plot_hull_filled(width=1, expand_factor=1.00)
+    fp.plotting_fn = plot_hull(width=1, expand_factor=1.00, fill=True)
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -174,8 +172,7 @@ def fractalRunner(drawing):
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
     # fp.plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
-    # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=0.5)  # alternative plotting method
-    fp.plotting_fn = plot_hull_filled(expand_factor=0.5)
+    fp.plotting_fn = plot_hull(expand_factor=0.5, fill=True)
 
     # Definition #6 - demo of random vector shift
     id = 6
@@ -211,7 +208,7 @@ def fractalRunner(drawing):
     x, y = 650, 650
     distance_from_pt = lambda vect, mx: ((vect[0] - x) ** 2 + (vect[1] - y) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(50, 350, tsfm=distance_from_pt, colours=[MAGENTA, YELLOW, CYAN])
-    fp.plotting_fn = plot_path(closed=True, width=2, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+    fp.plotting_fn = plot_path(fill=True, width=3, expand_factor=0.6, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
     # Definition #9 - Modified dragon curve with fractal dimension varying from 1 to 2, from one end to the other
     def gen_children_variable_dragon(system, id):
@@ -254,7 +251,7 @@ def fractalRunner(drawing):
 
     # TODO: Convex Hulls only currently works for 2D. Can it work for 3D too?
     # Calculate Convex Hulls after fractal definitions completed
-    # Need to do this if plot_hull_outline method used, can comment out this section otherwise
+    # Need to do this if plot_hull method used, can comment out this section otherwise
     fs.calculate_hulls(hull_accuracy=0.1, max_iterations=10)
 
     # --------------------

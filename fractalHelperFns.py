@@ -165,7 +165,7 @@ def basic_plot_vect_list(drawing, vect_list, colour, width, curved):
         drawing.add_line(pos_list, colour, width)
 
 
-def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, width, curved, expand_factor):
+def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, width, curved, expand_factor, fill):
     piece_vect = piece.get_vect()
     piece_mx = piece.get_mx()
     draw_list = []
@@ -173,7 +173,10 @@ def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, widt
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
         draw_list.append(draw_vect)
-    if closed:
+    if fill:
+        draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
+        # if filling, shape is automatically closed
+    elif closed:
         draw_list.append(draw_list[0])
     basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
 
@@ -182,7 +185,10 @@ def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, widt
 # Plotting functions
 
 # Plot a dot (small circle) for each fractal piece
-# Optional parameter expand_factor is to fine-tune control of dot size
+# Optional parameters:
+# expand_factor is to fine-tune control of dot size
+# offset_vect is to offset the dot by a specified amount
+# wobble_fn returns a random pixel displacement to simulate drawing by hand
 def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
@@ -197,38 +203,20 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     return plot_fn
 
 
-# Plot a path (series of line segments or bezier curves) for each fractal piece
-def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
+# Plot a specified outline for each fractal piece
+def plot_path(vector_list, fill=False, closed=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
-        basic_plot_path(drawing=drawing, piece=piece, vector_list=vector_list, wobble_fn=wobble_fn, closed=closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor)
+        basic_plot_path(drawing=drawing, piece=piece, vector_list=vector_list, wobble_fn=wobble_fn, closed=closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
 
     return plot_fn
 
 
-# Plot the outline of the hull using line segments or bezier curves, for each fractal piece
-def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
+# Plot the convex hull from the definition, for each fractal piece
+def plot_hull(fill=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
-            basic_plot_path(drawing=drawing, piece=piece, vector_list=hull, wobble_fn=wobble_fn, closed=True, colour=colour, width=width, curved=curved, expand_factor=expand_factor)
-
-    return plot_fn
-
-
-# Fill a fractal piece using a spiralling path from the centre to the convex hull
-def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
-    def plot_fn(drawing, piece, colour=BLACK):
-        hull = piece.get_defn().hull
-        if hull is not None:
-            piece_vect = piece.get_vect()
-            piece_mx = piece.get_mx()
-            draw_list = []  # hull points
-            for i in range(len(hull)):
-                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
-                draw_list.append(draw_vect)
-            final_draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
-            basic_plot_vect_list(drawing=drawing, vect_list=final_draw_list, colour=colour, width=width, curved=curved)
+            basic_plot_path(drawing=drawing, piece=piece, vector_list=hull, wobble_fn=wobble_fn, closed=True, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
 
     return plot_fn
 
