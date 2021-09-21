@@ -146,22 +146,29 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     return plot_fn
 
 
+def basic_plot_vect_list(drawing, vect_list, colour, width, curved):
+    pos_list = []
+    for vect in vect_list:
+        pos_list.append(get_canvas_pos_from_vect(vect))
+    if curved:
+        drawing.add_quadratic_bezier_curve(pos_list, colour, width)
+    else:
+        drawing.add_line(pos_list, colour, width)
+    
+
 # Plot a path (series of line segments) for each fractal piece
 def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
         piece_mx = piece.get_mx()
-        pos_list = []
+        draw_list = []
         for i in range(0, len(vector_list)):
             wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
             draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
-            pos_list.append(get_canvas_pos_from_vect(draw_vect))
+            draw_list.append(draw_vect)
         if closed:
-            pos_list.append(pos_list[0])
-        if curved:
-            drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-        else:
-            drawing.add_line(pos_list, colour, width)
+            draw_list.append(draw_list[0])
+        basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
 
     return plot_fn
 
@@ -173,16 +180,13 @@ def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
         if hull is not None:
             piece_vect = piece.get_vect()
             piece_mx = piece.get_mx()
-            pos_list = []
+            draw_list = []
             for i in range(0, len(hull)):
                 wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
                 draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
-                pos_list.append(get_canvas_pos_from_vect(draw_vect))
-            pos_list.append(pos_list[0])  # Close the hull outline
-            if curved:
-                drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-            else:
-                drawing.add_line(pos_list, colour, width)
+                draw_list.append(draw_vect)
+            draw_list.append(draw_list[0])  # Close the hull outline
+            basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
 
     return plot_fn
 
@@ -197,7 +201,7 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
             piece_mx = piece.get_mx()
             piece_hull_list = []  # hull points
             plot_vect_list = []  # inspiralling points to plot
-            pos_list = []  # convert to Pos format
+            draw_list = []  # final set of vects to draw
             avg_vect = piece_vect * 0  # Going to spiral in towards this point
             for i in range(n):
                 wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
@@ -222,11 +226,8 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
             # Get canvas points in Pos format, also reverse order so it spirals out from the centre
             l = len(plot_vect_list)
             for j in range(l):
-                pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l - j - 1]))
-            if curved:
-                drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-            else:
-                drawing.add_line(pos_list, colour, width)
+                draw_list.append(plot_vect_list[l - j - 1])
+            basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
 
     return plot_fn
 
