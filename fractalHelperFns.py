@@ -128,10 +128,69 @@ def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
 
 
 # -------------------------------------
+# Internal helpers for plotting functions
+
+# Helper function to calculate a 2D planar spiral filling path from an outline or convex hull
+def spiral_2D_path_fill(vect_list, width):
+    n = len(vect_list)  # hull length
+    avg_vect = vect_list[0] * 0  # Going to spiral in towards this point
+    for i in range(n):
+        avg_vect += vect_list[i]
+    avg_vect /= n  # turn sum to (mean) average
+    max_distance_from_avg = 0
+    for i in range(n):
+        max_distance_from_avg = max(max_distance_from_avg, vect_len(vect_list[i] - avg_vect))
+    # Calculate m, number of spirals in to the centre
+    # width is brush radius, so x2
+    # Add 2 to ensure overlapping, round to integer number of spirals
+    m = round(2 + max_distance_from_avg / (2 * width))
+    # Construct list of vectors to plot
+    mid_boundary_point = (vect_list[-2] + vect_list[-1]) * 0.5
+    spiral_list = [mid_boundary_point, vect_list[-1]] + vect_list  # standard array concatenation
+    for i in range(m):
+        for j in range(n):
+            spiral_list.append(((m - (i + 1)) * vect_list[j] + (i + 1) * avg_vect) * (1 / m))
+    spiral_list.append(avg_vect)
+    final_draw_list = spiral_list[::-1]  # Reverse order to spiral outwards
+    return final_draw_list
+
+# Helper function to do the drawing based on a wide range of criteria
+def basic_plot_path(drawing, piece, vector_list, width, colour, fill, closed, curved, expand_factor, wobble_fn):
+    piece_vect = piece.get_vect()
+    piece_mx = piece.get_mx()
+
+    # 1. Calculate draw_list, which is the path to draw
+    draw_list = []
+    for i in range(len(vector_list)):
+        wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
+        draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
+        draw_list.append(draw_vect)
+    if fill and len(draw_list) > 2:
+        draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
+        # if filling, shape is automatically closed
+    elif closed:
+        draw_list.append(draw_list[0])
+    
+    # 2. Convert to pos_list, a list of Pos objects
+    pos_list = []
+    for vect in draw_list:
+        pos_list.append(get_canvas_pos_from_vect(vect))
+    
+    # 3. Choose either a straight line or a curved path function to do the drawing
+    if curved:
+        drawing.add_quadratic_bezier_curve(pos_list, colour, width)
+    else:
+        drawing.add_line(pos_list, colour, width)
+
+
+# -------------------------------------
 # Plotting functions
 
 # Plot a dot (small circle) for each fractal piece
-# Optional parameter expand_factor is to fine-tune control of dot size
+# Optional parameters:
+# expand_factor is to fine-tune control of dot size
+# offset_vect is to offset the dot by a specified amount
+# wobble_fn returns a random pixel displacement to simulate drawing by hand
 def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     def plot_fn(drawing, piece, colour=BLACK):
         piece_vect = piece.get_vect()
@@ -146,87 +205,20 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
     return plot_fn
 
 
-# Plot a path (series of line segments) for each fractal piece
-def plot_path(vector_list, closed=False, width=1, expand_factor=1, wobble_fn=None, curved=False):
+# Plot a path (optionally filled, or closed) for each fractal piece separately
+# 1. If vector_list is specified, use that for the path
+# 2. Else if convex hull is calculated, use that
+# 3. Otherwise fall back to a unit square, making sure it is closed
+def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
-        piece_vect = piece.get_vect()
-        piece_mx = piece.get_mx()
-        pos_list = []
-        for i in range(0, len(vector_list)):
-            wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-            draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
-            pos_list.append(get_canvas_pos_from_vect(draw_vect))
-        if closed:
-            pos_list.append(pos_list[0])
-        if curved:
-            drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-        else:
-            drawing.add_line(pos_list, colour, width)
-
-    return plot_fn
-
-
-# Plot a path (series of line segments) for each fractal piece
-def plot_hull_outline(width=1, expand_factor=1, wobble_fn=None, curved=False):
-    def plot_fn(drawing, piece, colour=BLACK):
-        hull = piece.get_defn().hull
-        if hull is not None:
-            piece_vect = piece.get_vect()
-            piece_mx = piece.get_mx()
-            pos_list = []
-            for i in range(0, len(hull)):
-                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
-                pos_list.append(get_canvas_pos_from_vect(draw_vect))
-            pos_list.append(pos_list[0])  # Close the hull outline
-            if curved:
-                drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-            else:
-                drawing.add_line(pos_list, colour, width)
-
-    return plot_fn
-
-
-# Fill a fractal piece using a spiralling path from the centre to the convex hull
-def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
-    def plot_fn(drawing, piece, colour=BLACK):
-        hull = piece.get_defn().hull
-        if hull is not None:
-            n = len(hull)  # hull length
-            piece_vect = piece.get_vect()
-            piece_mx = piece.get_mx()
-            piece_hull_list = []  # hull points
-            plot_vect_list = []  # inspiralling points to plot
-            pos_list = []  # convert to Pos format
-            avg_vect = piece_vect * 0  # Going to spiral in towards this point
-            for i in range(n):
-                wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
-                draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
-                piece_hull_list.append(draw_vect)
-                avg_vect += draw_vect
-            avg_vect /= n  # turn sum to (mean) average
-            max_distance_from_avg = 0
-            for i in range(n):
-                max_distance_from_avg = max(max_distance_from_avg, vect_len(piece_hull_list[i] - avg_vect))
-            # Calculate m, number of spirals in to the centre
-            # width is brush radius, so x2
-            # Add 2 to ensure overlapping, round to integer number of spirals
-            m = round(2 + max_distance_from_avg / (2 * width))
-            # Construct list of vectors to plot
-            mid_boundary_point = (piece_hull_list[-2] + piece_hull_list[-1]) * 0.5
-            plot_vect_list = [mid_boundary_point, piece_hull_list[-1]] + piece_hull_list  # standard array concatenation
-            for i in range(m):
-                for j in range(n):
-                    plot_vect_list.append(((m - (i + 1)) * piece_hull_list[j] + (i + 1) * avg_vect) * (1 / m))
-            plot_vect_list.append(avg_vect)
-            # Get canvas points in Pos format, also reverse order so it spirals out from the centre
-            l = len(plot_vect_list)
-            for j in range(l):
-                pos_list.append(get_canvas_pos_from_vect(plot_vect_list[l - j - 1]))
-            if curved:
-                drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-            else:
-                drawing.add_line(pos_list, colour, width)
+        use_closed = closed
+        vect_list = vector_list
+        if vect_list is None:
+            vect_list = piece.get_defn().hull
+        if vect_list is None:
+            vect_list = [vect(0, 1), vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 1)]
+            use_closed = True
+        basic_plot_path(drawing=drawing, piece=piece, vector_list=vect_list, wobble_fn=wobble_fn, closed=use_closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
 
     return plot_fn
 

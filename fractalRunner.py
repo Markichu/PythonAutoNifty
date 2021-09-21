@@ -5,7 +5,7 @@ from FractalSystem import FractalSystem
 from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
 from numpyHelperFns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
 from fractalHelperFns import colour_fixed, colour_by_progress, colour_by_tsfm, colour_by_log2_size
-from fractalHelperFns import plot_dot, plot_path, plot_hull_outline, plot_hull_filled
+from fractalHelperFns import plot_dot, plot_path
 from fractalHelperFns import sort_by_tsfm, grid_generator, wobble_square
 from fractalHelperFns import get_iteration_fn_standard, get_iteration_fn_stop
 from fractalGeneratorFns import gen_children_rand_small_squares, gen_children_fade_out, gen_id_rand
@@ -18,16 +18,28 @@ def fractalRunner(drawing):
     # which each contain a list of FractalPiece (controlling next iteration)
     # as well as a FractalPlotter to control how each fractal definition is drawn
 
-    # Set up fractal system
-    max_iterations = 20  # Maximum iterations
-    min_diameter = 15  # px, fractal pieces will stop iterating if they are smaller than this diameter on at least 1 direction
+    # ----------------------
+    # First, create a fractal system and its definitions
     max_pieces = 100000  # Stop iterating after this number of fractal pieces calculated
     number_of_defns = 50  # Total number of fractal definitions in the linked fractal system
 
-    # Set up which fractal is drawn, and its position and orientation
+    # Create linked fractal system
+    fs = FractalSystem(max_pieces=max_pieces)
+    # Create the required number of fractal definitions
+    fs.make_defns(number_of_defns)
+
+    # ----------------------
+    # Then set parameters that are important for how fractal displays
+
+    # Control randomisation by setting a specific seed
+    # This allows pseudorandom fractals to be precisely recreated later on
+    random_seed = "My fractal 002"  # Any text here, every text will make a different fractal
+    random.seed(random_seed)  # Comment this out if you don't want to control the seeding
+
+    # Initialisation of fractal, its id, position (vector), and orientation (matrix)
     init_defn_id = 2  # between 0 and number_of_defns-1
-    init_scale = DRAWING_SIZE / 2
     margin_factor = 0.98  # if less than 1, leaves a small gap around the outside of canvas
+    init_scale = DRAWING_SIZE / 2
     init_vect = vect(
         x=1,
         y=1,
@@ -39,13 +51,6 @@ def fractalRunner(drawing):
     )
     # This is setup for 2-dimensional fractal
 
-    # Create linked fractal system
-    fs = FractalSystem(max_pieces=max_pieces)
-    # Function to control when pieces stop iterating
-    fs.iteration_fn = get_iteration_fn_standard(min_diameter=min_diameter, max_iterations=max_iterations)
-    # Create the required number of fractal definitions
-    fs.make_defns(number_of_defns)
-
     # Choose a sort order for final list of fractal pieces, which affects drawing order.
     # Examples:
     # fs.piece_sorter = sort_randomly()  # Draw in a random order
@@ -56,10 +61,9 @@ def fractalRunner(drawing):
     # fs.piece_sorter = sort_by_z()  # Draw from furthest back to furthest forward (3D only)
     # fs.piece_sorter = sort_by_size()  # Draw from largest at back, to smallest at front
 
-    # In order to recreate a given fractal precisely, any randomness it contains must be generated from a fixed random seed.
-    # Enable/disable this section to turn seeding on or off.
-    random_seed = "My fractal 002"  # Try incrementing this number! Controls the fractal via which randomness it uses.
-    random.seed(random_seed)  # Comment this out if you don't want to control the seeding
+    # Control default iteration function in fractal system
+    sys_max_iterations = 20  # Maximum iterations
+    sys_min_diameter = 30  # px, fractal pieces will stop iterating if they are smaller than this diameter on at least 1 direction
 
     # --------------------
 
@@ -109,25 +113,20 @@ def fractalRunner(drawing):
     # grid(1, 0) = (0.5, -0.5)
     # etc
     fd.create_child(id, grid(0, 0), mx_id() * sc)  # Same scale matrix result, three ways of writing
-    fd.create_child(id, grid(0, 1), mx_scale(sc))
-    fd.create_child(id, grid(1, 0), mx_sq(num=1, scale=sc))
+    fd.create_child(id, grid(0.05, 1), mx_scale(sc))
+    fd.create_child(id, grid(1, 0.05), mx_sq(num=1, scale=sc))
 
     # Showing here a manual assignment of relative diameter to fractal definition.
     # This is redundant since 2 is the default value, but larger or smaller values will affect drawing and iteration.
     # Min diameter 2 means in some orientation the defn fits between planes 2 units apart, for a piece with identity transformation (vect(0, 0), mx_id())
     fd.relative_diameter = 2
-    fd.iteration_fn = get_iteration_fn_standard(min_diameter=10, max_iterations=5)
+    fd.iteration_fn = get_iteration_fn_standard(min_diameter=60, max_iterations=4)
 
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
     fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
-
-    # # Plot method 1: set the corner points manually, plot a path
-    # fp.plotting_fn = plot_path(closed=True, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1)])
-    # # Plot method 2: outline using convex hull, must call fs.calculate_hulls after definitions complete
-    # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=1.00)
-    # Plot method 3: fill using convex hull, must call fs.calculate_hulls
-    fp.plotting_fn = plot_hull_filled(width=1, expand_factor=1.00)
+    # Plotting method: uses convex hull on definition by default, override by specifying vector_list = [vect(x, y)...]
+    fp.plotting_fn = plot_path(width=1, expand_factor=1.00, fill=True)
 
     # Definition #4 - demo of random square matrix transformations
     id = 4
@@ -140,7 +139,7 @@ def fractalRunner(drawing):
     fd.create_child(id, grid(0, 1), gen_mx_rand_sq(scale=sc ** 1.3))
     fd.create_child(id, grid(1, 1), gen_mx_rand_sq(scale=sc ** 1.7))
     fp = fd.plotter
-    fp.colouring_fn = colour_by_log2_size(0, 4, colours=[GREEN, BLUE])
+    fp.colouring_fn = colour_by_log2_size(2, 4, colours=[GREEN, BLUE])
     fp.plotting_fn = plot_path(
         closed=True,
         width=2,
@@ -149,7 +148,6 @@ def fractalRunner(drawing):
         vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)],
         curved=True
     )
-    # fp.plotting_fn = plot_hull_filled()  # Alternative plot method, using defaults
 
     # Definition #5 - demo of random hexagon fractal
     id_exit = 1
@@ -170,8 +168,7 @@ def fractalRunner(drawing):
     fp = fd.plotter
     fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
     # fp.plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
-    # fp.plotting_fn = plot_hull_outline(width=1.5, expand_factor=0.5)  # alternative plotting method
-    fp.plotting_fn = plot_hull_filled(expand_factor=0.5)
+    fp.plotting_fn = plot_path(expand_factor=0.5, fill=True)
 
     # Definition #6 - demo of random vector shift
     id = 6
@@ -207,7 +204,7 @@ def fractalRunner(drawing):
     x, y = 650, 650
     distance_from_pt = lambda vect, mx: ((vect[0] - x) ** 2 + (vect[1] - y) ** 2) ** 0.5
     fp.colouring_fn = colour_by_tsfm(50, 350, tsfm=distance_from_pt, colours=[MAGENTA, YELLOW, CYAN])
-    fp.plotting_fn = plot_path(closed=True, width=2, expand_factor=0.8, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+    fp.plotting_fn = plot_path(fill=True, width=3, expand_factor=0.6, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
 
     # Definition #9 - Modified dragon curve with fractal dimension varying from 1 to 2, from one end to the other
     def gen_children_variable_dragon(system, id):
@@ -242,9 +239,16 @@ def fractalRunner(drawing):
 
     # --------------------
 
+    # Default function to control when pieces stop iterating
+    # This can be overwritten at the fractal definition level
+    fs.iteration_fn = get_iteration_fn_standard(min_diameter=sys_min_diameter, max_iterations=sys_max_iterations)
+
+    # --------------------
+
     # TODO: Convex Hulls only currently works for 2D. Can it work for 3D too?
     # Calculate Convex Hulls after fractal definitions completed
-    # Need to do this if plot_hull_outline method used, can comment out this section otherwise
+    # If this is not done, plot_path will not have hulls available for drawing,
+    # and will fall back to unit squares if a path (vector_list) is not supplied
     fs.calculate_hulls(hull_accuracy=0.1, max_iterations=10)
 
     # --------------------
