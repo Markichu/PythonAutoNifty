@@ -18,16 +18,28 @@ def fractalRunner(drawing):
     # which each contain a list of FractalPiece (controlling next iteration)
     # as well as a FractalPlotter to control how each fractal definition is drawn
 
-    # Set up fractal system
-    max_iterations = 20  # Maximum iterations
-    min_diameter = 15  # px, fractal pieces will stop iterating if they are smaller than this diameter on at least 1 direction
+    # ----------------------
+    # First, create a fractal system and its definitions
     max_pieces = 100000  # Stop iterating after this number of fractal pieces calculated
     number_of_defns = 50  # Total number of fractal definitions in the linked fractal system
 
-    # Set up which fractal is drawn, and its position and orientation
+    # Create linked fractal system
+    fs = FractalSystem(max_pieces=max_pieces)
+    # Create the required number of fractal definitions
+    fs.make_defns(number_of_defns)
+
+    # ----------------------
+    # Then set parameters that are important for how fractal displays
+
+    # Control randomisation by setting a specific seed
+    # This allows pseudorandom fractals to be precisely recreated later on
+    random_seed = "My fractal 002"  # Any text here, every text will make a different fractal
+    random.seed(random_seed)  # Comment this out if you don't want to control the seeding
+
+    # Initialisation of fractal, its id, position (vector), and orientation (matrix)
     init_defn_id = 2  # between 0 and number_of_defns-1
-    init_scale = DRAWING_SIZE / 2
     margin_factor = 0.98  # if less than 1, leaves a small gap around the outside of canvas
+    init_scale = DRAWING_SIZE / 2
     init_vect = vect(
         x=1,
         y=1,
@@ -39,13 +51,6 @@ def fractalRunner(drawing):
     )
     # This is setup for 2-dimensional fractal
 
-    # Create linked fractal system
-    fs = FractalSystem(max_pieces=max_pieces)
-    # Function to control when pieces stop iterating
-    fs.iteration_fn = get_iteration_fn_standard(min_diameter=min_diameter, max_iterations=max_iterations)
-    # Create the required number of fractal definitions
-    fs.make_defns(number_of_defns)
-
     # Choose a sort order for final list of fractal pieces, which affects drawing order.
     # Examples:
     # fs.piece_sorter = sort_randomly()  # Draw in a random order
@@ -56,10 +61,9 @@ def fractalRunner(drawing):
     # fs.piece_sorter = sort_by_z()  # Draw from furthest back to furthest forward (3D only)
     # fs.piece_sorter = sort_by_size()  # Draw from largest at back, to smallest at front
 
-    # In order to recreate a given fractal precisely, any randomness it contains must be generated from a fixed random seed.
-    # Enable/disable this section to turn seeding on or off.
-    random_seed = "My fractal 002"  # Try incrementing this number! Controls the fractal via which randomness it uses.
-    random.seed(random_seed)  # Comment this out if you don't want to control the seeding
+    # Control default iteration function in fractal system
+    sys_max_iterations = 20  # Maximum iterations
+    sys_min_diameter = 15  # px, fractal pieces will stop iterating if they are smaller than this diameter on at least 1 direction
 
     # --------------------
 
@@ -239,6 +243,12 @@ def fractalRunner(drawing):
     # fp.colouring_fn = colour_fixed(CYAN, alpha=0.75) # Alternative fixed colouring method
     fp.plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
     # fp.plotting_fn = plot_path(width=1, closed=True, vector_list=[vect(-1, 0), vect(0, -1), vect(1, 0), vect(0, 1)])  # Alternative plot method
+
+    # --------------------
+
+    # Default function to control when pieces stop iterating
+    # This can be overwritten at the fractal definition level
+    fs.iteration_fn = get_iteration_fn_standard(min_diameter=sys_min_diameter, max_iterations=sys_max_iterations)
 
     # --------------------
 
