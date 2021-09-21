@@ -160,7 +160,7 @@ def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, widt
     piece_vect = piece.get_vect()
     piece_mx = piece.get_mx()
     draw_list = []
-    for i in range(0, len(vector_list)):
+    for i in range(len(vector_list)):
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
         draw_list.append(draw_vect)
@@ -192,38 +192,35 @@ def plot_hull_filled(width=2, expand_factor=1, wobble_fn=None, curved=False):
     def plot_fn(drawing, piece, colour=BLACK):
         hull = piece.get_defn().hull
         if hull is not None:
-            n = len(hull)  # hull length
             piece_vect = piece.get_vect()
             piece_mx = piece.get_mx()
-            piece_hull_list = []  # hull points
-            plot_vect_list = []  # inspiralling points to plot
-            draw_list = []  # final set of vects to draw
-            avg_vect = piece_vect * 0  # Going to spiral in towards this point
-            for i in range(n):
+            draw_list = []  # hull points
+            for i in range(len(hull)):
                 wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
                 draw_vect = piece_vect + wobble_vect + (piece_mx @ hull[i]) * expand_factor
-                piece_hull_list.append(draw_vect)
-                avg_vect += draw_vect
+                draw_list.append(draw_vect)
+
+            avg_vect = piece_vect * 0  # Going to spiral in towards this point
+            for i in range(len(hull)):
+                avg_vect += draw_list[i]
+            n = len(hull)  # hull length
             avg_vect /= n  # turn sum to (mean) average
             max_distance_from_avg = 0
             for i in range(n):
-                max_distance_from_avg = max(max_distance_from_avg, vect_len(piece_hull_list[i] - avg_vect))
+                max_distance_from_avg = max(max_distance_from_avg, vect_len(draw_list[i] - avg_vect))
             # Calculate m, number of spirals in to the centre
             # width is brush radius, so x2
             # Add 2 to ensure overlapping, round to integer number of spirals
             m = round(2 + max_distance_from_avg / (2 * width))
             # Construct list of vectors to plot
-            mid_boundary_point = (piece_hull_list[-2] + piece_hull_list[-1]) * 0.5
-            plot_vect_list = [mid_boundary_point, piece_hull_list[-1]] + piece_hull_list  # standard array concatenation
+            mid_boundary_point = (draw_list[-2] + draw_list[-1]) * 0.5
+            spiral_list = [mid_boundary_point, draw_list[-1]] + draw_list  # standard array concatenation
             for i in range(m):
                 for j in range(n):
-                    plot_vect_list.append(((m - (i + 1)) * piece_hull_list[j] + (i + 1) * avg_vect) * (1 / m))
-            plot_vect_list.append(avg_vect)
-            # Get canvas points in Pos format, also reverse order so it spirals out from the centre
-            l = len(plot_vect_list)
-            for j in range(l):
-                draw_list.append(plot_vect_list[l - j - 1])
-            basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
+                    spiral_list.append(((m - (i + 1)) * draw_list[j] + (i + 1) * avg_vect) * (1 / m))
+            spiral_list.append(avg_vect)
+            final_draw_list = spiral_list[::-1]  # Reverse order to spiral outwards
+            basic_plot_vect_list(drawing=drawing, vect_list=final_draw_list, colour=colour, width=width, curved=curved)
 
     return plot_fn
 

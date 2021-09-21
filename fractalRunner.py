@@ -63,7 +63,7 @@ def fractalRunner(drawing):
 
     # Control default iteration function in fractal system
     sys_max_iterations = 20  # Maximum iterations
-    sys_min_diameter = 15  # px, fractal pieces will stop iterating if they are smaller than this diameter on at least 1 direction
+    sys_min_diameter = 30  # px, fractal pieces will stop iterating if they are smaller than this diameter on at least 1 direction
 
     # --------------------
 
@@ -120,7 +120,7 @@ def fractalRunner(drawing):
     # This is redundant since 2 is the default value, but larger or smaller values will affect drawing and iteration.
     # Min diameter 2 means in some orientation the defn fits between planes 2 units apart, for a piece with identity transformation (vect(0, 0), mx_id())
     fd.relative_diameter = 2
-    fd.iteration_fn = get_iteration_fn_standard(min_diameter=10, max_iterations=5)
+    fd.iteration_fn = get_iteration_fn_standard(min_diameter=60, max_iterations=4)
 
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
