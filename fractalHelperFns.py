@@ -154,20 +154,12 @@ def spiral_2D_path_fill(vect_list, width):
     final_draw_list = spiral_list[::-1]  # Reverse order to spiral outwards
     return final_draw_list
 
-
-def basic_plot_vect_list(drawing, vect_list, colour, width, curved):
-    pos_list = []
-    for vect in vect_list:
-        pos_list.append(get_canvas_pos_from_vect(vect))
-    if curved:
-        drawing.add_quadratic_bezier_curve(pos_list, colour, width)
-    else:
-        drawing.add_line(pos_list, colour, width)
-
-
-def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, width, curved, expand_factor, fill):
+# Helper function to do the drawing based on a wide range of criteria
+def basic_plot_path(drawing, piece, vector_list, width, colour, fill, closed, curved, expand_factor, wobble_fn):
     piece_vect = piece.get_vect()
     piece_mx = piece.get_mx()
+
+    # 1. Calculate draw_list, which is the path to draw
     draw_list = []
     for i in range(len(vector_list)):
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
@@ -178,7 +170,17 @@ def basic_plot_path(drawing, piece, vector_list, wobble_fn, closed, colour, widt
         # if filling, shape is automatically closed
     elif closed:
         draw_list.append(draw_list[0])
-    basic_plot_vect_list(drawing=drawing, vect_list=draw_list, colour=colour, width=width, curved=curved)
+    
+    # 2. Convert to pos_list, a list of Pos objects
+    pos_list = []
+    for vect in draw_list:
+        pos_list.append(get_canvas_pos_from_vect(vect))
+    
+    # 3. Choose either a straight line or a curved path function to do the drawing
+    if curved:
+        drawing.add_quadratic_bezier_curve(pos_list, colour, width)
+    else:
+        drawing.add_line(pos_list, colour, width)
 
 
 # -------------------------------------
