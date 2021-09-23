@@ -2,6 +2,7 @@ import math
 import os
 import random
 
+from PIL import ImageColor
 from Pos import Pos
 from constants import DRAWING_SIZE
 from math import comb
@@ -46,6 +47,22 @@ def hsva_to_rgba(h, s, v, a=1.0):
         r, g, b = v, t, p
 
     return [r * 255, g * 255, b * 255, a]
+
+
+# Convert a hex colour code to an rgba colour list
+# e.g. "#FFFFFF" to [255, 255, 255, 1]
+def hex_to_rgba(hex_code, alpha=1):
+    col_rgb = ImageColor.getcolor(hex_code, "RGB")  # RGB tuple
+    col_rgba = list(col_rgb) + [alpha]  # RGBA list
+    return col_rgba
+
+
+# Convert a list of hex colour codes to a list of rgba colour lists
+def hex_list_to_rgba(hex_list, alpha=1):
+    col_list = []
+    for hex_code in hex_list:
+        col_list.append(hex_to_rgba(hex_code, alpha))  # List of RGBA lists
+    return col_list
 
 
 # Obtained from https://orthallelous.wordpress.com/2020/06/21/pure-python-bezier-curve/
