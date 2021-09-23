@@ -27,13 +27,13 @@ def iterate_defn_hull(system, defn, iteration):
         return
     next_points = None
     for child in children:
-        # FractalDefn contains abstract FractalPieces. These can have id, vect, mx all functions.
+        # FractalDefn contains abstract FractalPieces. These can have fid, vect, mx all functions.
         # Evaluate without any context_piece. These functions should return the largest possible orientation
         # so that convex hull is too big, rather than too small.
-        id = child.get_id()
+        fid = child.get_fid()
         vect = child.get_vect()
         mx = child.get_mx()
-        prev_hull = system.lookup_defn(id).hull
+        prev_hull = system.lookup_defn(fid).hull
         next_points_partial = prev_hull @ np.transpose(mx) + vect  # Backwards arithmetic here (*)
         if next_points is None:
             next_points = next_points_partial
@@ -47,7 +47,7 @@ def iterate_defn_hull(system, defn, iteration):
     # Now can do lookup on original points (next_points) rather than the approximate and scaled points (scaled_integer_points)
     defn.hull = next_points[vertices]
     # TODO: fix error if hull accuracy is too big then we don't get enough points to make a convex hull, and the method from scipy breaks
-    # system.log(f"Hull iteration {iteration} of definition {defn.id} has length {len(defn.hull)}")
+    # system.log(f"Hull iteration {iteration} of definition {defn.fid} has length {len(defn.hull)}")
 
 
 degrees_30 = mx_rotd(angle=30, scale=1)
@@ -77,4 +77,4 @@ def calculate_hull_diameter(system, defn):
 
     diam = get_min_diam_30_degrees(hull)
     defn.relative_diameter = diam
-    system.log(f"- hull {defn.id} has {len(hull)} points, {diam:.2f} min diameter")
+    system.log(f"- hull {defn.fid} has {len(hull)} points, {diam:.2f} min diameter")

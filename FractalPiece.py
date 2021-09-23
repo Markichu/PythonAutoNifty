@@ -3,16 +3,18 @@ from fractalHelperFns import DEFAULT_ITERATION_FN
 
 # Consider splitting FractalPiece class into concrete and abstract subclasses
 #
-# Abstract fractal pieces are the ones inside a fractal definition, and can have values or functions for id, vect, matrix
-# Must use get_id, get_vect, get_mx for these.
+# Abstract fractal pieces are the ones inside a fractal definition,
+# and can have values or functions for fid, vect, matrix
+# Must use get_fid, get_vect, get_mx for these.
 #
-# Concrete fractal pieces can only have values (and not functions) for id, vect, matrix
+# Concrete fractal pieces can only have values (and not functions) for fid, vect, matrix
 # Fractal system should have concrete initial pieces, and concrete iterated pieces
 # This is mentioned in comments on the 'iterate' method below.
-# For concrete, it would still be encouraged to use the getters, even though self.id, self.vect, self.mx would work.
+# For concrete, it would still be encouraged to use the getters,
+# even though self.fid, self.vect, self.mx would work.
 
 class FractalPiece:
-    def __init__(self, system, id, vect, mx, iteration=0, progress=None, reverse_progress=False, reset_progress=False):
+    def __init__(self, system, fid, vect, mx, iteration=0, progress=None, reverse_progress=False, reset_progress=False):
         self.system = system
 
         # Keep track of what iteration this piece is on
@@ -37,7 +39,7 @@ class FractalPiece:
 
         # These should be either a value of the specified type, or a function returning suitable value
         # Function should accept an optional FractalPiece as context for evaluation.
-        self.id = id  # Should be a non-negative integer 0, 1, 2... representing definition position in fractal system
+        self.fid = fid  # Fractal id (fid) of definition. Should be a non-negative integer 0, 1, 2... representing definition position in fractal system
         self.vect = vect  # Numpy vector (or is it coordinate?)
         self.mx = mx  # Numpy matrix
 
@@ -56,7 +58,7 @@ class FractalPiece:
         return result
 
     def get_defn(self):
-        return self.system.lookup_defn(self.get_id())
+        return self.system.lookup_defn(self.get_fid())
 
     # If instance variable is callable, then return var(context_piece)
     # Otherwise, return var
@@ -70,8 +72,8 @@ class FractalPiece:
             result = result(context_piece)
         return result
 
-    def get_id(self, context_piece=None):
-        return self._get_instance_var(self.id, context_piece)
+    def get_fid(self, context_piece=None):
+        return self._get_instance_var(self.fid, context_piece)
 
     def get_vect(self, context_piece=None):
         return self._get_instance_var(self.vect, context_piece)
@@ -97,7 +99,7 @@ class FractalPiece:
                 collect_next_iteration.append(self)
             else:
                 was_iterated = True
-                # 'This' piece (self) is concrete, so id, vect, mx ought to be values, not functions.
+                # 'This' piece (self) is concrete, so fid, vect, mx ought to be values, not functions.
                 # Use getters anyway, but don't supply context
                 this_vect = self.get_vect()
                 this_mx = self.get_mx()
@@ -109,13 +111,13 @@ class FractalPiece:
                     for i in range(count_children):
                         defn_child_piece = defn_child_pieces[i]
                         # 'Defn child' piece on a fractal definition is abstract,
-                        # so id, vect, mx could be values or functions.
+                        # so fid, vect, mx could be values or functions.
                         # Therefore need to use the getters, evaluated in the context of this piece (self).
-                        defn_child_id = defn_child_piece.get_id(self)
+                        defn_child_fid = defn_child_piece.get_fid(self)
                         defn_child_vect = defn_child_piece.get_vect(self)
                         defn_child_mx = defn_child_piece.get_mx(self)
-                        # 'Next' piece will be concrete, and will be constructed with values (not functions) for id, vect, mx.
-                        next_id = defn_child_id
+                        # 'Next' piece will be concrete, and will be constructed with values (not functions) for fid, vect, mx.
+                        next_fid = defn_child_fid
                         next_vect = this_vect + this_mx @ defn_child_vect
                         next_mx = this_mx @ defn_child_mx
                         next_progress = progress_intervals[i]
@@ -123,13 +125,13 @@ class FractalPiece:
                             next_progress = [next_progress[1], next_progress[0]]
                         if defn_child_piece.reset_progress:
                             next_progress = [0, 1]
-                        next_piece = FractalPiece(system=self.system, id=next_id, vect=next_vect, mx=next_mx, iteration=self.iteration + 1, progress=next_progress)
+                        next_piece = FractalPiece(system=self.system, fid=next_fid, vect=next_vect, mx=next_mx, iteration=self.iteration + 1, progress=next_progress)
                         collect_next_iteration.append(next_piece)
         return was_iterated
 
     def __repr__(self):
-        id = "function" if callable(self.id) else self.id
+        fid = "function" if callable(self.fid) else self.fid
         vect = "function" if callable(self.vect) else self.vect
         mx = "function" if callable(self.mx) else self.mx
         mxprint = f"{mx}".replace("\n", ",")
-        return f"(id {id}, vect {vect}, mx {mxprint})"
+        return f"(fid {fid}, vect {vect}, mx {mxprint})"

@@ -19,11 +19,11 @@ class FractalSystem:
         self.piece_sorter = None
         self.verbose = True  # Set to false to suppress printing output to console
 
-    def lookup_defn(self, id):
-        if isinstance(id, int) and id >= 0 and id < len(self.defns):
-            return self.defns[id]
+    def lookup_defn(self, fid):
+        if isinstance(fid, int) and fid >= 0 and fid < len(self.defns):
+            return self.defns[fid]
         else:
-            # If id is not found, fail gracefully by returning None.
+            # If fractal id (fid) is not found, fail gracefully by returning None.
             # Should check for None and only take further action if a definition is returned.
             return None
 
@@ -35,8 +35,8 @@ class FractalSystem:
     def make_defns(self, n):
         if isinstance(n, int) and n > 0 and n <= self.max_defns:
             self.defns = []
-            for id in range(n):
-                self.add_defn(FractalDefn(system=self, id=id))
+            for fid in range(n):
+                self.add_defn(FractalDefn(system=self, fid=fid))
         return self
 
     def log(self, text):
@@ -109,12 +109,12 @@ class FractalSystem:
     def __repr__(self):
         result = "FS: "
         first = True
-        defn_id = 0
+        defn_fid = 0
         for defn in self.defns:
             if first:
                 first = False
             else:
                 result += ", "
-            result += f"(ID {defn_id} contains {defn})"
-            defn_id += 1
+            result += f"(Fractal ID {defn_fid} contains {defn})"
+            defn_fid += 1
         return result

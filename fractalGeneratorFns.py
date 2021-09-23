@@ -14,16 +14,15 @@ from numpyHelperFns import vect, vect_len, mx_scale, mx_rotd, mx_refl_X, mx_sq, 
 # For a square [-1, 1] x [-1, 1]
 # split it into n^2 tiles (nxn)
 # and then keep m out of n^2 at random
-def gen_children_rand_small_squares(system, id, m, n):
+def gen_children_rand_small_squares(system, fid, m, n):
     grid = grid_generator(x_steps=n, y_steps=n)
 
     def calc_children(context_piece=None):
         # This function is probabilistic, so context piece is not used. Still need the parameter available!
         children = []
-        n0 = n - 1
         for x in range(n):
             for y in range(n):
-                piece = FractalPiece(system=system, id=id, vect=grid(x, y), mx=mx_scale(1 / n))
+                piece = FractalPiece(system=system, fid=fid, vect=grid(x, y), mx=mx_scale(1 / n))
                 children.append(piece)
         return random.sample(children, m)
 
@@ -36,7 +35,7 @@ def gen_children_rand_small_squares(system, id, m, n):
 # depending on its distance from vect
 # For large pieces, iterate them with probability 1,
 # only apply the probabilistic iteration to scales (metrics) below the cutoff.
-def gen_children_fade_out(system, id, n, centre_vect, cutoff_diameter, d1=0, d2=2000, p1=1, p2=0):
+def gen_children_fade_out(system, fid, n, centre_vect, cutoff_diameter, d1=0, d2=2000, p1=1, p2=0):
     grid = grid_generator(x_steps=n, y_steps=n)
 
     def calc_children(context_piece=None):
@@ -51,7 +50,7 @@ def gen_children_fade_out(system, id, n, centre_vect, cutoff_diameter, d1=0, d2=
         for x in range(n):
             for y in range(n):
                 if (random.random() < p):
-                    piece = FractalPiece(system=system, id=id, vect=grid(x, y), mx=mx_scale(1 / n))
+                    piece = FractalPiece(system=system, fid=fid, vect=grid(x, y), mx=mx_scale(1 / n))
                     children.append(piece)
         return children
 
@@ -59,12 +58,12 @@ def gen_children_fade_out(system, id, n, centre_vect, cutoff_diameter, d1=0, d2=
 
 
 # -------------------------------------
-# Methods to calculate a random id
+# Methods to calculate a random fractal id
 
-# Select an id at random from a list, equal weights
-def gen_id_rand(list_of_ids):
+# Select an fractal id (fid) at random from a list, equal weights
+def gen_fid_rand(list_of_fids):
     def calc_id(context_piece=None):
-        return random.choice(list_of_ids)
+        return random.choice(list_of_fids)
 
     return calc_id
 
