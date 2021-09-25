@@ -133,7 +133,8 @@ def fractalRunner(drawing):
     # If shape is too small, compared with brush radius, then the lines drawn will overlap the boundary anyway.
     fill_plot_fn = plot_path(width=5, expand_factor=1.00, fill=True, shrink=True)
     outline_plot_fn = plot_path(width=3, fill=False, closed=True, shrink=False)
-    # Composite drawing method: do a translucent (alpha=0.5) fill first, then a solid (alpha=1) outline
+    # Composite drawing method: do a translucent fill first, then a nearly solid outline
+    # The fill uses the shrink method, the outline does not, which gives some interesting effects at the boundaries.
     fp.add(fill_plot_fn, fill_colour_fn)
     fp.add(outline_plot_fn, outline_colour_fn)
 
