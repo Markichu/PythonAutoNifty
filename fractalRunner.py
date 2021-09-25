@@ -75,6 +75,7 @@ def fractalRunner(drawing):
     fp = fd.plotter
     fp.draws = False  # specify to prevent drawing
 
+
     # Definition #1 - identity fractal (doesn't change upon iteration)
     fid = 1
     fd = fs.lookup_defn(fid)
@@ -82,6 +83,7 @@ def fractalRunner(drawing):
     fd.iteration_fn = get_iteration_fn_stop()  # specify to prevent further calculation of iterations
     fp = fd.plotter
     fp.draws = False
+
 
     # Definition #2 - use as wrapper to display 1 or more other fractals
     # Since this is a wrapper, reset the progress on each inner fractal
@@ -99,6 +101,7 @@ def fractalRunner(drawing):
     fd.create_child(9, vect(-1, 0.2) * scv, mx_rotd(angle=20, scale=scm * 1.15) @ np.array(((1, 0), (0, -1))), reset_progress=True)
     # keep default plotting setup, this definition likely won't plot
     # since it iterates to other things
+
 
     # Definition #3 - demo Sierpinski Sieve
     fid = 3
@@ -122,14 +125,19 @@ def fractalRunner(drawing):
 
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
-    fill_colour_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK], alpha=0.5)
-    outline_colour_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK], alpha=1)
+    fill_colour_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLUE], alpha=0.5)
+    outline_colour_fn = colour_fixed(colour=BLACK, alpha=0.75)
     # Plotting method: uses convex hull on definition by default, override by specifying vector_list = [vect(x, y)...]
-    fill_plot_fn = plot_path(width=5, expand_factor=1.00, fill=True)
-    outline_plot_fn = plot_path(width=1, expand_factor=1.00, fill=False, closed=True)
-    # Composite drawing method: do a translucent (alpha=0.5) fill first, then a solid (alpha=1) outline
+    # Setting shrink=True (overriding default value of False) moves the shape's vectors inwards
+    # to try and draw strictly inside the original shape using the specified brush radius (width).
+    # If shape is too small, compared with brush radius, then the lines drawn will overlap the boundary anyway.
+    fill_plot_fn = plot_path(width=5, expand_factor=1.00, fill=True, shrink=True)
+    outline_plot_fn = plot_path(width=3, fill=False, closed=True, shrink=False)
+    # Composite drawing method: do a translucent fill first, then a nearly solid outline
+    # The fill uses the shrink method, the outline does not, which gives some interesting effects at the boundaries.
     fp.add(fill_plot_fn, fill_colour_fn)
     fp.add(outline_plot_fn, outline_colour_fn)
+
 
     # Definition #4 - demo of random square matrix transformations
     fid = 4
@@ -153,6 +161,7 @@ def fractalRunner(drawing):
     )
     fp.add(plotting_fn, colouring_fn)
 
+
     # Definition #5 - demo of random hexagon fractal
     fid_exit = 1
     fid_iterate = 5
@@ -174,6 +183,7 @@ def fractalRunner(drawing):
     # plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
     plotting_fn = plot_path(expand_factor=0.5, fill=True)
     fp.add(plotting_fn, colouring_fn)
+
 
     # Definition #6 - demo of random vector shift
     fid = 6
