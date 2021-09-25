@@ -1,11 +1,12 @@
 import math
 import random
+import numpy as np
 
 from Pos import Pos
 from constants import DRAWING_SIZE, BLACK, BLUE
 from fractalConstants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS
 from helperFns import interpolate_colour
-from numpyHelperFns import vect, vect_len, metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord
+from numpyHelperFns import vect, vect_len, mx_rotd, metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord
 
 
 # -------------------------------------
@@ -130,6 +131,102 @@ def grid_generator(x_steps, y_steps, x_min=-1, y_min=-1, x_max=1, y_max=1):
 # -------------------------------------
 # Internal helpers for plotting functions
 
+# Helper function to shrink a single point (q) by a specified brush radius (width)
+# How it shrinks depends on the points before and after (p, r)
+def shrink_2D_vect(p, q, r, width, mx):
+    # Numpy vector arithmetic used here
+    # mx ought to be a 90 degree rotation either to left or to right
+    # L1 is line from p to q
+    # L2 is line from q to r
+    # Goal is to shift both L1 and L2 sideways by `width`, then calculate their intersection
+    # which is the shrunk coordinate
+
+    # Peturb p, q, r infinitesimally here to avoid potential divisions by zero later on
+    delta_v = 0.000001
+    def peturb_vector(sc):
+        return np.array((sc * (-0.5 + random.random()), sc * (-0.5 + random.random())))
+    p = p + peturb_vector(delta_v)
+    q = q + peturb_vector(delta_v)
+    r = r + peturb_vector(delta_v)
+
+    # Calculate shift vectors to move each line L1, L2 by width, in direction of mx
+    sv1_0 = mx @ (q - p)
+    sv2_0 = mx @ (r - q)
+    sv1 = sv1_0 * (width / vect_len(sv1_0))
+    sv2 = sv2_0 * (width / vect_len(sv2_0))
+
+    # Calculate vectors shifted by width here
+    ps1 = p + sv1
+    qs1 = q + sv1
+    qs2 = q + sv2
+    rs2 = r + sv2
+
+    # Convert to individual components
+    # Now LA is L1 shifted by width, LA is between (x1, y1) and (x2, y2)
+    # and LB is L2 shifted by width, LB is between (x3, y3) and (x4, y4)
+    x_1 = ps1[0]
+    y_1 = ps1[1]
+    x_2 = qs1[0]
+    y_2 = qs1[1]
+    x_3 = qs2[0]
+    y_3 = qs2[1]
+    x_4 = rs2[0]
+    y_4 = rs2[1]
+
+    # Due to x<->y symmetry in line definition, define a function that can obtain either
+    def get_coord(x1, x2, x3, x4, y1, y2, y3, y4):
+        A = y4 - y3
+        B = y2 - y1
+        C = y1 - y3
+        D = x4 - x3
+        E = x2 - x1
+        F = (1/(B*D) - 1/(A*E))
+        x0 = C/(A*B) + x3/(B*D) - x1/(A*E)
+        x = x0 / F
+        return x
+    
+    # Use function to obtain both x and y coords, and return result
+    x = get_coord(x_1, x_2, x_3, x_4, y_1, y_2, y_3, y_4)
+    y = get_coord(y_1, y_2, y_3, y_4, x_1, x_2, x_3, x_4)
+    return np.array((x, y))
+
+
+# Helper function to shrink 2D path (vect_list) by a specified brush radius (width)
+def shrink_2D_vects(piece, vect_list, width):
+    result_list = []
+    count_vect = len(vect_list)
+    # 1. Check we have at least 3 vectors in list to shrink
+    if count_vect < 3:
+        return vect_list
+    # 2. If piece is too small, reduce the shrink amount (width)
+    width_from_piece = 0.5 * piece.get_minimum_diameter()
+    if width_from_piece < width:
+        width = width_from_piece
+    # 3. Get the average vector in the list
+    av_vect = vect_list[0]
+    for i in range(1, count_vect):
+        av_vect = av_vect + vect_list[i]
+    av_vect = av_vect * (1/count_vect)
+    # 4. Check normal (constructed using mx) to line between first two vectors
+    # is pointing in same direction as the vector from middle of line to middle of shape
+    mx = mx_rotd(angle=90, scale=1)
+    p = vect_list[0]
+    q = vect_list[1]
+    v1 = mx @ (q-p)
+    v2 = av_vect * 2 - p - q
+    dot_product = sum(v1 * v2)
+    if dot_product < 0:
+        mx = mx_rotd(angle=-90, scale=1)  # Reverse the orientation
+    # 5. Shrink the vector list by specified width, in correct orientation mx
+    for i in range(count_vect):
+        p = vect_list[(i-1) % count_vect]
+        q = vect_list[i]
+        r = vect_list[(i+1) % count_vect]
+        shrunk_q = shrink_2D_vect(p, q, r, width, mx)
+        result_list.append(shrunk_q)
+    return result_list
+
+
 # Helper function to calculate a 2D planar spiral filling path from an outline or convex hull
 def spiral_2D_path_fill(vect_list, width):
     n = len(vect_list)  # hull length
@@ -155,16 +252,21 @@ def spiral_2D_path_fill(vect_list, width):
     return final_draw_list
 
 # Helper function to do the drawing based on a wide range of criteria
-def basic_plot_path(drawing, piece, vector_list, width, colour, fill, closed, curved, expand_factor, wobble_fn):
+def basic_plot_path(drawing, piece, vector_list, width, shrink, colour, fill, closed, curved, expand_factor, wobble_fn):
     piece_vect = piece.get_vect()
     piece_mx = piece.get_mx()
 
     # 1. Calculate draw_list, which is the path to draw
     draw_list = []
+    # 1.1. Transform vector list to draw list
     for i in range(len(vector_list)):
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
         draw_list.append(draw_vect)
+    # 1.2. Shrink a bit (due to finite brush radius) if shrink option is selected
+    if shrink:
+        draw_list = shrink_2D_vects(piece, draw_list, width)
+    # 1.3. Deal with both filled and closed shapes
     if fill and len(draw_list) > 2:
         draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
         # if filling, shape is automatically closed
@@ -209,7 +311,7 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
 # 1. If vector_list is specified, use that for the path
 # 2. Else if convex hull is calculated, use that
 # 3. Otherwise fall back to a unit square, making sure it is closed
-def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1, expand_factor=1, wobble_fn=None):
+def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1, shrink=False, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
         use_closed = closed
         vect_list = vector_list
@@ -218,7 +320,7 @@ def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1,
         if vect_list is None:
             vect_list = [vect(0, 1), vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 1)]
             use_closed = True
-        basic_plot_path(drawing=drawing, piece=piece, vector_list=vect_list, wobble_fn=wobble_fn, closed=use_closed, colour=colour, width=width, curved=curved, expand_factor=expand_factor, fill=fill)
+        basic_plot_path(drawing=drawing, piece=piece, vector_list=vect_list, wobble_fn=wobble_fn, closed=use_closed, colour=colour, width=width, shrink=shrink, curved=curved, expand_factor=expand_factor, fill=fill)
 
     return plot_fn
 
