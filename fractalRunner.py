@@ -74,8 +74,6 @@ def fractalRunner(drawing):
     # no children, iterates to nothing
     fp = fd.plotter
     fp.draws = False  # specify to prevent drawing
-    # if it did draw, it would use default plotting function `plot_dot`
-    fp.colouring_fn = colour_by_progress(colours=[RED])  # if it did draw, it would be a red dot
 
     # Definition #1 - identity fractal (doesn't change upon iteration)
     fid = 1
@@ -83,8 +81,7 @@ def fractalRunner(drawing):
     fd.create_child(fid, vect(0, 0), mx_id())  # this is the identity. Not actually used, since iteration prevented.
     fd.iteration_fn = get_iteration_fn_stop()  # specify to prevent further calculation of iterations
     fp = fd.plotter
-    fp.draws = False  # In this demo, defn fid=1 is used, but not drawn. You can show it if you want.
-    fp.colouring_fn = colour_by_progress(colours=[LIGHT_GREEN])
+    fp.draws = False
 
     # Definition #2 - use as wrapper to display 1 or more other fractals
     # Since this is a wrapper, reset the progress on each inner fractal
@@ -125,9 +122,14 @@ def fractalRunner(drawing):
 
     fp = fd.plotter
     x_minus_y = lambda vect, mx: vect[0] - vect[1]
-    fp.colouring_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK])
+    fill_colour_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK], alpha=0.5)
+    outline_colour_fn = colour_by_tsfm(-150, 150, tsfm=x_minus_y, colours=[RED, BLACK], alpha=1)
     # Plotting method: uses convex hull on definition by default, override by specifying vector_list = [vect(x, y)...]
-    fp.plotting_fn = plot_path(width=1, expand_factor=1.00, fill=True)
+    fill_plot_fn = plot_path(width=5, expand_factor=1.00, fill=True)
+    outline_plot_fn = plot_path(width=1, expand_factor=1.00, fill=False, closed=True)
+    # Composite drawing method: do a translucent (alpha=0.5) fill first, then a solid (alpha=1) outline
+    fp.add(fill_plot_fn, fill_colour_fn)
+    fp.add(outline_plot_fn, outline_colour_fn)
 
     # Definition #4 - demo of random square matrix transformations
     fid = 4
@@ -140,8 +142,8 @@ def fractalRunner(drawing):
     fd.create_child(fid, grid(0, 1), gen_mx_rand_sq(scale=sc ** 1.3))
     fd.create_child(fid, grid(1, 1), gen_mx_rand_sq(scale=sc ** 1.7))
     fp = fd.plotter
-    fp.colouring_fn = colour_by_log2_size(2, 4, colours=[GREEN, BLUE])
-    fp.plotting_fn = plot_path(
+    colouring_fn = colour_by_log2_size(2, 4, colours=[GREEN, BLUE])
+    plotting_fn = plot_path(
         closed=True,
         width=2,
         expand_factor=1.1,
@@ -149,6 +151,7 @@ def fractalRunner(drawing):
         vector_list=[vect(-1, 0), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 1)],
         curved=True
     )
+    fp.add(plotting_fn, colouring_fn)
 
     # Definition #5 - demo of random hexagon fractal
     fid_exit = 1
@@ -167,9 +170,10 @@ def fractalRunner(drawing):
     fd.create_child(fid_fn, vect(1, -h) * sc, mx_fn)
     fd.create_child(fid_fn, vect(0, 0) * sc, mx_fn)
     fp = fd.plotter
-    fp.colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
-    # fp.plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
-    fp.plotting_fn = plot_path(expand_factor=0.5, fill=True)
+    colouring_fn = colour_by_progress(colours=[BLACK, PINK, LIGHT_BLUE, GREEN, YELLOW, BLACK])
+    # plotting_fn = plot_dot(expand_factor=0.5)  # expand_factor < 1 makes dots distinct
+    plotting_fn = plot_path(expand_factor=0.5, fill=True)
+    fp.add(plotting_fn, colouring_fn)
 
     # Definition #6 - demo of random vector shift
     fid = 6
@@ -180,8 +184,10 @@ def fractalRunner(drawing):
     fd.create_child(fid, gen_vect_rand([-sc, sc], [sc, sc]), mx_scale(sc))
     fp = fd.plotter
     distance_from_origin = lambda vect, mx: ((vect[0]) ** 2 + (vect[1]) ** 2) ** 0.5
-    fp.colouring_fn = colour_by_tsfm(500, 580, tsfm=distance_from_origin, colours=[PURPLE, YELLOW, PINK])
-    fp.plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
+    colouring_fn = colour_by_tsfm(500, 580, tsfm=distance_from_origin, colours=[PURPLE, YELLOW, PINK])
+    plotting_fn = plot_dot(expand_factor=1.5, wobble_fn=wobble_square(pixels=5))  # make dots overlap
+    fp.add(plotting_fn, colouring_fn)
+
 
     # Definition #7 - Standard (2D) dragon curve
     fid = 7
@@ -191,8 +197,10 @@ def fractalRunner(drawing):
     fd.create_child(fid, vect(0.5, 0.5), mx_rotd(angle=-135, scale=sc))
     fp = fd.plotter
     piece_angle = lambda vect, mx: mx_angle(mx)
-    fp.colouring_fn = colour_by_tsfm(-90, 270, tsfm=piece_angle, colours=[RED, YELLOW, GREEN, BLUE])
-    fp.plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
+    colouring_fn = colour_by_tsfm(-90, 270, tsfm=piece_angle, colours=[RED, YELLOW, GREEN, BLUE])
+    plotting_fn = plot_path(width=3, vector_list=[vect(-1, 0), vect(1, 0)])
+    fp.add(plotting_fn, colouring_fn)
+
 
     # Definition #8 - Random Sierpinski Carpet
     # gen_children_rand_small_squares - 7 out of 9 little squares, in 3x3 big square
@@ -204,8 +212,10 @@ def fractalRunner(drawing):
     fp = fd.plotter
     x, y = 650, 650
     distance_from_pt = lambda vect, mx: ((vect[0] - x) ** 2 + (vect[1] - y) ** 2) ** 0.5
-    fp.colouring_fn = colour_by_tsfm(50, 350, tsfm=distance_from_pt, colours=[MAGENTA, YELLOW, CYAN])
-    fp.plotting_fn = plot_path(fill=True, width=3, expand_factor=0.6, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+    colouring_fn = colour_by_tsfm(50, 350, tsfm=distance_from_pt, colours=[MAGENTA, YELLOW, CYAN])
+    plotting_fn = plot_path(fill=True, width=3, expand_factor=0.6, vector_list=[vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 0), vect(0, 0)])
+    fp.add(plotting_fn, colouring_fn)
+
 
     # Definition #9 - Modified dragon curve with fractal dimension varying from 1 to 2, from one end to the other
     def gen_children_variable_dragon(system, fid):
@@ -233,10 +243,12 @@ def fractalRunner(drawing):
     fd.children = gen_children_variable_dragon(fs, fid)
     fd.iteration_fn = get_iteration_fn_standard(min_diameter=20, max_iterations=20)
     fp = fd.plotter
-    fp.colouring_fn = colour_by_progress([BLUE, RED, ORANGE])
-    # fp.colouring_fn = colour_fixed(CYAN, alpha=0.75) # Alternative fixed colouring method
-    fp.plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
-    # fp.plotting_fn = plot_path(width=1, closed=True, vector_list=[vect(-1, 0), vect(0, -1), vect(1, 0), vect(0, 1)])  # Alternative plot method
+    colouring_fn = colour_by_progress([BLUE, RED, ORANGE])
+    # colouring_fn = colour_fixed(CYAN, alpha=0.75) # Alternative fixed colouring method
+    plotting_fn = plot_path(width=2, vector_list=[vect(-1, 0), vect(1, 0)])
+    # plotting_fn = plot_path(width=1, closed=True, vector_list=[vect(-1, 0), vect(0, -1), vect(1, 0), vect(0, 1)])  # Alternative plot method
+    fp.add(plotting_fn, colouring_fn)
+
 
     # --------------------
 
