@@ -88,11 +88,15 @@ def mx_diag(x=1, y=1, z=None):
 # ---------------------------------------
 # Generate rotation matrices in 2D or 3D
 
-# 2D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
-def mx_rotd(angle=0, scale=1):
+# 2D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X, with optional reflection
+def mx_rotd(angle=0, scale=1, reflect=False):
     angle_in_radians = np.radians(angle)
     c, s = np.cos(angle_in_radians), np.sin(angle_in_radians)
-    return np.array(((c, s), (-s, c))) * scale
+    # TODO: document which plane this is reflecting in
+    r = 1
+    if reflect:
+        r = -1
+    return np.array(((c, s), (-s * r, c * r))) * scale
 
 
 # 3D clockwise rotation matrix in XY plane, angle in degrees, +1° rotates Y towards X
