@@ -7,8 +7,10 @@ import time
 import numpy as np
 
 from Pos import Pos
+from font import get_font_character_map, get_reduced_font_character_map
 from helperFns import get_bezier_curve, rotate
-from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH
+from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, WHITE, TITLE_BAR_HEIGHT, BORDER_WIDTH, RED
+from fontConstants import DEFAULT_FONT
 
 
 # The Drawing class contains all the code required to produce an output.txt file.
@@ -75,21 +77,50 @@ class Drawing:
                 "brushRadius": brush_radius}
         self.object["lines"].append(line)
 
+    # This function is only really useful for fonts. TrueTypeFonts have compressed bezier curves.
+    # These curves are not in the same form as the midpoint based bezier curves of Nifty.ink
+    # This function serves as a "close enough" approximation of converting them to nifty bezier curves, without the slow
+    # and wasteful iterative approach which would make fonts draw far slower and not be consistently smooth with curves.
+    def add_modified_quadratic_bezier_curve(self, pos_list, colour, brush_radius, enclosed_path=False):
+
+        max_index = len(pos_list)-1
+
+        new_pos_list = []
+
+        for index, point in enumerate(pos_list):
+            if index == 0:
+                new_pos_list.append(point)
+            if index < max_index:
+                next_point = pos_list[index+1]
+                midpoint = Pos((next_point.x+point.x)/2,(next_point.y+point.y)/2)
+                new_pos_list.append(midpoint)
+            else:
+                # This is the last point in the segment
+                if enclosed_path:
+                    next_point = pos_list[0]
+                    midpoint = Pos((next_point.x + point.x) / 2, (next_point.y + point.y) / 2)
+                    new_pos_list.append(midpoint)
+                    new_pos_list.append(next_point)
+                else:
+                    new_pos_list.append(point)
+        self.add_quadratic_bezier_curve(new_pos_list, colour, brush_radius, enclosed_path=False)
+
     # Add a series of straight line segments between a list of points (Pos) on the canvas
     def add_line(self, pos_list, colour, brush_radius, enclosed_path=False):
         # create points for square
-        points_list = [pos_list[0].point()]
-        for pos in pos_list[1:-1]:
-            points_list.append(pos.point())
-            points_list.append(pos.point())
-        points_list.append(pos_list[-1].point())
-        if enclosed_path:
+        if pos_list:
+            points_list = [pos_list[0].point()]
+            for pos in pos_list[1:-1]:
+                points_list.append(pos.point())
+                points_list.append(pos.point())
             points_list.append(pos_list[-1].point())
-            points_list.append(pos_list[0].point())
-        line = {"points": points_list,
-                "brushColor": "rgba({},{},{},{})".format(*colour),
-                "brushRadius": brush_radius}
-        self.object["lines"].append(line)
+            if enclosed_path:
+                points_list.append(pos_list[-1].point())
+                points_list.append(pos_list[0].point())
+            line = {"points": points_list,
+                    "brushColor": "rgba({},{},{},{})".format(*colour),
+                    "brushRadius": brush_radius}
+            self.object["lines"].append(line)
 
     # Add a bezier curve that is quadratic if you give 3 points, cubic if you give 4 points and so on.
     def add_general_bezier_curve(self, control_points, colour, brush_radius, step_size=40, enclosed_path=False):
@@ -98,7 +129,6 @@ class Drawing:
         tuple_control_points = [(point.x, point.y) for point in control_points]
         points = get_bezier_curve(tuple_control_points, step_size, end_point=True)
         pos_points = [Pos(point[0], point[1]) for point in points]
-        print(pos_points)
         self.add_line(pos_points, colour, brush_radius, enclosed_path=enclosed_path)
 
     # Add a pause to the canvas, using a point off the canvas
@@ -159,134 +189,66 @@ class Drawing:
         self.add_line(result_corners, colour, br2)
 
     # Write text onto the canvas using a custom font specified below
-    def write(self, pos, lines, font_size, line_spacing=1.15, colour=BLACK):
+    def write(self, pos, lines, font_size, font_weight=None, line_spacing=1.35, colour=BLACK, font_file_name=None, show_points=False, draw_bounding_box=False):
         line_pos = pos.copy()
         y_offset = Pos(0, font_size * line_spacing)
-        font = {"a": ([[Pos(0.1, 1), Pos(0.5, 0)],
-                       [Pos(0.5, 0), Pos(0.9, 1)],
-                       [Pos(0.2, 0.8), Pos(0.8, 0.8)]], 1),
-                "b": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0), Pos(0.9, 0.5), Pos(0.1, 0.5)],
-                       [Pos(0.1, 0.5), Pos(0.9, 0.5), Pos(0.9, 1), Pos(0.1, 1)]], 1),
-                "c": ([[Pos(0.9, 0.3), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.3), Pos(0.1, 0.7), Pos(0.1, 1), Pos(0.9, 1),
-                        Pos(0.9, 0.7)]], 1),
-                "d": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0), Pos(0.9, 1), Pos(0.1, 1)]], 1),
-                "e": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0)],
-                       [Pos(0.1, 0.5), Pos(0.6, 0.5)],
-                       [Pos(0.1, 1), Pos(0.9, 1)]], 1),
-                "f": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0)],
-                       [Pos(0.1, 0.5), Pos(0.6, 0.5)]], 1),
-                "g": ([[Pos(0.9, 0.3), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.3), Pos(0.1, 0.7), Pos(0.1, 1), Pos(0.9, 1),
-                        Pos(0.9, 0.7), Pos(0.9, 0.5)],
-                       [Pos(0.5, 0.5), Pos(0.9, 0.5)]], 1),
-                "h": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0.5), Pos(0.9, 0.5)],
-                       [Pos(0.9, 0), Pos(0.9, 1)]], 1),
-                "i": ([[Pos(0.1, 0), Pos(0.1, 1)]], 0.2),
-                "j": ([[Pos(0.6, 0), Pos(0.6, 0.7), Pos(0.6, 0.7), Pos(0.6, 1), Pos(0.1, 1)]], 0.7),
-                "k": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0.6), Pos(0.9, 0)],
-                       [Pos(0.25, 0.5), Pos(0.9, 1)]], 1),
-                "l": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 1), Pos(0.7, 1)]], 0.8),
-                "m": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.6, 1)],
-                       [Pos(0.6, 1), Pos(1.1, 0)],
-                       [Pos(1.1, 0), Pos(1.1, 1)]], 1.2),
-                "n": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 1)],
-                       [Pos(0.9, 0), Pos(0.9, 1)]], 1),
-                "o": ([[Pos(0.9, 0.3), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.3), Pos(0.1, 0.7), Pos(0.1, 1), Pos(0.9, 1),
-                        Pos(0.9, 0.7), Pos(0.9, 0.3)]], 1),
-                "p": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0), Pos(0.9, 0.5), Pos(0.1, 0.5)]], 1),
-                "q": ([[Pos(0.9, 0.3), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.3), Pos(0.1, 0.7), Pos(0.1, 1), Pos(0.9, 1),
-                        Pos(0.9, 0.7), Pos(0.9, 0.3)],
-                       [Pos(0.7, 0.8), Pos(0.9, 1)]], 1),
-                "r": ([[Pos(0.1, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0), Pos(0.9, 0.5), Pos(0.1, 0.5)],
-                       [Pos(0.6, 0.5), Pos(0.9, 1)]], 1),
-                "s": ([[Pos(0.9, 0.3), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.5), Pos(0.9, 0.5), Pos(0.9, 1), Pos(0.1, 1),
-                        Pos(0.1, 0.7)]], 1),
-                "t": ([[Pos(0.5, 0), Pos(0.5, 1)],
-                       [Pos(0.1, 0), Pos(0.9, 0)]], 1),
-                "u": ([[Pos(0.1, 0), Pos(0.1, 0.7), Pos(0.1, 1), Pos(0.9, 1), Pos(0.9, 0.7), Pos(0.9, 0)]], 1),
-                "v": ([[Pos(0.1, 0), Pos(0.5, 1)],
-                       [Pos(0.5, 1), Pos(0.9, 0)]], 1),
-                "w": ([[Pos(0.1, 0), Pos(0.4, 1)],
-                       [Pos(0.4, 1), Pos(0.7, 0)],
-                       [Pos(0.7, 0), Pos(1, 1)],
-                       [Pos(1, 1), Pos(1.3, 0)]], 1.4),
-                "x": ([[Pos(0.1, 0), Pos(0.9, 1)],
-                       [Pos(0.1, 1), Pos(0.9, 0)]], 1),
-                "y": ([[Pos(0.1, 0), Pos(0.5, 0.6)],
-                       [Pos(0.5, 0.6), Pos(0.9, 0)],
-                       [Pos(0.5, 0.6), Pos(0.5, 1)]], 1),
-                "z": ([[Pos(0.1, 0), Pos(0.9, 0)],
-                       [Pos(0.9, 0), Pos(0.1, 1)],
-                       [Pos(0.1, 1), Pos(0.9, 1)]], 1),
-                " ": ([], 0.75),
-                "#": ([[Pos(0.1, 0.3), Pos(0.9, 0.3)],
-                       [Pos(0.1, 0.7), Pos(0.9, 0.7)],
-                       [Pos(0.2, 1), Pos(0.4, 0)],
-                       [Pos(0.6, 1), Pos(0.8, 0)]], 1),
-                "=": ([[Pos(0.1, 0.3), Pos(0.9, 0.3)],
-                       [Pos(0.1, 0.7), Pos(0.9, 0.7)]], 1),
-                "'": ([[Pos(0.1, 0), Pos(0.1, 0.4)]], 0.2),
-                "\"": ([[Pos(0.1, 0), Pos(0.1, 0.4)],
-                        [Pos(0.2, 0), Pos(0.2, 0.4)]], 0.3),
-                ".": ([[Pos(0.1, 1), Pos(0.1, 1)]], 0.2),
-                "!": ([[Pos(0.1, 0), Pos(0.1, 0.8)],
-                       [Pos(0.1, 1), Pos(0.1, 1)]], 0.2),
-                "1": ([[Pos(0.1, 1), Pos(0.9, 1)],
-                       [Pos(0.5, 0), Pos(0.5, 1)],
-                       [Pos(0.5, 0), Pos(0.1, 0.4)]], 1),
-                "2": ([[Pos(0.1, 0.3), Pos(0.1, 0), Pos(0.8, 0), Pos(0.8, 0.4), Pos(0.1, 1)],
-                       [Pos(0.1, 1), Pos(0.9, 1)]], 1),
-                "3": ([[Pos(0.1, 0.2), Pos(0.1, 0), Pos(0.9, 0), Pos(0.9, 0.5), Pos(0.4, 0.5)],
-                       [Pos(0.1, 0.8), Pos(0.1, 1), Pos(0.9, 1), Pos(0.9, 0.5), Pos(0.4, 0.5)]], 1),
-                "4": ([[Pos(0.1, 0.8), Pos(0.9, 0.8)],
-                       [Pos(0.7, 0), Pos(0.7, 1)],
-                       [Pos(0.1, 0.8), Pos(0.7, 0)]], 1),
-                "5": ([[Pos(0.1, 0), Pos(0.9, 0)],
-                       [Pos(0.1, 0.4), Pos(0.1, 0)],
-                       [Pos(0.1, 0.4), Pos(0.9, 0.4), Pos(0.9, 1), Pos(0.1, 1), Pos(0.1, 0.8)]], 1),
-                "6": ([[Pos(0.9, 0.2), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.4),
-                        Pos(0.1, 0.6), Pos(0.1, 1), Pos(0.9, 1), Pos(0.9, 0.5), Pos(0.1, 0.5), Pos(0.1, 0.6)]], 1),
-                "7": ([[Pos(0.1, 0.2), Pos(0.1, 0)],
-                       [Pos(0.1, 0), Pos(0.9, 0)],
-                       [Pos(0.9, 0), Pos(0.4, 1)]], 1),
-                "8": ([[Pos(0.5, 0.5), Pos(0.1, 0.5), Pos(0.1, 0), Pos(0.9, 0), Pos(0.9, 0.5), Pos(0.5, 0.5)],
-                       [Pos(0.5, 0.5), Pos(0.1, 0.5), Pos(0.1, 1), Pos(0.9, 1), Pos(0.9, 0.5), Pos(0.5, 0.5)]], 1),
-                "9": ([[Pos(0.1, 0.8), Pos(0.1, 1), Pos(0.9, 1), Pos(0.9, 0.6),
-                        Pos(0.9, 0.4), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.5), Pos(0.9, 0.5), Pos(0.9, 0.4)]], 1),
-                "0": ([[Pos(0.9, 0.3), Pos(0.9, 0), Pos(0.1, 0), Pos(0.1, 0.3), Pos(0.1, 0.7), Pos(0.1, 1), Pos(0.9, 1),
-                        Pos(0.9, 0.7), Pos(0.9, 0.3)],
-                       [Pos(0.1, 0.3), Pos(0.9, 0.7)]], 1)}
 
-        def write_char(pos, char):
-            # resize char to font size
-            this_char = []
-            x_offset = Pos(font_size * font[char][1], 0)
-            for line in font[char][0]:
-                this_line = []
-                for point in line:
-                    this_line.append((point.copy() * font_size) + pos)
-                this_char.append(this_line)
+        if not font_weight:
+            if not font_file_name:
+                font_weight = font_size / 30  # The default font looks a bit better thicker as it isn't outline based like all other fonts.
+            else:
+                font_weight = font_size / 60
 
-            # draw character
-            for line in this_char:
-                self.add_quadratic_bezier_curve(line, colour, font_size / 30)
+        if font_file_name:
+            # TODO: Figure out how to fill
+            # TODO: Anti-aliasing for Pygame
+
+            # Very slow, only use the following function if you need the character map for every single character in the font
+            # character_map = get_font_character_map(font_file_name)
+
+            # Much faster, near instant if not many unique characters are used
+            character_map = get_reduced_font_character_map("".join(lines), font_file_name)
+        else:
+            character_map = DEFAULT_FONT
+
+        def write_char(pos, char, char_num):
+
+            if not font_file_name:
+                char = char.upper()
+
+            x_offset = Pos(font_size * character_map[ord(char)][2], 0)
+
+            # horizontal_advanced_width = Pos(character_map[ord(char)][7], 0)
+            # Bounding box including the character spacing
+
+            current_left_side_bearing = Pos(0, 0)
+            # If first character, remove left side bearing
+            if char_num == 0:
+                current_left_side_bearing = Pos(character_map[ord(char)][6], 0)
+                x_offset -= current_left_side_bearing * font_size
+
+            char_data = character_map[ord(char)][5]
+            this_char_bounding_box = [((point.copy() - current_left_side_bearing) * font_size) + pos for point in character_map[ord(char)][4]]
+
+            if draw_bounding_box:
+                self.add_line(this_char_bounding_box, colour, font_weight, enclosed_path=True)
+                full_char_bounding_box = [Pos(0.0, 0.0), Pos((this_char_bounding_box[1].x - pos.x)/font_size, 0.0), Pos((this_char_bounding_box[2].x - pos.x)/font_size, 1.0), Pos(0.0, 1.0)]
+                full_char_bounding_box = [(point.copy() * font_size) + pos for point in full_char_bounding_box]
+                self.add_line(full_char_bounding_box, RED, font_weight, enclosed_path=True)
+
+            for index, segment in enumerate(char_data):
+                # this_char_on_curve = [on for (point,on) in segment]
+                this_char_segment = [(point.copy() * font_size) + pos - (current_left_side_bearing * font_size) for point in segment]
+                if font_file_name:
+                    self.add_modified_quadratic_bezier_curve(this_char_segment, colour, font_weight, enclosed_path=True)
+                else:
+                    self.add_quadratic_bezier_curve(this_char_segment, colour, font_weight)
 
             return pos + x_offset
 
         for line in lines:
-            for char in line:
-                if char.lower() in font:
-                    pos = write_char(pos.copy(), char.lower())
+            for index, char in enumerate(line):
+                pos = write_char(pos.copy(), char, index)
             line_pos = line_pos + y_offset
             pos = line_pos.copy()
 
@@ -426,23 +388,24 @@ class Drawing:
 
         def draw_quadratic_bezier_curve_line(surface, colour, pts, width, end_caps=False, step_size=40):
 
-            last_midpoint = pts[0]
-            midpoint = last_midpoint
-            p2 = last_midpoint
+            if pts:
+                last_midpoint = pts[0]
+                midpoint = last_midpoint
+                p2 = last_midpoint
 
-            for i in range(len(pts)):
-                p1 = pts[i]
-                try:
-                    p2 = pts[i + 1]
+                for i in range(len(pts)):
+                    p1 = pts[i]
+                    try:
+                        p2 = pts[i + 1]
 
-                    midpoint = get_midpoint(p1, p2)
-                    # TODO: Write some code to create an appropriate step_size, likely based on the bezier curve length
-                    bezier_curve_points = get_bezier_curve((last_midpoint, p1, midpoint), step_size=step_size, end_point=True)
-                    draw_lines(surface, colour, bezier_curve_points, width, end_caps=end_caps)
+                        midpoint = get_midpoint(p1, p2)
+                        # TODO: Write some code to create an appropriate step_size, likely based on the bezier curve length
+                        bezier_curve_points = get_bezier_curve((last_midpoint, p1, midpoint), step_size=step_size, end_point=True)
+                        draw_lines(surface, colour, bezier_curve_points, width, end_caps=end_caps)
 
-                    last_midpoint = midpoint
-                except IndexError:  # Draw the last point as a straight line to finish
-                    draw_line(surface, colour, midpoint, p2, width, end_caps=end_caps)
+                        last_midpoint = midpoint
+                    except IndexError:  # Draw the last point as a straight line to finish
+                        draw_line(surface, colour, midpoint, p2, width, end_caps=end_caps)
 
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale

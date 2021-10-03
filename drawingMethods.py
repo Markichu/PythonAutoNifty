@@ -83,7 +83,6 @@ def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False,
     if keep_aspect_ratio:  # keep the images original shape
         square_pixel_width = width / max(pixel_width, pixel_height)
         square_pixel_height = height / max(pixel_width, pixel_height)
-        max_square_dimension = max(square_pixel_width, square_pixel_height)
 
         # Centre the image if it isn't a square
         x_offset = abs(max(pixel_width, pixel_height) - pixel_width) / 2
@@ -381,17 +380,17 @@ def square_fractal(drawing, master_key, iterations=5):
     return square_fractal_recursive(drawing, master_key, [Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE)], iterations)
 
 
-def text_drawing_example(drawing):
+def text_drawing_example(drawing, font_file_name=None, draw_bounding_box=False):
     drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
     drawing.add_gradient(Pos(150, 150), Pos(DRAWING_SIZE - 150, DRAWING_SIZE - 150), hsva_to_rgba(0, 0, 1), hsva_to_rgba(0, 0, 1), 200)
 
     # Examples of writing:
     # title text
-    drawing.write(pos=Pos(160, 170), lines=["Add a title", "here!"], font_size=50)
+    drawing.write(pos=Pos(160, 170), lines=["Add a title", "here!"], font_size=50, font_file_name=font_file_name, draw_bounding_box=draw_bounding_box)
     # body text
     drawing.write(pos=Pos(160, 300), lines=["Add some interesting",
                                             "content and words",
-                                            "here!"], font_size=25, line_spacing=1.35, colour=(64, 64, 200, 1))
+                                            "here!"], font_size=25, line_spacing=1.35, colour=(64, 64, 200, 1), font_file_name=font_file_name, draw_bounding_box=draw_bounding_box)
 
     return drawing
 

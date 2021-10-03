@@ -26,6 +26,7 @@ def main():
     # drawing = point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
     # drawing = square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners
     # drawing = text_drawing_example(Drawing())  # Example of how to draw text on the canvas
+    # drawing = text_drawing_example(Drawing(), font_file_name='fonts/OpenSans-Regular.ttf', draw_bounding_box=False)  # Example of how to draw text on the canvas with a free use font
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
     # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
     # drawing = square_example(Drawing())  # Draws some basic squares with different brush sizes
