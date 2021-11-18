@@ -60,10 +60,10 @@ class Pos:
         result.y /= div
         return result
 
-    def __round__(self):
+    def __round__(self, n_digits=None):
         result = self.copy()
-        result.x = round(self.x)
-        result.y = round(self.y)
+        result.x = round(self.x, n_digits)
+        result.y = round(self.y, n_digits)
         return result
 
     def __repr__(self):

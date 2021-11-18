@@ -1,6 +1,7 @@
 import os
 
 from Drawing import Drawing
+from Renderer import Renderer
 from helperFns import random_seed, set_random_seed
 from constants import DRAWING_SIZE, BLACK
 from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals, \
@@ -42,7 +43,7 @@ def main():
     # drawing *= 0.95
 
     # # Optional - Reduce size of your drawing but at the cost of precision.
-    # drawing.round_floats()
+    # round(drawing)
 
     # # Optional - Save the raw drawing data to a file
     # drawing.export_raw_data("drawing.ink", indent=4)
@@ -73,9 +74,6 @@ def main():
     with open("output.txt", "w") as file:
         file.write(output_data)
 
-    # # Hide the Pygame support message
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = str()
-
     # # Optional - Render and save the image in pygame
     # #   increase pygame_scale for higher RES output images
     # #   enable headless if image will be larger than the screen
@@ -90,13 +88,16 @@ def main():
     # #   green_screen_colour the colour to use as a green screen for transparent bg, use a colour not in your drawing!
     # #   timestamp_format provides access to a custom timestamp format, refer to datetime's strftime format codes
 
+    # Init render class.
+    renderer = Renderer()
+
     # Render in a very accurate (but slower) way.
-    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
+    renderer.render(drawing, filename="screenshot.png",
                    simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10,
                    timestamp=True)
 
     # Render the traditional way (faster).
-    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
+    # renderer.render(drawing, filename="screenshot.png")
 
 
 if __name__ == '__main__':

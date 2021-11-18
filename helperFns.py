@@ -92,6 +92,13 @@ def interpolate_colour(start_col, end_col, amount, alpha_factor=1):
     return r, g, b, a
 
 
+def alpha_blend(a, bg, fg):
+    return ((1 - a) * fg[0] + a * bg[0],
+            (1 - a) * fg[1] + a * bg[1],
+            (1 - a) * fg[2] + a * bg[2],
+            255)
+
+
 def random_seed():
     seed = int.from_bytes(os.urandom(8), byteorder="big")
     random.seed(seed)
