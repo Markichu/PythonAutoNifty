@@ -43,7 +43,51 @@ def get_segment_coordinates(font, glyph_name, units_per_em):
     segment = []
     compressed_points, end_points, point_flags = glyph.getCoordinates(glyph_table)
 
+    # # flags
+    # flagOnCurve = 0x01
+    # flagXShort = 0x02
+    # flagYShort = 0x04
+    # flagRepeat = 0x08
+    # flagXsame = 0x10
+    # flagYsame = 0x20
+    # flagOverlapSimple = 0x40
+    # flagReserved = 0x80
+    # More detail at https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html        Table 16: Outline Flags
+    # And also at https://docs.microsoft.com/en-us/typography/opentype/spec/glyf        Simple Glyph Flags
+
+    # Filling algorithm information
+    # A non-zero-fill algorithm is needed to avoid dropouts when contours overlap.
+    # The OVERLAP_SIMPLE flag is used by some rasterizer implementations to ensure
+    # that a non-zero-fill algorithm is used rather than an even-odd-fill algorithm.
+    # Implementations that always use a non-zero-fill algorithm will ignore this flag.
+    # Note that some implementations might check this flag specifically in non-variable fonts,
+    # but always use a non-zero-fill algorithm for variable fonts.
+    # This flag can be used in order to provide broad interoperability of fonts
+    # — particularly non-variable fonts — when glyphs have overlapping contours.
+    # https://www.tutorialspoint.com/computer_graphics/polygon_filling_algorithm.htm
+    # try:
+    #     def reprflag(flag):
+    #         bin = ""
+    #         if type(flag) is str:
+    #             flag = ord(flag)
+    #         while flag:
+    #             if flag & 0x01:
+    #                 bin = "1" + bin
+    #             else:
+    #                 bin = "0" + bin
+    #             flag = flag >> 1
+    #         bin = (14 - len(bin)) * "0" + bin
+    #         return bin
+    #
+    #     for index, flag in enumerate(point_flags):
+    #         print(reprflag(flag))
+    #         print(compressed_points[index])
+    # except Exception as e:
+    #     print(e)
     bounding_box = [Pos(x / total_x, (y+y_offset) / total_y) for (x, y) in bounding_box]
+
+    # TODO: It seems either the flags are being handled incorrectly, or the on curve/off curves are being calculated incorrectly \
+    #       With fonts like OpenSans, it occurs visibly for letters such as A, B and D
 
     if len(compressed_points) > 1:
         for index, point in enumerate(compressed_points):
