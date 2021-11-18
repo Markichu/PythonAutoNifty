@@ -1,3 +1,5 @@
+import os
+
 from Drawing import Drawing
 from helperFns import random_seed, set_random_seed
 from constants import DRAWING_SIZE, BLACK
@@ -54,6 +56,9 @@ def main():
     # # Optional - Load a layer from a file, adds to the top of the drawing.
     # drawing.add_layer_from_file("drawing.ink")
 
+    # # Optional - Reverse the drawing order of a drawing
+    # reversed(drawing)
+
     # # Select an import method for the output data
     output_data = drawing.to_nifty_import()  # Replace previous canvas contents in Nifty.Ink
     # output_data = drawing.to_nifty_add_layer_import()  # Keep previous canvas contents, write a layer on top
@@ -62,13 +67,18 @@ def main():
     # # Write the drawing to output file
     # # that can be pasted into the console
     # # in the Developer pane on Nifty Ink website
-    print(f"Lines: {len(drawing.object['lines'])}, Size: {(len(output_data)/1024.0**2):.2f}MB")
+    print(f"Lines: {len(drawing.object['lines'])}, "
+          f"Points: {sum([len(line['points']) for line in drawing.object['lines']])}, "
+          f"Size: {(len(output_data) / 1024.0 ** 2):.2f}MB")
     with open("output.txt", "w") as file:
         file.write(output_data)
 
-    # # Optional - Render and save the image in pygame,\
-    # #   increase pygame_scale for higher RES output images,\
-    # #   enable headless if image will be larger than the screen,\
+    # # Hide the Pygame support message
+    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = str()
+
+    # # Optional - Render and save the image in pygame
+    # #   increase pygame_scale for higher RES output images
+    # #   enable headless if image will be larger than the screen
     # #   filename specifies the name and format of the image
     # #   simulate specifies whether to show the drawing process
     # #   speed specifies the speed a simulated drawing should be drawn, 3 is roughly equal to the speed that nifty uses
@@ -76,13 +86,17 @@ def main():
     # #   fake_transparency is used as an illusion of transparency but only works well with 1 effective layer, very fast
     # #   draw_as_bezier is used to show lines drawn in the exact same method as nifty.ink, slower
     # #   step_size determines the bezier curves effective resolution, higher is slower but often looks better
+    # #   save_transparent_bg transparent bg in the pygame screenshot, doesn't work well with transparent lines
+    # #   green_screen_colour the colour to use as a green screen for transparent bg, use a colour not in your drawing!
+    # #   timestamp_format provides access to a custom timestamp format, refer to datetime's strftime format codes
 
     # Render in a very accurate (but slower) way.
-    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
-    #                simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10)
+    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png",
+                   simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10,
+                   timestamp=True)
 
     # Render the traditional way (faster).
-    drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
+    # drawing.render(pygame_scale=None, headless=False, filename="screenshot.png")
 
 
 if __name__ == '__main__':

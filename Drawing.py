@@ -5,6 +5,7 @@ import pygame
 import os
 import time
 import numpy as np
+import datetime
 
 from Pos import Pos
 from font import get_font_character_map, get_reduced_font_character_map
@@ -141,12 +142,12 @@ class Drawing:
 
     # Add a square to the canvas
     # The degree of roundedness of the corners is determined by the brush radius
-    def add_rounded_square(self, centre_pos, width, colour, brush_radius=DEFAULT_BRUSH_RADIUS):
-        self.add_rounded_rectangle(centre_pos, width, width, colour, brush_radius=brush_radius)
+    def add_rounded_square(self, centre_pos, width, colour, brush_radius=DEFAULT_BRUSH_RADIUS, filled=True):
+        self.add_rounded_rectangle(centre_pos, width, width, colour, brush_radius=brush_radius, filled=filled)
 
     # # Add a rectangle to the canvas
     # # The degree of roundedness of the corners is determined by the brush radius
-    def add_rounded_rectangle(self, centre_pos, width, height, colour, brush_radius=DEFAULT_BRUSH_RADIUS):
+    def add_rounded_rectangle(self, centre_pos, width, height, colour, brush_radius=DEFAULT_BRUSH_RADIUS, filled=True):
         rotate_rectangle = False
         if width > height:
             width, height = height, width
@@ -178,11 +179,12 @@ class Drawing:
         # do outer line
         result_corners = corners + [corners[0]]
 
-        # do filling lines. line_step is approximately 2 * br2
-        line_step = (width - br2 * 2) / line_count
-        for i in range(1, line_count):
-            result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, br2))
-            result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -br2))
+        if filled:
+            # do filling lines. line_step is approximately 2 * br2
+            line_step = (width - br2 * 2) / line_count
+            for i in range(1, line_count):
+                result_corners.append(corners[0].copy() + Pos(line_step * i, 0) + Pos(0, br2))
+                result_corners.append(corners[1].copy() + Pos(line_step * i, 0) + Pos(0, -br2))
 
         if rotate_rectangle:
             result_corners = [rotate(point, math.pi/2, centre_pos) for point in result_corners]
@@ -237,7 +239,6 @@ class Drawing:
                 self.add_line(full_char_bounding_box, RED, font_weight, enclosed_path=True)
 
             for index, segment in enumerate(char_data):
-                # this_char_on_curve = [on for (point,on) in segment]
                 this_char_segment = [(point.copy() * font_size) + pos - (current_left_side_bearing * font_size) for point in segment]
                 if font_file_name:
                     self.add_modified_quadratic_bezier_curve(this_char_segment, colour, font_weight, enclosed_path=True)
@@ -259,12 +260,23 @@ class Drawing:
 
     # Use this to make your drawings slightly less precise, but also reduce their size a lot
     # This can be useful if browser local storage limits start affecting your large drawings
-    def round_floats(self):
+    def round_floats(self, round_colours=False):
         for line in self.object['lines']:
+            if round_colours:
+                r, g, b, a = [float(x) for x in line['brushColor'][5:-1].split(",")]
+                if a == 1:
+                    line['brushColor'] = "rgb(" + ",".join([str(round(r)), str(round(g)), str(round(b))]) + ")"
+                else:
+                    line['brushColor'] = "rgba(" + ",".join([str(round(r)), str(round(g)), str(round(b)), str(a)]) + ")"
             line['brushRadius'] = round(line['brushRadius'])
             for point in line['points']:
                 point['x'] = round(point['x'])
                 point['y'] = round(point['y'])
+
+    # Reverse the drawing order of all the lines, this will mess up the final appearance if lines overlap!
+    def __reversed__(self):
+        self.object['lines'] = list(reversed(self.object['lines']))
+        return self
 
     # Save raw drawing data to a file for later use.
     def export_raw_data(self, file_name, indent=4):
@@ -313,7 +325,7 @@ class Drawing:
     # Render the lines to preview in Pygame
     def render(self, pygame_scale=None, headless=False, filename="output.png", simulate=False, speed=None,
                allow_transparency=False, fake_transparency=False, proper_line_thickness=False, draw_as_bezier=False,
-               step_size=10):
+               step_size=10, save_transparent_bg=False, green_screen_colour=(0,177,64,255), timestamp=False, timestamp_format="%Y_%m_%d_%H_%M_%S_%f_"):
         # Set a fake video driver to hide output
         if headless:
             os.environ['SDL_VIDEODRIVER'] = 'dummy'
@@ -342,10 +354,15 @@ class Drawing:
         # Initialise the window with dimensions
         pygame_x = round(DRAWING_SIZE * pygame_scale)
         pygame_y = round(DRAWING_SIZE * pygame_scale)
-        screen = pygame.display.set_mode((pygame_x, pygame_y))
+        screen = pygame.display.set_mode((pygame_x, pygame_y), 0, 32)
 
         pygame.display.set_caption("Drawing Render")
-        screen.fill(WHITE[:3])
+
+        if save_transparent_bg:
+            screen.fill(green_screen_colour)
+        else:
+            screen.fill(WHITE)
+        screen.set_alpha(255)
         pygame.display.update()  # Show the background, (so the screen isn't black on drawings that are slow to process)
 
         def alpha_blend(a, bg, fg):
@@ -409,12 +426,19 @@ class Drawing:
 
         for line in self.object["lines"]:
             brush_radius = line["brushRadius"] * pygame_scale
-            colour = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
-            colour[3] *= 255  # Pygame expects an alpha between 0 and 255, not 0 and 1.
+            if "rgba" in line["brushColor"]:
+                colour = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
+            else:
+                colour = [float(cell) for cell in list(line["brushColor"][4:-1].split(","))]
+
+            try:
+                colour[3] *= 255  # Pygame expects an alpha between 0 and 255, not 0 and 1.
+            except:
+                colour.append(255)
 
             points = []
             if colour[3] != 255 and allow_transparency:  # If the brushColour is transparent, draw with transparency
-                target_surface = pygame.Surface((pygame_x, pygame_y))
+                target_surface = pygame.Surface((pygame_x, pygame_y), 0, 32)
                 if colour[:-1] != [0,0,0]:
                     target_surface.set_colorkey(BLACK)
                 else:  # Handle the black edge case
@@ -456,9 +480,43 @@ class Drawing:
 
         # update screen to render the final result of the drawing
         pygame.display.update()
-        print(f"\nSaving {filename}")
-        pygame.image.save(screen, filename)
+
+        time_str = datetime.datetime.now().strftime(timestamp_format) if timestamp else ""
+
+        print(f"\nSaving {time_str+filename}")
+        pygame.image.save(screen, time_str+filename)
         print("Saved.")
+
+        # TODO: Figure out if Pygame has a method to save a surface with a transparent background
+        if save_transparent_bg:
+            image_string = pygame.image.tostring(screen, 'RGBA', False)
+
+            from PIL import Image
+
+            img = Image.frombytes("RGBA", screen.get_size(), image_string)
+
+            # https://stackoverflow.com/questions/765736/how-to-use-pil-to-make-all-white-pixels-transparent
+            def convert_png_transparent(image, dst_file, bg_color=(255, 255, 255)):
+                array = np.array(image, dtype=np.ubyte)
+                mask = (array[:, :, :3] == bg_color).all(axis=2)
+                alpha = np.where(mask, 0, 255)
+                array[:, :, -1] = alpha
+
+                print(f"Saving {dst_file}")
+                Image.fromarray(np.ubyte(array)).save(dst_file, "PNG")
+                print("Saved.")
+
+                # # save a version with white pixels where the green screen was
+                # for y in range(image.size[1]):
+                #     for x in range(image.size[0]):
+                #         if [*image.getpixel((x, y))[:-1]] == bg_color:
+                #             image.putpixel((x, y), (255, 255, 255, 255))
+
+            convert_png_transparent(img, f"{time_str}transparent_{filename}", [*green_screen_colour[:-1]])
+
+            # # Directly save the PIL image (no alpha sadly)
+            # img.save("pil_screenshot.png")
+            # print("Saved.")
 
         # enter a loop to prevent pygame from ending
         running = True
