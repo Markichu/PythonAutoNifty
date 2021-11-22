@@ -1,8 +1,8 @@
 import random
-from FractalPlotter import FractalPlotter
-from FractalPiece import FractalPiece
-from fractalHullHelperFns import iterate_defn_hull, calculate_hull_diameter
-from fractalConstants import DEFAULT_HULL_ACCURACY
+from fractal_plotter import FractalPlotter
+from fractal_piece import FractalPiece
+from fractal_hull_helper_fns import iterate_defn_hull, calculate_hull_diameter
+from fractal_constants import DEFAULT_HULL_ACCURACY
 
 
 class FractalDefn:

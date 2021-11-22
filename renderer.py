@@ -8,7 +8,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = str()
 import pygame
 
 from constants import BLACK, WHITE, DRAWING_SIZE, TITLE_BAR_HEIGHT, BORDER_WIDTH
-from helperFns import get_bezier_curve, alpha_blend
+from helper_fns import get_bezier_curve, alpha_blend
 
 
 class Renderer:
@@ -116,7 +116,7 @@ class Renderer:
                     except IndexError:  # Draw the last point as a straight line to finish
                         draw_line(surface, colour, midpoint, p2, width, end_caps=end_caps)
 
-        for line in drawing.object["lines"]:
+        for line in drawing:
             brush_radius = line["brushRadius"] * self.pygame_scale
             if "rgba" in line["brushColor"]:
                 colour = [float(cell) for cell in list(line["brushColor"][5:-1].split(","))]
@@ -176,9 +176,7 @@ class Renderer:
 
         time_str = datetime.datetime.now().strftime(timestamp_format) if timestamp else ""
 
-        print(f"\nSaving {time_str + filename}")
         pygame.image.save(self.screen, time_str + filename)
-        print("Saved.")
 
         # TODO: Figure out if Pygame has a method to save a surface with a transparent background
         if save_transparent_bg:
@@ -193,9 +191,7 @@ class Renderer:
                 alpha = np.where(mask, 0, 255)
                 array[:, :, -1] = alpha
 
-                print(f"Saving {dst_file}")
                 Image.fromarray(np.ubyte(array)).save(dst_file, "PNG")
-                print("Saved.")
 
             convert_png_transparent(img, f"{time_str}transparent_{filename}", [*green_screen_colour[:-1]])
 

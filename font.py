@@ -2,8 +2,8 @@ import os
 from fontTools import ttLib
 from collections import defaultdict
 
-from Pos import Pos
-from fontConstants import default_value
+from pos import Pos
+from font_constants import default_value
 
 # Useful for information, https://github.com/fonttools/fonttools/blob/main/Lib/fontTools/ttLib/tables/_g_l_y_f.py
 # Inspired by https://github.com/fonttools/fonttools/blob/main/Snippets/interpolate.py

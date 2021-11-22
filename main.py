@@ -1,15 +1,15 @@
 import os
 
-from Drawing import Drawing
-from Renderer import Renderer
-from helperFns import random_seed, set_random_seed
+from drawing import Drawing
+from renderer import Renderer
+from helper_fns import random_seed, set_random_seed
 from constants import DRAWING_SIZE, BLACK
-from drawingMethods import point_image, square_image, rotating_square, tiled_diagonals, \
+from drawing_methods import point_image, square_image, rotating_square, tiled_diagonals, \
     fibonacci_dots, fibonacci_image, squared_circle, curved_lines, \
     shrinking_circle_ring, square_fractal, text_drawing_example, square_example, rectangle_example, \
     alpha_example, star_example
 
-from fractalRunner import fractalRunner
+from fractal_runner import fractalRunner
 
 
 def main():
@@ -23,8 +23,8 @@ def main():
     # ---------------
     # # Pick a method to use here that draws something nice on the canvas
     # # Uncomment out a single line to run that function
-    # # Most of the methods and examples are in file drawingMethods.py
-    # # For the general fractal examples, set it up in fractalRunner.py
+    # # Most of the methods and examples are in file drawing_methods.py
+    # # For the general fractal examples, set it up in fractal_runner.py
 
     # drawing = point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
     # drawing = square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners
@@ -68,8 +68,8 @@ def main():
     # # Write the drawing to output file
     # # that can be pasted into the console
     # # in the Developer pane on Nifty Ink website
-    print(f"Lines: {len(drawing.object['lines'])}, "
-          f"Points: {sum([len(line['points']) for line in drawing.object['lines']])}, "
+    print(f"Lines: {len(drawing)}, "
+          f"Points: {sum([len(line['points']) for line in drawing])}, "
           f"Size: {(len(output_data) / 1024.0 ** 2):.2f}MB")
     with open("output.txt", "w") as file:
         file.write(output_data)

@@ -1,7 +1,7 @@
-from FractalDefn import FractalDefn
-from fractalConstants import DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS, BREAK_AFTER_ITERATIONS
-from fractalConstants import DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_INITIAL_HULL
-from fractalHelperFns import DEFAULT_METRIC_FN, DEFAULT_ITERATION_FN
+from fractal_defn import FractalDefn
+from fractal_constants import DEFAULT_MAX_PIECES, DEFAULT_MAX_DEFNS, BREAK_AFTER_ITERATIONS
+from fractal_constants import DEFAULT_HULL_MAX_ITERATIONS, DEFAULT_INITIAL_HULL
+from fractal_helper_fns import DEFAULT_METRIC_FN, DEFAULT_ITERATION_FN
 
 
 # There should only be 1 fractal system created,
