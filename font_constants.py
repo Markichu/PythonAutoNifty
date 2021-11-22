@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from Pos import Pos
+from pos import Pos
 
 
 def default_value():

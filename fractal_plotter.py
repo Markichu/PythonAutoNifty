@@ -1,5 +1,5 @@
 from constants import BLACK
-from fractalHelperFns import DEFAULT_PLOTTING_FN, DEFAULT_COLOURING_FN
+from fractal_helper_fns import DEFAULT_PLOTTING_FN, DEFAULT_COLOURING_FN
 
 # A FractalPlotter object controls how a FractalPiece is plotted onto the canvas
 # It contains a list of instructions for the plot method and the colour to plot

@@ -8,7 +8,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = str()
 import pygame
 
 from constants import BLACK, WHITE, DRAWING_SIZE, TITLE_BAR_HEIGHT, BORDER_WIDTH
-from helperFns import get_bezier_curve, alpha_blend
+from helper_fns import get_bezier_curve, alpha_blend
 
 
 class Renderer:

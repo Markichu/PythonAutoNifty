@@ -3,7 +3,7 @@ import os
 import random
 
 from PIL import ImageColor
-from Pos import Pos
+from pos import Pos
 from constants import DRAWING_SIZE
 from math import comb
 
