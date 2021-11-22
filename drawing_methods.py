@@ -213,7 +213,6 @@ def fibonacci_image(drawing, image_filename, n=3000):
         brightness = 1 - ((0.2126 * colour[0] + 0.7152 * colour[1] + 0.0722 * colour[2]) / 265)
 
         # draw dot
-        print(brightness * 4, (brightness * (DRAWING_SIZE / math.sqrt(n))) / 2)
         drawing.add_point(pos, colour, brightness * DRAWING_SIZE / math.sqrt(n) / 2)
 
     return drawing
@@ -279,7 +278,6 @@ def shrinking_circle_ring(drawing, n=20, m=36):
     big_radius = DRAWING_SIZE / 2
     for _ in range(n):
         # calc current radius
-        print(big_radius, (m * big_radius) / (m + 2 * math.pi))
         big_radius = (m * big_radius) / (m + 2 * math.pi)
         small_radius = (math.pi * big_radius) / m
 
