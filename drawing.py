@@ -3,10 +3,9 @@ import math
 import random
 
 from pos import Pos
-from font import get_font_character_map, get_reduced_font_character_map
+from font import Font
 from helper_fns import get_bezier_curve, rotate
 from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, RED
-from font_constants import DEFAULT_FONT
 
 
 # The Drawing class contains all the code required to produce an output.txt file.
@@ -180,65 +179,46 @@ class Drawing:
         self.add_line(result_corners, colour, br2)
 
     # Write text onto the canvas using a custom font specified below
-    def write(self, pos, lines, font_size, font_weight=None, line_spacing=1.35, colour=BLACK, font_file_name=None, show_points=False, draw_bounding_box=False):
+    def write(self, font, pos, lines, draw_bounding_box=False):
         line_pos = pos.copy()
+
+        font_size = font.size
+        font_weight = font.weight
+        line_spacing = font.line_spacing
+        colour = font.colour
+
         y_offset = Pos(0, font_size * line_spacing)
 
         if not font_weight:
-            if not font_file_name:
-                font_weight = font_size / 30  # The default font looks a bit better thicker as it isn't outline based like all other fonts.
-            else:
-                font_weight = font_size / 60
+            font_weight = font_size / 60
 
-        if font_file_name:
-            # TODO: Figure out how to fill
-            # TODO: Anti-aliasing for Pygame
-
-            # Very slow, only use the following function if you need the character map for every single character in the font
-            # character_map = get_font_character_map(font_file_name)
-
-            # Much faster, near instant if not many unique characters are used
-            character_map = get_reduced_font_character_map("".join(lines), font_file_name)
-        else:
-            character_map = DEFAULT_FONT
-
-        def write_char(pos, char, char_num):
-
-            if not font_file_name:
-                char = char.upper()
-
-            x_offset = Pos(font_size * character_map[ord(char)][2], 0)
-
-            # horizontal_advanced_width = Pos(character_map[ord(char)][7], 0)
-            # Bounding box including the character spacing
-
+        def write_char(char_pos, char, char_num):
+            x_offset = Pos(font_size * font[ord(char)].character_width, 0)
             current_left_side_bearing = Pos(0, 0)
+
             # If first character, remove left side bearing
             if char_num == 0:
-                current_left_side_bearing = Pos(character_map[ord(char)][6], 0)
+                current_left_side_bearing = Pos(font[ord(char)].left_side_bearing, 0)
                 x_offset -= current_left_side_bearing * font_size
 
-            char_data = character_map[ord(char)][5]
-            this_char_bounding_box = [((point.copy() - current_left_side_bearing) * font_size) + pos for point in character_map[ord(char)][4]]
+            char_data = font[ord(char)].char_data
+            this_char_bounding_box = [((point.copy() - current_left_side_bearing) * font_size) + char_pos for point in font[ord(char)].bounding_box]
 
             if draw_bounding_box:
                 self.add_line(this_char_bounding_box, colour, font_weight, enclosed_path=True)
-                full_char_bounding_box = [Pos(0.0, 0.0), Pos((this_char_bounding_box[1].x - pos.x)/font_size, 0.0), Pos((this_char_bounding_box[2].x - pos.x)/font_size, 1.0), Pos(0.0, 1.0)]
-                full_char_bounding_box = [(point.copy() * font_size) + pos for point in full_char_bounding_box]
+                full_char_bounding_box = [Pos(0.0, 0.0), Pos((this_char_bounding_box[1].x - char_pos.x) / font_size, 0.0), Pos((this_char_bounding_box[2].x - char_pos.x) / font_size, 1.0), Pos(0.0, 1.0)]
+                full_char_bounding_box = [(point.copy() * font_size) + char_pos for point in full_char_bounding_box]
                 self.add_line(full_char_bounding_box, RED, font_weight, enclosed_path=True)
 
             for segment in char_data:
-                this_char_segment = [(point.copy() * font_size) + pos - (current_left_side_bearing * font_size) for point in segment]
-                if font_file_name:
-                    self.add_modified_quadratic_bezier_curve(this_char_segment, colour, font_weight, enclosed_path=True)
-                else:
-                    self.add_quadratic_bezier_curve(this_char_segment, colour, font_weight)
+                this_char_segment = [(point.copy() * font_size) + char_pos - (current_left_side_bearing * font_size) for point in segment]
+                self.add_modified_quadratic_bezier_curve(this_char_segment, colour, font_weight, enclosed_path=True)
 
-            return pos + x_offset
+            return char_pos + x_offset
 
         for line in lines:
-            for index, char in enumerate(line):
-                pos = write_char(pos.copy(), char, index)
+            for index, character in enumerate(line):
+                pos = write_char(pos.copy(), character, index)
             line_pos = line_pos + y_offset
             pos = line_pos.copy()
 
