@@ -1,6 +1,6 @@
 import math
 
-from constants import DRAWING_SIZE
+from .constants import DRAWING_SIZE
 
 
 # This class Pos wraps an x and y coordinate.

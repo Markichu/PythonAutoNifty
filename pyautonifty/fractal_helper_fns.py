@@ -2,11 +2,11 @@ import math
 import random
 import numpy as np
 
-from pos import Pos
-from constants import DRAWING_SIZE, BLACK, BLUE
-from fractal_constants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS
-from helper_fns import interpolate_colour
-from numpy_helper_fns import vect, vect_len, mx_rotd, metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord
+from .pos import Pos
+from .constants import DRAWING_SIZE, BLACK, BLUE
+from .fractal_constants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS
+from .helper_fns import interpolate_colour
+from .numpy_helper_fns import vect, vect_len, mx_rotd, metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord
 
 
 # -------------------------------------
