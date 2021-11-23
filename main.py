@@ -1,10 +1,26 @@
-from pyautonifty import helper_fns, constants, drawing_methods
+from pyautonifty import helper_fns, constants
 from pyautonifty.pos import Pos
 from pyautonifty.drawing import Drawing
 from pyautonifty.fractal_runner import fractalRunner
 from pyautonifty.renderer import Renderer
 
+from examples.alpha_example import alpha_example
+from examples.curved_lines import curved_lines
+from examples.fibonacci_dots import fibonacci_dots
+from examples.point_image import point_image
+from examples.rectangle_example import rectangle_example
+from examples.rotating_square import rotating_square
+from examples.shrinking_circle_ring import shrinking_circle_ring
+from examples.square_example import square_example
+from examples.square_fractal import square_fractal
+from examples.square_image import square_image
+from examples.squared_circle import squared_circle
+from examples.star_example import star_example
+from examples.text_drawing_example import text_drawing_example
+from examples.tiled_diagonals import tiled_diagonals
 
+
+# Below you can create your own custom drawing programmatically!
 def custom_drawing_method(drawing):
     colour = (255, 0, 0, 0.2)  # RED with an alpha value of 0.2
     drawing.add_rounded_rectangle(Pos(500, 500), 600, 500, colour, 50, filled=True)
@@ -43,15 +59,15 @@ def main():
     # # Most of the methods and examples are in file drawing_methods.py
     # # For the general fractal examples, set it up in fractal_runner.py
 
-    # drawing = drawing_methods.point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
-    # drawing = drawing_methods.square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners
-    # drawing = drawing_methods.text_drawing_example(Drawing(), font_file_name='fonts/OpenSans-Regular.ttf')  # Example of how to draw text on the canvas with a free use font
+    # drawing = point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Small image (PNG, JPG supported)
+    # drawing = square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Sharp pixel corners drawing
+    # drawing = text_drawing_example(Drawing(), font_file_name='fonts/OpenSans-Regular.ttf')  # Text with TTF font file
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
-    # drawing = drawing_methods.square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
-    # drawing = drawing_methods.square_example(Drawing())  # Draws some basic squares with different brush sizes
-    # drawing = drawing_methods.rectangle_example(Drawing())  # Draws some basic rectangles with different brush sizes
-    # drawing = drawing_methods.alpha_example(Drawing())  # Shows an example of using alpha values, make sure pygame has alpha enabled too!
-    # drawing = drawing_methods.star_example(Drawing())  # Draws a spiralling pattern inside a black circle
+    # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
+    # drawing = square_example(Drawing())  # Draws some basic squares with different brush sizes
+    # drawing = rectangle_example(Drawing())  # Draws some basic rectangles with different brush sizes
+    # drawing = alpha_example(Drawing())  # Shows an example of using alpha values, ensure correct pygame settings
+    # drawing = star_example(Drawing())  # Draws a spiralling pattern inside a black circle
 
     # drawing = custom_drawing_method(Drawing())
 
@@ -114,6 +130,7 @@ def main():
 
     # Render the traditional way (faster).
     # renderer.render(drawing, filename="screenshot.png")
+
 
 if __name__ == '__main__':
     main()

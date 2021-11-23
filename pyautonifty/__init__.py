@@ -3,7 +3,6 @@ from . import pos
 from . import helper_fns
 from . import numpy_helper_fns
 from . import constants
-from . import drawing_methods
 
 from . import fractal_runner
 from . import fractal_constants
