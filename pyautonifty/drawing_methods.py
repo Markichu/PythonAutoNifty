@@ -3,10 +3,9 @@ import random
 import math
 import numpy as np
 
-from pos import Pos
-
-from constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
-from helper_fns import rotate, hsva_to_rgba
+from .pos import Pos
+from .constants import DRAWING_SIZE, GOLDEN_RATIO, BLACK, WHITE
+from .helper_fns import rotate, hsva_to_rgba
 
 
 # Draw an image from file using dots as pixels

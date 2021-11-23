@@ -1,16 +1,17 @@
 import numpy as np
 import random
-from fractal_piece import FractalPiece
-from fractal_system import FractalSystem
-from helper_fns import hex_list_to_rgba
-from constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
-from numpy_helper_fns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
-from fractal_helper_fns import colour_fixed, colour_by_progress, colour_by_tsfm, colour_by_log2_size
-from fractal_helper_fns import plot_dot, plot_path
-from fractal_helper_fns import sort_by_tsfm, grid_generator, wobble_square
-from fractal_helper_fns import get_iteration_fn_standard, get_iteration_fn_stop
-from fractal_generator_fns import gen_children_rand_small_squares, gen_children_fade_out, gen_fid_rand
-from fractal_generator_fns import gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
+
+from .fractal_piece import FractalPiece
+from .fractal_system import FractalSystem
+from .helper_fns import hex_list_to_rgba
+from .constants import DRAWING_SIZE, WHITE, LIGHT_GREY, GREY, DARK_GREY, BLACK, RED, ORANGE, YELLOW, LIGHT_GREEN, GREEN, SPRING_GREEN, CYAN, LIGHT_BLUE, BLUE, PURPLE, MAGENTA, PINK
+from .numpy_helper_fns import vect, vect_len, mx_angle, mx_id, mx_scale, mx_diag, mx_rotd, mx_sq
+from .fractal_helper_fns import colour_fixed, colour_by_progress, colour_by_tsfm, colour_by_log2_size
+from .fractal_helper_fns import plot_dot, plot_path
+from .fractal_helper_fns import sort_by_tsfm, grid_generator, wobble_square
+from .fractal_helper_fns import get_iteration_fn_standard, get_iteration_fn_stop
+from .fractal_generator_fns import gen_children_rand_small_squares, gen_children_fade_out, gen_fid_rand
+from .fractal_generator_fns import gen_vect_rand, gen_mx_rand_sq, gen_mx_rand_circ
 
 
 def fractalRunner(drawing):

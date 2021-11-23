@@ -1,8 +1,8 @@
 import random
 
-from fractal_piece import FractalPiece
-from fractal_helper_fns import grid_generator
-from numpy_helper_fns import vect, vect_len, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
+from .fractal_piece import FractalPiece
+from .fractal_helper_fns import grid_generator
+from .numpy_helper_fns import vect, vect_len, mx_scale, mx_rotd, mx_refl_X, mx_sq, mx_dh
 
 
 # -------------------------------------

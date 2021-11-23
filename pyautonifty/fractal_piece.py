@@ -1,4 +1,4 @@
-from fractal_helper_fns import DEFAULT_ITERATION_FN
+from .fractal_helper_fns import DEFAULT_ITERATION_FN
 
 
 # Consider splitting FractalPiece class into concrete and abstract subclasses

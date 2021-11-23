@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial import ConvexHull
 
-from numpy_helper_fns import mx_rotd
+from .numpy_helper_fns import mx_rotd
 
 
 # To make a convex hull in 2D:

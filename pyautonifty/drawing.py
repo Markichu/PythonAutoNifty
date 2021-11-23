@@ -2,10 +2,10 @@ import json
 import math
 import random
 
-from pos import Pos
-from font import Font
-from helper_fns import get_bezier_curve, rotate
-from constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, RED
+from .pos import Pos
+from .font import Font
+from .helper_fns import get_bezier_curve, rotate
+from .constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, RED
 
 
 # The Drawing class contains all the code required to produce an output.txt file.

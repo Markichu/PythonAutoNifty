@@ -1,24 +1,41 @@
-import os
+from pyautonifty import helper_fns, constants, drawing_methods
+from pyautonifty.pos import Pos
+from pyautonifty.drawing import Drawing
+from pyautonifty.fractal_runner import fractalRunner
+from pyautonifty.renderer import Renderer
 
-from drawing import Drawing
-from renderer import Renderer
-from helper_fns import random_seed, set_random_seed
-from constants import DRAWING_SIZE, BLACK
-from drawing_methods import point_image, square_image, rotating_square, tiled_diagonals, \
-    fibonacci_dots, fibonacci_image, squared_circle, curved_lines, \
-    shrinking_circle_ring, square_fractal, text_drawing_example, square_example, rectangle_example, \
-    alpha_example, star_example
 
-from fractal_runner import fractalRunner
+def custom_drawing_method(drawing):
+    colour = (255, 0, 0, 0.2)  # RED with an alpha value of 0.2
+    drawing.add_rounded_rectangle(Pos(500, 500), 600, 500, colour, 50, filled=True)
+
+    line_points = [Pos(370, 342), Pos(637, 503), Pos(370, 663)]
+
+    mid_point_x = sum(pos.x for pos in line_points) / len(line_points)
+    mid_point_y = sum(pos.y for pos in line_points) / len(line_points)
+    mid_point = Pos(mid_point_x, mid_point_y)
+
+    line_points.append(line_points[0])
+    line_points.append(mid_point)
+    line_points.append(line_points[1])
+    line_points.append(mid_point)
+    line_points.append(line_points[2])
+
+    colour = (255, 255, 255, 0.5)  # WHITE with an alpha value of 0.5
+
+    drawing.add_line(line_points, colour, 50)
+    return drawing
 
 
 def main():
     # # Optional - Make a new random seed, set it and print it. Used in drawings with randomness
     # # This technically changes the random seed, but should not matter unless you put code above this.
-    seed = random_seed()
+    seed = helper_fns.random_seed()
+    print("Random seed:", seed)
 
     # # Optional - Change the random seed. Use this to reproduce the same random drawing.
-    # set_random_seed(seed)
+    # helper_fns.set_random_seed(seed)
+    # print("Random changed to:", seed)
 
     # ---------------
     # # Pick a method to use here that draws something nice on the canvas
@@ -26,16 +43,17 @@ def main():
     # # Most of the methods and examples are in file drawing_methods.py
     # # For the general fractal examples, set it up in fractal_runner.py
 
-    # drawing = point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
-    # drawing = square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners
-    # drawing = text_drawing_example(Drawing())  # Example of how to draw text on the canvas
-    # drawing = text_drawing_example(Drawing(), font_file_name='fonts/OpenSans-Regular.ttf', draw_bounding_box=False)  # Example of how to draw text on the canvas with a free use font
+    # drawing = drawing_methods.point_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Example of how to reproduce a small image (PNG, JPG supported) on the canvas
+    # drawing = drawing_methods.square_image(Drawing(), "temp_image.png", do_a_shuffle=False)  # Alternative image drawing method with sharp pixel corners
+    # drawing = drawing_methods.text_drawing_example(Drawing(), font_file_name='fonts/OpenSans-Regular.ttf')  # Example of how to draw text on the canvas with a free use font
     drawing = fractalRunner(Drawing())  # Generalised fractal drawing methods
-    # drawing = square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
-    # drawing = square_example(Drawing())  # Draws some basic squares with different brush sizes
-    # drawing = rectangle_example(Drawing())  # Draws some basic rectangles with different brush sizes
-    # drawing = alpha_example(Drawing())  # Shows an example of using alpha values, make sure pygame has alpha enabled too!
-    # drawing = star_example(Drawing())  # Draws a spiralling pattern inside a black circle
+    # drawing = drawing_methods.square_fractal(Drawing(), [1, 1, 1, 0], 5)  # Simple square fractal drawing tool
+    # drawing = drawing_methods.square_example(Drawing())  # Draws some basic squares with different brush sizes
+    # drawing = drawing_methods.rectangle_example(Drawing())  # Draws some basic rectangles with different brush sizes
+    # drawing = drawing_methods.alpha_example(Drawing())  # Shows an example of using alpha values, make sure pygame has alpha enabled too!
+    # drawing = drawing_methods.star_example(Drawing())  # Draws a spiralling pattern inside a black circle
+
+    # drawing = custom_drawing_method(Drawing())
 
     # ---------------
 
@@ -52,10 +70,7 @@ def main():
     # drawing.import_raw_data("drawing.ink")
 
     # # Optional - Add a layer from another drawing, adds to the top of the drawing.
-    # drawing.add_layer(drawing2)
-
-    # # Optional - Load a layer from a file, adds to the top of the drawing.
-    # drawing.add_layer_from_file("drawing.ink")
+    # drawing + drawing2
 
     # # Optional - Reverse the drawing order of a drawing
     # reversed(drawing)
@@ -93,12 +108,12 @@ def main():
 
     # Render in a very accurate (but slower) way.
     renderer.render(drawing, filename="screenshot.png",
-                   simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True, step_size=10,
-                   timestamp=True)
+                    simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
+                    step_size=10,
+                    timestamp=True)
 
     # Render the traditional way (faster).
     # renderer.render(drawing, filename="screenshot.png")
-
 
 if __name__ == '__main__':
     main()

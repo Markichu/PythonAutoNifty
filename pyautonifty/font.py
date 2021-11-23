@@ -1,8 +1,8 @@
 from fontTools import ttLib
 from collections import defaultdict
 
-from constants import BLACK
-from pos import Pos
+from .constants import BLACK
+from .pos import Pos
 
 
 class Character:

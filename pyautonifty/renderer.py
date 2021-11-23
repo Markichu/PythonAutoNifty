@@ -2,13 +2,16 @@ import datetime
 import os
 import time
 import numpy as np
+from PIL import Image
+
 
 # Hide the Pygame support message
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = str()
 import pygame
 
-from constants import BLACK, WHITE, DRAWING_SIZE, TITLE_BAR_HEIGHT, BORDER_WIDTH
-from helper_fns import get_bezier_curve, alpha_blend
+from .constants import BLACK, WHITE, DRAWING_SIZE, TITLE_BAR_HEIGHT, BORDER_WIDTH
+from .helper_fns import get_bezier_curve, alpha_blend
+
 
 
 class Renderer:
@@ -180,7 +183,6 @@ class Renderer:
 
         # TODO: Figure out if Pygame has a method to save a surface with a transparent background
         if save_transparent_bg:
-            from PIL import Image
             image_string = pygame.image.tostring(self.screen, 'RGBA', False)
             img = Image.frombytes("RGBA", self.screen.get_size(), image_string)
 
