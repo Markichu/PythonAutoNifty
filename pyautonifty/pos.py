@@ -25,7 +25,7 @@ class Pos:
     def copy(self):
         return Pos(self.x, self.y)
 
-    def rotate(self, rotation, origin=None):
+    def irotate(self, rotation, origin=None):
         # get default centre
         if origin is None:
             origin = Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2)
@@ -34,30 +34,50 @@ class Pos:
         x = self.x * math.cos(rotation) - self.y * math.sin(rotation)
         self.y = self.x * math.sin(rotation) + self.y * math.cos(rotation)
         self.x = x
-        return self + origin
+        self += origin
+        return self
+
+    def rotate(self, rotation, origin=None):
+        return self.copy().irotate(rotation, origin)
+
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+        return self
+
+    def __isub__(self, other):
+        self.x -= other.x
+        self.y -= other.y
+        return self
+
+    def __imul__(self, mult):
+        self.x *= mult
+        self.y *= mult
+        return self
+
+    def __itruediv__(self, div):
+        self.x /= div
+        self.y /= div
+        return self
 
     def __add__(self, other):
         result = self.copy()
-        result.x += other.x
-        result.y += other.y
+        result += other
         return result
 
     def __sub__(self, other):
         result = self.copy()
-        result.x -= other.x
-        result.y -= other.y
+        result -= other
         return result
 
     def __mul__(self, mult):
         result = self.copy()
-        result.x *= mult
-        result.y *= mult
+        result *= mult
         return result
 
     def __truediv__(self, div):
         result = self.copy()
-        result.x /= div
-        result.y /= div
+        result /= div
         return result
 
     def __round__(self, n_digits=None):
