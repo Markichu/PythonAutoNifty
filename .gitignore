@@ -1,5 +1,6 @@
 output.txt
-screenshot.png
+screenshot*
 .idea/*
 __pycache__
 temp*
+dist*
