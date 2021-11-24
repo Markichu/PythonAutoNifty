@@ -18,17 +18,23 @@ def squared_circle(drawing, n=8):
         degrees = i * step + (step / 2)
 
         # get pos for corners
-        pos1 = Pos.from_rotational(np.radians(degrees), DRAWING_SIZE).rotate(np.radians(45))
-        pos2 = Pos(pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
-        pos3 = Pos(DRAWING_SIZE - pos1.x, DRAWING_SIZE - pos1.y).rotate(np.radians(45))
-        pos4 = Pos(DRAWING_SIZE - pos1.x, pos1.y).rotate(np.radians(45))
+        temp_pos = Pos.from_rotational(np.radians(degrees), DRAWING_SIZE)
+        pos_list = [
+            temp_pos,
+            Pos(temp_pos.x, DRAWING_SIZE - temp_pos.y),
+            Pos(DRAWING_SIZE - temp_pos.x, DRAWING_SIZE - temp_pos.y),
+            Pos(DRAWING_SIZE - temp_pos.x, temp_pos.y)
+        ]
+
+        for pos in pos_list:
+            pos.irotate(np.radians(45))
 
         # do colour
         colour = hsva_to_rgba(current_h, 0.8, 0.85)
         current_h -= 0.7 / n
 
         # add square
-        drawing.add_line([pos1, pos2, pos3, pos4], colour, DRAWING_SIZE / (25 * n))
+        drawing.add_line(pos_list, colour, DRAWING_SIZE / (25 * n), enclosed_path=True)
 
     return drawing
 
