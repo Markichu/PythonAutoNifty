@@ -123,10 +123,9 @@ def main():
     renderer = Renderer()
 
     # Render in a very accurate (but slower) way.
-    renderer.render(drawing, filename="screenshot.png",
+    renderer.render(drawing, filename="screenshot_%Y_%m_%d_%H-%M-%S-%f.png",
                     simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
-                    step_size=10,
-                    timestamp=True)
+                    step_size=10)
 
     # Render the traditional way (faster).
     # renderer.render(drawing, filename="screenshot.png")

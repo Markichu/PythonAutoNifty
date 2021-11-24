@@ -13,7 +13,6 @@ from .constants import BLACK, WHITE, DRAWING_SIZE, TITLE_BAR_HEIGHT, BORDER_WIDT
 from .helper_fns import get_bezier_curve, alpha_blend
 
 
-
 class Renderer:
     def __init__(self, headless=False, pygame_scale=None):
         self.pygame_scale = pygame_scale
@@ -48,22 +47,15 @@ class Renderer:
         self.screen = pygame.display.set_mode((self.pygame_x, self.pygame_y))
         pygame.display.set_caption("Drawing Render")
 
-
-
     # Render the lines to preview in Pygame
     def render(self, drawing, filename="output.png", simulate=False, speed=None,
                allow_transparency=False, fake_transparency=False, proper_line_thickness=False, draw_as_bezier=False,
-               step_size=10, save_transparent_bg=False, green_screen_colour=(0, 177, 64, 255), timestamp=False,
-               timestamp_format="%Y_%m_%d_%H_%M_%S_%f_"):
+               step_size=10, save_transparent_bg=False, green_screen_colour=(0, 177, 64, 255)):
 
         if step_size < 2:
             step_size = 2
 
-        if save_transparent_bg:
-            self.screen.fill(green_screen_colour)
-        else:
-            self.screen.fill(WHITE)
-        # self.screen.set_alpha(255)  CHECK NOT USED
+        self.screen.fill(green_screen_colour) if save_transparent_bg else self.screen.fill(WHITE)
         pygame.display.update()  # Show the background, (so the screen isn't black on drawings that are slow to process)
 
         def draw_line(surface, colour, start_point, end_point, width, end_caps=False):
@@ -177,12 +169,14 @@ class Renderer:
         # update screen to render the final result of the drawing
         pygame.display.update()
 
-        time_str = datetime.datetime.now().strftime(timestamp_format) if timestamp else ""
-
-        pygame.image.save(self.screen, time_str + filename)
+        # format the filename to include the time how the user chooses
+        current_time = datetime.datetime.now()
+        filename = filename.replace('%s', str(int(current_time.timestamp())))
+        formatted_filename = current_time.strftime(filename)
 
         # TODO: Figure out if Pygame has a method to save a surface with a transparent background
         if save_transparent_bg:
+            # Save the image with a transparent background
             image_string = pygame.image.tostring(self.screen, 'RGBA', False)
             img = Image.frombytes("RGBA", self.screen.get_size(), image_string)
 
@@ -195,7 +189,10 @@ class Renderer:
 
                 Image.fromarray(np.ubyte(array)).save(dst_file, "PNG")
 
-            convert_png_transparent(img, f"{time_str}transparent_{filename}", [*green_screen_colour[:-1]])
+            convert_png_transparent(img, formatted_filename, [*green_screen_colour[:-1]])
+        else:
+            # Save the image without a transparent background
+            pygame.image.save(self.screen, formatted_filename)
 
         # enter a loop to prevent pygame from ending
         running = True
