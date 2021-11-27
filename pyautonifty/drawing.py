@@ -3,9 +3,8 @@ import math
 import random
 
 from .pos import Pos
-from .font import Font
 from .helper_fns import get_bezier_curve, rotate
-from .constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, BLACK, RED
+from .constants import DRAWING_SIZE, DEFAULT_BRUSH_RADIUS, MIN_BRUSH_RADIUS, RED
 
 
 # The Drawing class contains all the code required to produce an output.txt file.
@@ -25,11 +24,13 @@ class Drawing:
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
         self.object["lines"].append(line)
+        return self
 
     # Use a large dot to colour the whole canvas
     def add_background(self, colour):
         # 0.71 is approx square root of 0.5
         self.add_point(Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2), colour, DRAWING_SIZE * 0.71)
+        return self
 
     # Add a gradient between two points
     def add_gradient(self, pos1, pos2, colour1, colour2, divisions=30):
@@ -48,6 +49,7 @@ class Drawing:
             line_pos1 = Pos(pos1.x, pos1.y + (size_step * i))
             line_pos2 = Pos(pos2.x, pos1.y + (size_step * i))
             self.add_straight_line(line_pos1, line_pos2, colour, brush_radius)
+        return self
 
     # Add a straight line between two positions on the canvas
     def add_straight_line(self, pos1, pos2, colour, brush_radius):
@@ -55,6 +57,7 @@ class Drawing:
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
         self.object["lines"].append(line)
+        return self
 
     # Add a curved line between a list of points (Pos) on the canvas
     # Note - this line is curved on Nifty Ink
@@ -68,6 +71,7 @@ class Drawing:
                 "brushColor": "rgba({},{},{},{})".format(*colour),
                 "brushRadius": brush_radius}
         self.object["lines"].append(line)
+        return self
 
     # This function is only really useful for fonts. TrueTypeFonts have compressed bezier curves.
     # These curves are not in the same form as the midpoint based bezier curves of Nifty.ink
@@ -94,6 +98,7 @@ class Drawing:
                 else:
                     new_pos_list.append(point)
         self.add_quadratic_bezier_curve(new_pos_list, colour, brush_radius, enclosed_path=False)
+        return self
 
     # Add a series of straight line segments between a list of points (Pos) on the canvas
     def add_line(self, pos_list, colour, brush_radius, enclosed_path=False):
@@ -110,6 +115,7 @@ class Drawing:
                     "brushColor": "rgba({},{},{},{})".format(*colour),
                     "brushRadius": brush_radius}
             self.object["lines"].append(line)
+        return self
 
     # Add a bezier curve that is quadratic if you give 3 points, cubic if you give 4 points and so on.
     def add_general_bezier_curve(self, control_points, colour, brush_radius, step_size=40, enclosed_path=False):
@@ -119,6 +125,7 @@ class Drawing:
         points = get_bezier_curve(tuple_control_points, step_size, end_point=True)
         pos_points = [Pos(point[0], point[1]) for point in points]
         self.add_line(pos_points, colour, brush_radius, enclosed_path=enclosed_path)
+        return self
 
     # Add a pause to the canvas, using a point off the canvas
     def add_pause(self, length):
@@ -127,11 +134,13 @@ class Drawing:
                 "brushColor": "rgba(0, 0, 0, 0)",
                 "brushRadius": 0}
         self.object["lines"].append(line)
+        return self
 
     # Add a square to the canvas
     # The degree of roundedness of the corners is determined by the brush radius
     def add_rounded_square(self, centre_pos, width, colour, brush_radius=DEFAULT_BRUSH_RADIUS, filled=True):
         self.add_rounded_rectangle(centre_pos, width, width, colour, brush_radius=brush_radius, filled=filled)
+        return self
 
     # # Add a rectangle to the canvas
     # # The degree of roundedness of the corners is determined by the brush radius
@@ -177,6 +186,7 @@ class Drawing:
         if rotate_rectangle:
             result_corners = [rotate(point, math.pi/2, centre_pos) for point in result_corners]
         self.add_line(result_corners, colour, br2)
+        return self
 
     # Write text onto the canvas using a custom font specified below
     def write(self, font, pos, lines, draw_bounding_box=False):
@@ -221,11 +231,13 @@ class Drawing:
                 pos = write_char(pos.copy(), character, index)
             line_pos = line_pos + y_offset
             pos = line_pos.copy()
+        return self
 
     # Randomly reorder the lines
     # Nifty Ink will animate in an interesting random order
     def shuffle_lines(self):
         random.shuffle(self.object["lines"])
+        return self
 
     # Use this to make your drawings slightly less precise, but also reduce their size a lot
     # This can be useful if browser local storage limits start affecting your large drawings
@@ -239,6 +251,7 @@ class Drawing:
 
             line['brushRadius'] = round(line['brushRadius'])
             line['points'] = [round(point, n_digits) for point in line['points']]
+        return self
 
     # Reverse the drawing order of all the lines, this will mess up the final appearance if lines overlap!
     def __reversed__(self):
@@ -264,6 +277,7 @@ class Drawing:
     # TODO: Handle canvas size scaling (which we currently don't change anyway)
     def __add__(self, drawing):
         self.object['lines'].extend(drawing.object['lines'])
+        return self
 
     def __iter__(self):
         for line in self.object['lines']:
@@ -276,6 +290,7 @@ class Drawing:
     def export_raw_data(self, file_name, indent=4):
         with open(file_name, "w") as file:
             json.dump(self.to_nifty_object(), file, indent=indent)
+        return self
 
     # Load a raw data file and replace the contents of this drawing.
     def import_raw_data(self, file_name):
@@ -298,7 +313,7 @@ class Drawing:
         }
 
     @staticmethod
-    def from_nifty_object(self, json_dict):
+    def from_nifty_object(json_dict):
         temp = []
         for line in json_dict['lines']:
             temp.append({

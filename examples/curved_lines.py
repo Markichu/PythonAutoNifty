@@ -23,7 +23,8 @@ def curved_lines(drawing, n=20):
         # do top left line
         drawing.add_straight_line(Pos(offset, 0), Pos(0, offset), BLACK, DRAWING_SIZE / (25 * n))
         # do bottom right
-        drawing.add_straight_line(Pos(DRAWING_SIZE, DRAWING_SIZE - offset), Pos(DRAWING_SIZE - offset, DRAWING_SIZE), BLACK, DRAWING_SIZE / (25 * n))
+        drawing.add_straight_line(Pos(DRAWING_SIZE, DRAWING_SIZE - offset), Pos(DRAWING_SIZE - offset, DRAWING_SIZE),
+                                  BLACK, DRAWING_SIZE / (25 * n))
 
     # do middle diagonal
     drawing.add_straight_line(Pos(DRAWING_SIZE, 0), Pos(0, DRAWING_SIZE), BLACK, DRAWING_SIZE / (25 * n))
@@ -46,7 +47,6 @@ if __name__ == "__main__":
     renderer = Renderer()
 
     # Render in a very accurate (but slower) way.
-    renderer.render(example_drawing, filename="screenshot.png",
+    renderer.render(example_drawing, filename="curved_lines_%Y_%m_%d_%H-%M-%S-%f.png",
                     simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
-                    step_size=10,
-                    timestamp=True)
+                    step_size=10)

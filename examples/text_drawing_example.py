@@ -41,7 +41,6 @@ if __name__ == "__main__":
     renderer = Renderer()
 
     # Render in a very accurate (but slower) way.
-    renderer.render(example_drawing, filename="screenshot.png",
+    renderer.render(example_drawing, filename="text_drawing_example_%Y_%m_%d_%H-%M-%S-%f.png",
                     simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
-                    step_size=10,
-                    timestamp=True)
+                    step_size=10)

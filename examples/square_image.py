@@ -53,7 +53,8 @@ def square_image(drawing, image_name, brush_radius=1, do_a_shuffle=False,
             if rotation:
                 pos = rotate(pos, rotation, origin=position)
 
-            drawing.add_rounded_rectangle(centre_pos=pos, width=square_pixel_width, height=square_pixel_height, colour=colour, brush_radius=brush_radius)
+            drawing.add_rounded_rectangle(centre_pos=pos, width=square_pixel_width, height=square_pixel_height,
+                                          colour=colour, brush_radius=brush_radius)
 
     if do_a_shuffle:
         drawing.shuffle_lines()
@@ -76,7 +77,6 @@ if __name__ == "__main__":
     renderer = Renderer()
 
     # Render in a very accurate (but slower) way.
-    renderer.render(example_drawing, filename="screenshot.png",
+    renderer.render(example_drawing, filename="square_image_%Y_%m_%d_%H-%M-%S-%f.png",
                     simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
-                    step_size=10,
-                    timestamp=True)
+                    step_size=10)

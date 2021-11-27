@@ -12,12 +12,14 @@ from pyautonifty.renderer import Renderer
 # Subsequently, davidryan59 implemented more generalised fractal drawing methods, see fractalRunner, FractalSystem etc.
 def square_fractal(drawing, master_key, iterations=5):
     # add gradient background
-    drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7), 200)
+    drawing.add_gradient(Pos(0, 0), Pos(DRAWING_SIZE, DRAWING_SIZE), hsva_to_rgba(0, 0, 0.9), hsva_to_rgba(0, 0, 0.7),
+                         200)
     drawing *= 1 / 0.95
 
     # Add text
     font = Font("fonts/OpenSans-Regular.ttf", size=50, unknown_character=default_value())
-    drawing.write(font, Pos(600, 125), ["Square", "Fractal", f'#{"".join([str(key) for key in master_key[:3]])}', f"n={iterations}"])
+    drawing.write(font, Pos(600, 125),
+                  ["Square", "Fractal", f'#{"".join([str(key) for key in master_key[:3]])}', f"n={iterations}"])
 
     def rotate_left(ext_key):
         rotate_left_dict = {0: 0,
@@ -104,7 +106,6 @@ if __name__ == "__main__":
     renderer = Renderer()
 
     # Render in a very accurate (but slower) way.
-    renderer.render(example_drawing, filename="screenshot.png",
+    renderer.render(example_drawing, filename="square_fractal_%Y_%m_%d_%H-%M-%S-%f.png",
                     simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
-                    step_size=10,
-                    timestamp=True)
+                    step_size=10)
