@@ -7,7 +7,8 @@ from pyautonifty.drawing import Drawing
 from pyautonifty.renderer import Renderer
 
 
-def star_example(drawing, lines=10, line_segments=100, draw_points=False, transparency=False, curved_lines=False, enclosed_path=False):
+def star_example(drawing, lines=10, line_segments=100, draw_points=False, transparency=False, curved_lines=False,
+                 enclosed_path=False):
     all_points = []
     drawing.add_point(Pos(DRAWING_SIZE / 2, DRAWING_SIZE / 2), BLACK, 500)
     num = random.randint(2, 10)
@@ -64,7 +65,6 @@ if __name__ == "__main__":
     renderer = Renderer()
 
     # Render in a very accurate (but slower) way.
-    renderer.render(example_drawing, filename="screenshot.png",
+    renderer.render(example_drawing, filename="star_example_%Y_%m_%d_%H-%M-%S-%f.png",
                     simulate=True, allow_transparency=True, proper_line_thickness=True, draw_as_bezier=True,
-                    step_size=10,
-                    timestamp=True)
+                    step_size=10)
