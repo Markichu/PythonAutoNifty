@@ -21,7 +21,7 @@ setuptools.setup(
         "numpy==1.21.4",
         "pygame==2.1.0",
         "scipy==1.7.2",
-        "pillow==8.4.0",
+        "pillow==9.0.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
