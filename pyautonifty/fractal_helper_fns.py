@@ -4,7 +4,7 @@ import numpy as np
 
 from .pos import Pos
 from .constants import DRAWING_SIZE, BLACK, BLUE
-from .fractal_constants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS
+from .fractal_constants import DEFAULT_MIN_DIAMETER, DEFAULT_MAX_ITERATIONS, BASE_SCALE_WIDTH
 from .helper_fns import interpolate_colour
 from .numpy_helper_fns import vect, vect_len, mx_rotd, metric_matrix_min_eig_val, metric_matrix_rms, metric_matrix_x_coord
 
@@ -252,7 +252,7 @@ def spiral_2D_path_fill(vect_list, width):
     return final_draw_list
 
 # Helper function to do the drawing based on a wide range of criteria
-def basic_plot_path(drawing, piece, vector_list, width, shrink, colour, fill, closed, curved, expand_factor, wobble_fn):
+def basic_plot_path(drawing, piece, vector_list, width, scale_width, shrink, colour, fill, closed, curved, expand_factor, wobble_fn):
     piece_vect = piece.get_vect()
     piece_mx = piece.get_mx()
 
@@ -263,10 +263,13 @@ def basic_plot_path(drawing, piece, vector_list, width, shrink, colour, fill, cl
         wobble_vect = wobble_fn() if callable(wobble_fn) else piece_vect * 0
         draw_vect = piece_vect + wobble_vect + (piece_mx @ vector_list[i]) * expand_factor
         draw_list.append(draw_vect)
-    # 1.2. Shrink a bit (due to finite brush radius) if shrink option is selected
+    # 1.2. If scale_width option used, scale the width up or down based on piece diameter relative to the base scale width
+    if scale_width:
+        width *= piece.get_minimum_diameter() / BASE_SCALE_WIDTH
+    # 1.3. Shrink a bit (due to finite brush radius) if shrink option is selected
     if shrink:
         draw_list = shrink_2D_vects(piece, draw_list, width)
-    # 1.3. Deal with both filled and closed shapes
+    # 1.4. Deal with both filled and closed shapes
     if fill and len(draw_list) > 2:
         draw_list = spiral_2D_path_fill(vect_list=draw_list, width=width)
         # if filling, shape is automatically closed
@@ -311,7 +314,7 @@ def plot_dot(expand_factor=1, wobble_fn=None, offset_vect=None):
 # 1. If vector_list is specified, use that for the path
 # 2. Else if convex hull is calculated, use that
 # 3. Otherwise fall back to a unit square, making sure it is closed
-def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1, shrink=False, expand_factor=1, wobble_fn=None):
+def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1, scale_width=False, shrink=False, expand_factor=1, wobble_fn=None):
     def plot_fn(drawing, piece, colour=BLACK):
         use_closed = closed
         vect_list = vector_list
@@ -320,7 +323,7 @@ def plot_path(vector_list=None, fill=False, closed=False, curved=False, width=1,
         if vect_list is None:
             vect_list = [vect(0, 1), vect(-1, 1), vect(-1, -1), vect(1, -1), vect(1, 1)]
             use_closed = True
-        basic_plot_path(drawing=drawing, piece=piece, vector_list=vect_list, wobble_fn=wobble_fn, closed=use_closed, colour=colour, width=width, shrink=shrink, curved=curved, expand_factor=expand_factor, fill=fill)
+        basic_plot_path(drawing=drawing, piece=piece, vector_list=vect_list, wobble_fn=wobble_fn, closed=use_closed, colour=colour, width=width, scale_width=scale_width, shrink=shrink, curved=curved, expand_factor=expand_factor, fill=fill)
 
     return plot_fn
 

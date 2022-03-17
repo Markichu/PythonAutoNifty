@@ -9,6 +9,8 @@ BREAK_AFTER_ITERATIONS = 1000  # stop the loop if this number of iterations is r
 DEFAULT_HULL_MAX_ITERATIONS = 20
 DEFAULT_HULL_ACCURACY = 0.031415  # Acceptable accuracy for fractal roughly filling interval [-1, 1] in each direction
 
+BASE_SCALE_WIDTH = 100  # For paths with scale_width=True, scale width of path based on fractal radius / this number
+
 # This hull ought to have diameter 2 in the diameter-calculating algorithm being used
 # Current algorithm is to find max-min x and y at 0, 30, 60 degrees (min of 6 values)
 # This hull produces 2 under that algorithm.
